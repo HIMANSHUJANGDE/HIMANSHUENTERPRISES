@@ -1,0 +1,193 @@
+Age Calculator
+	<style>
+    #main_container {
+    width: 400px;
+    margin: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 30px;
+    font-family: sans-serif;
+    border-radius: 20px;
+    border: 3px solid #999;
+}
+
+#birth_date_input, #age_container {
+    text-align: center;
+    margin: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#age_container {
+    margin: 40px 5px;
+    padding: 20px;
+    border-radius: 50px;
+    border: 1px solid #000;
+    font-weight: bolder;
+    background: #EEE;
+    font-size: 20px;
+    line-height: 40px;
+}
+
+#calculate {
+    cursor: pointer;
+    text-align: center;
+    width: 200px;
+    padding: 5px;
+    margin: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #999;
+    border-radius: 10px;
+    background: #FFD119;
+    background: -webkit-gradient(linear, left top, left bottom, from(#FFD119), to(#E6B800));
+	background: -moz-linear-gradient(top, #FFD119, #E6B800);
+    font-weight: bold;
+    height: 28px;
+    box-shadow: 0 -8px inset;
+}
+
+#calculate:hover {
+    background: -webkit-gradient(linear, left top, left bottom, from(#E6B800), to(#FFD119));
+	background: -moz-linear-gradient(top, #E6B800, #FFD119);
+    margin-top: 13px;
+    height: 25px;
+    box-shadow: 0 -5px inset;
+}
+
+#calculate:active {
+    background: #403300;
+    padding-top: 10px;
+    height: 20px;
+    box-shadow: 0 5px #000 inset;
+}
+
+#age {
+    padding: 5px;
+    border: 3px dashed #AAA;
+    background-color: green;
+}
+html{
+    background:rgb(100, 100, 1000);
+}
+    </style>
+
+
+
+    <div id="main_container">
+        <div id="birth_date_input">Birth Date*: <input type="date" id="birth_date" /></div>
+        <br/>
+        <div id="calculate">Calculate your age**</div><br />
+        
+        <div id="age_container"><span id="exact_age">Age</span></div>
+
+    </div>
+	<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+ <script>
+     $(document).ready(function(){
+    $("#calculate").click(function(){
+        var mdate = $("#birth_date").val().toString();
+        var yearThen = parseInt(mdate.substring(0,4), 10);
+        var monthThen = parseInt(mdate.substring(5,7), 10);
+        var dayThen = parseInt(mdate.substring(8,10), 10);
+        
+        var today = new Date();
+        var birthday = new Date(yearThen, monthThen-1, dayThen);
+        
+        var differenceInMilisecond = today.valueOf() - birthday.valueOf();
+        
+        var year_age = Math.floor(differenceInMilisecond / 31536000000);
+        var day_age = Math.floor((differenceInMilisecond % 31536000000) / 86400000);
+        
+        if ((today.getMonth() == birthday.getMonth()) && (today.getDate() == birthday.getDate())) {
+            alert("Happy B'day!!!");
+        }
+        
+        var month_age = Math.floor(day_age/30);
+        
+        day_age = day_age % 30;
+        
+        if (isNaN(year_age) || isNaN(month_age) || isNaN(day_age)) {
+            $("#exact_age").text("Invalid birthday - Please try again!");
+        }
+        else {
+            $("#exact_age").html(getAge(new Date($("#birth_date").val()), new Date()));
+        }
+    });
+
+
+  function getAge(date_1, date_2)
+{
+  
+//convert to UTC
+var date2_UTC = new Date(Date.UTC(date_2.getUTCFullYear(), date_2.getUTCMonth(), date_2.getUTCDate()));
+var date1_UTC = new Date(Date.UTC(date_1.getUTCFullYear(), date_1.getUTCMonth(), date_1.getUTCDate()));
+
+
+var yAppendix, mAppendix, dAppendix;
+
+
+//--------------------------------------------------------------
+var days = date2_UTC.getDate() - date1_UTC.getDate();
+if (days < 0)
+{
+
+    date2_UTC.setMonth(date2_UTC.getMonth() - 1);
+    days += DaysInMonth(date2_UTC);
+}
+//--------------------------------------------------------------
+var months = date2_UTC.getMonth() - date1_UTC.getMonth();
+if (months < 0)
+{
+    date2_UTC.setFullYear(date2_UTC.getFullYear() - 1);
+    months += 12;
+}
+//--------------------------------------------------------------
+var years = date2_UTC.getFullYear() - date1_UTC.getFullYear();
+
+
+
+
+if (years > 1) yAppendix = " years";
+else yAppendix = " year";
+if (months > 1) mAppendix = " months";
+else mAppendix = " month";
+if (days > 1) dAppendix = " days";
+else dAppendix = " day";
+
+return "You are<br/><span id=\"age\">"+years + yAppendix + ", " + months + mAppendix + ", and " + days + dAppendix +" </span> old";
+}
+
+/*
+Wrong age calculation issue fixed / update javascript code 
+By Rohit Kumar
+https://www.iamrohit.in
+https://youtube.com/AskRohit
+*/
+
+function DaysInMonth(date2_UTC)
+{
+var monthStart = new Date(date2_UTC.getFullYear(), date2_UTC.getMonth(), 1);
+var monthEnd = new Date(date2_UTC.getFullYear(), date2_UTC.getMonth() + 1, 1);
+var monthLength = (monthEnd - monthStart) / (1000 * 60 * 60 * 24);
+return monthLength;
+}
+
+});
+     
+</script>
+
+   
+  <div class='footer-copy'>    
+  <p>  <script>document.write(new Date().getFullYear())</script>    
+  <span>• </span>    
+      
+      
+  </p></div>    
+
+
+
+</div>
+
+    
+      </div>
