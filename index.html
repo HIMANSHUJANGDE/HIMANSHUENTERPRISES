@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML File Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .file-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .file-item {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .file-item a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .file-item a:hover {
+            text-decoration: underline;
+        }
+        .upload-section {
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>HTML File Manager</h1>
+
+    <!-- File upload form (No actual upload without backend code) -->
+    <div class="upload-section">
+        <h3>Upload a File</h3>
+        <form action="upload.php" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <input type="submit" value="Upload">
+        </form>
+    </div>
+
+    <!-- List of files (Mocked with sample data) -->
+    <h3>Files in Directory</h3>
+    <ul class="file-list">
+        <li class="file-item">
+            <span>file1.txt</span>
+            <a href="download.php?file=file1.txt" target="_blank">Download</a>
+            <a href="delete.php?file=file1.txt" onclick="return confirm('Are you sure you want to delete file1.txt?');">Delete</a>
+        </li>
+        <li class="file-item">
+            <span>image.jpg</span>
+            <a href="download.php?file=image.jpg" target="_blank">Download</a>
+            <a href="delete.php?file=image.jpg" onclick="return confirm('Are you sure you want to delete image.jpg?');">Delete</a>
+        </li>
+        <li class="file-item">
+            <span>document.pdf</span>
+            <a href="download.php?file=document.pdf" target="_blank">Download</a>
+            <a href="delete.php?file=document.pdf" onclick="return confirm('Are you sure you want to delete document.pdf?');">Delete</a>
+        </li>
+    </ul>
+
+</body>
+</html>
