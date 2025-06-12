@@ -1,39 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Website to APK Maker</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    input[type="file"] { margin: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website to APK Maker</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Website to APK Maker</h1>
-  <input type="file" id="zipUpload" accept=".zip" />
-  <button onclick="buildApk()">Build APK</button>
-  <p id="status"></p>
-
-  <script>
-    const { ipcRenderer } = require("electron");
-
-    function buildApk() {
-      const file = document.getElementById('zipUpload').files[0];
-      if (!file) {
-        alert("Please upload a ZIP file of your website.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function () {
-        ipcRenderer.send("build-apk", reader.result);
-        document.getElementById('status').textContent = "Building APK...";
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    ipcRenderer.on("build-complete", (event, apkPath) => {
-      document.getElementById('status').textContent = "APK ready: " + apkPath;
-    });
-  </script>
+    <div class="container">
+        <h1>Convert Your Website to an Android App</h1>
+        <input type="file" id="websiteFiles" accept=".zip" />
+        <button onclick="createAPK()">Create APK</button>
+        <div id="status"></div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
