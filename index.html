@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login + File Manager</title>
+  <style>
+
+
+    body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  padding: 30px;
+}
+
+.container {
+  background: #fff;
+  padding: 20px;
+  max-width: 500px;
+  margin: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #eee;
+  padding: 10px;
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hidden {
+  display: none;
+}
+
+.error {
+  color: red;
+  margin-top: 5px;
+}
+
+.logout-btn {
+  float: right;
+  background-color: #e74c3c;
+  color: white;
+}
+
+
+
+    
+  </style>
+</head>
+<body>
+  <div class="container" id="loginSection">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginError" class="error"></p>
+  </div>
+
+  <div class="container hidden" id="fileManagerSection">
+    <h2>File Manager</h2>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+    <input type="file" id="fileInput" multiple>
+    <button onclick="uploadFiles()">Upload</button>
+    <ul id="fileList"></ul>
+  </div>
+
+  <script>
+
+
+
+
+const hardcodedUser = {
+  username: "admin",
+  password: "1234"
+};
+
+let filesArray = [];
+
+// On load, check login state
+window.onload = () => {
+  const loggedIn = localStorage.getItem("loggedIn");
+  if (loggedIn === "true") {
+    showFileManager();
+  }
+};
+
+// Login function
+function login() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const errorEl = document.getElementById("loginError");
+
+  if (username === hardcodedUser.username && password === hardcodedUser.password) {
+    localStorage.setItem("loggedIn", "true");
+    showFileManager();
+  } else {
+    errorEl.textContent = "Invalid credentials.";
+  }
+}
+
+// Logout function
+function logout() {
+  localStorage.removeItem("loggedIn");
+  location.reload();
+}
+
+function showFileManager() {
+  document.getElementById("loginSection").classList.add("hidden");
+  document.getElementById("fileManagerSection").classList.remove("hidden");
+  displayFiles();
+}
+
+// File upload and display logic
+function uploadFiles() {
+  const input = document.getElementById('fileInput');
+  const files = input.files;
+
+  for (let file of files) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      filesArray.push({
+        name: file.name,
+        size: file.size,
+        content: e.target.result
+      });
+      displayFiles();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  input.value = "";
+}
+
+function displayFiles() {
+  const list = document.getElementById("fileList");
+  list.innerHTML = "";
+
+  filesArray.forEach((file, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${file.name} (${Math.round(file.size / 1024)} KB)
+      <span>
+        <button onclick="downloadFile(${index})">Download</button>
+        <button onclick="deleteFile(${index})">Delete</button>
+      </span>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function downloadFile(index) {
+  const file = filesArray[index];
+  const link = document.createElement("a");
+  link.href = file.content;
+  link.download = file.name;
+  link.click();
+}
+
+function deleteFile(index) {
+  filesArray.splice(index, 1);
+  displayFiles();
+}
+
+
+
+
+
+    
+  </script>
+</body>
+</html>
