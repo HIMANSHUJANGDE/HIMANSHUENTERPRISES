@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website to APK Maker</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Website to APK Maker</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-    <div class="container">
-        <h1>Convert Your Website to an Android App</h1>
-        <input type="file" id="websiteFiles" accept=".zip" />
-        <button onclick="createAPK()">Create APK</button>
-        <div id="status"></div>
-    </div>
-    <script src="script.js"></script>
+  <div class="container">
+    <h1>Website to APK Maker</h1>
+    <p>Select a ZIP file of your website (must contain index.html)</p>
+    <input type="file" id="fileInput" accept=".zip" />
+    <button id="uploadBtn">Build APK</button>
+    <p id="status"></p>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
