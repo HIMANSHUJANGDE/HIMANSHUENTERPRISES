@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Embedded Website</title>
+  <meta charset="UTF-8">
+  <title>YouTube Video Downloader</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Embedded Website via iframe</h2>
-
-  <iframe 
-    src="http://himanshuenterprises.rf.gd" 
-    width="100%" 
-    height="600" 
-    style="border:1px solid #ccc;"
-    loading="lazy">
-  </iframe>
-
+  <div class="container">
+    <h1>YouTube Video Downloader</h1>
+    <input type="text" id="videoURL" placeholder="Paste YouTube URL here">
+    <button onclick="downloadVideo()">Download</button>
+    <p id="status"></p>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
