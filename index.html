@@ -2,110 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple File Manager</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    #login, #fileManager {
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-    }
-    input[type="text"], input[type="password"], input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007BFF;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      background: #eee;
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 4px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Management System</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div id="login">
-  <h2>Login</h2>
-  <input type="text" id="username" placeholder="Username" />
-  <input type="password" id="password" placeholder="Password" />
-  <button onclick="login()">Login</button>
-  <p id="loginMsg" style="color:red;"></p>
-</div>
+  <!-- Login Form -->
+  <div id="loginForm">
+    <h2>Login</h2>
+    <form id="login">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <p id="loginError" class="error"></p>
+  </div>
 
-<div id="fileManager" style="display:none;">
-  <h2>File Manager</h2>
-  <input type="file" id="fileInput" multiple />
-  <button onclick="uploadFiles()">Upload</button>
-  <h3>Files:</h3>
-  <ul id="fileList"></ul>
-  <button onclick="logout()">Logout</button>
-</div>
+  <!-- File Management Page (hidden initially) -->
+  <div id="fileManagement" style="display: none;">
+    <h2>Welcome to File Management</h2>
+    <button id="logoutBtn">Logout</button>
+    <hr>
+    
+    <div>
+      <h3>Files</h3>
+      <ul id="fileList"></ul>
+      <input type="text" id="fileName" placeholder="Enter file name" />
+      <button id="createFileBtn">Create File</button>
+    </div>
+  </div>
 
-<script>
-  const validUser = { username: 'admin', password: '1234' };
-  let uploadedFiles = [];
-
-  function login() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
-
-    if (user === validUser.username && pass === validUser.password) {
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('fileManager').style.display = 'block';
-    } else {
-      document.getElementById('loginMsg').textContent = 'Invalid credentials!';
-    }
-  }
-
-  function uploadFiles() {
-    const input = document.getElementById('fileInput');
-    const list = document.getElementById('fileList');
-
-    for (let file of input.files) {
-      uploadedFiles.push(file.name);
-      const li = document.createElement('li');
-      li.textContent = file.name;
-      list.appendChild(li);
-    }
-
-    input.value = ""; // reset input
-  }
-
-  function logout() {
-    uploadedFiles = [];
-    document.getElementById('fileList').innerHTML = '';
-    document.getElementById('login').style.display = 'block';
-    document.getElementById('fileManager').style.display = 'none';
-  }
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
