@@ -1,0 +1,18 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>File Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>File Manager</h2>
+  <form action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" required>
+    <button type="submit">Upload</button>
+  </form>
+  <ul id="file-list"></ul>
+  <a href="/logout">Logout</a>
+  <script src="script.js"></script>
+</body>
+</html>
