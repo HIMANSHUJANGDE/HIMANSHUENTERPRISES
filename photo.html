@@ -2,45 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Passport Photo Generator A4</title>
+  <title>Passport Photo Printer</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       background: #f0f0f0;
+      padding: 20px;
       text-align: center;
-      padding: 20px;
     }
-
     .container {
-      background: white;
+      background: #fff;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
       display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
-    canvas {
-      margin-top: 20px;
-      border: 1px solid #ccc;
-      max-width: 100%;
-    }
-
     input, button {
       margin: 10px;
-      padding: 10px 15px;
+      padding: 10px;
       font-size: 16px;
     }
-
-    label {
-      font-weight: bold;
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      max-width: 100%;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Passport Photo Printer (A4 Portrait, Landscape Photos)</h2>
-    <label for="pcsInput">How many copies (pcs):</label>
-    <input type="number" id="pcsInput" value="50" min="1" max="100">
+    <h2>Passport Size Photo Printer (Auto Rotate)</h2>
+    <label for="pcsInput">Number of copies:</label>
+    <input type="number" id="pcsInput" value="32" min="1" max="100">
     <br>
     <input type="file" id="photoInput" accept="image/*">
     <br>
@@ -53,65 +46,68 @@
     const canvas = document.getElementById('outputCanvas');
     const ctx = canvas.getContext('2d');
 
-    const PHOTO_WIDTH = 531; // 45mm @ 300 DPI
-    const PHOTO_HEIGHT = 413; // 35mm @ 300 DPI
+    const PAGE_WIDTH = 2480;
+    const PAGE_HEIGHT = 3508;
+
+    const PHOTO_W = 413;  // 35mm @ 300 DPI
+    const PHOTO_H = 531;  // 45mm @ 300 DPI
+    const BORDER = 2;
     const GAP = 20;
-    const BORDER_COLOR = '#000';
-    const BORDER_WIDTH = 2;
 
     document.getElementById('photoInput').addEventListener('change', function (e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const pcs = parseInt(document.getElementById('pcsInput').value) || 50;
-
+      const pcs = parseInt(document.getElementById('pcsInput').value) || 32;
       const reader = new FileReader();
+
       reader.onload = function (evt) {
         const img = new Image();
         img.onload = function () {
-          // Crop center square from image
-          const size = Math.min(img.width, img.height);
-          const sx = (img.width - size) / 2;
-          const sy = (img.height - size) / 2;
+          const rotate = img.width < img.height; // Rotate to landscape if portrait
 
-          // Resize to landscape format
           const tempCanvas = document.createElement('canvas');
           const tempCtx = tempCanvas.getContext('2d');
-          tempCanvas.width = PHOTO_WIDTH;
-          tempCanvas.height = PHOTO_HEIGHT;
 
-          tempCtx.drawImage(img, sx, sy, size, size, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
-
-          // Clear canvas
-          ctx.fillStyle = "#fff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          const columns = Math.floor((canvas.width + GAP) / (PHOTO_WIDTH + GAP));
-          const rows = Math.floor((canvas.height + GAP) / (PHOTO_HEIGHT + GAP));
-          const maxPhotos = columns * rows;
-
-          if (pcs > maxPhotos) {
-            alert(`Max photos on A4 portrait = ${maxPhotos}. Only placing ${maxPhotos}.`);
+          if (rotate) {
+            tempCanvas.width = PHOTO_H;
+            tempCanvas.height = PHOTO_W;
+            tempCtx.translate(PHOTO_H / 2, PHOTO_W / 2);
+            tempCtx.rotate(Math.PI / 2);
+            tempCtx.drawImage(img, -img.height / 2, -img.width / 2, img.height, img.width);
+          } else {
+            tempCanvas.width = PHOTO_W;
+            tempCanvas.height = PHOTO_H;
+            tempCtx.drawImage(img, 0, 0, PHOTO_W, PHOTO_H);
           }
 
-          let count = Math.min(pcs, maxPhotos);
+          // Fill canvas white
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
+
+          const photoWidth = tempCanvas.width;
+          const photoHeight = tempCanvas.height;
+
+          const cols = Math.floor((PAGE_WIDTH + GAP) / (photoWidth + GAP));
+          const rows = Math.floor((PAGE_HEIGHT + GAP) / (photoHeight + GAP));
+          const maxPhotos = cols * rows;
+
+          if (pcs > maxPhotos) {
+            alert(`Only ${maxPhotos} photos fit on one A4 page. Showing ${maxPhotos}.`);
+          }
+
           let placed = 0;
           let y = GAP;
-
-          for (let r = 0; r < rows && placed < count; r++) {
+          for (let r = 0; r < rows && placed < pcs; r++) {
             let x = GAP;
-            for (let c = 0; c < columns && placed < count; c++) {
-              // Draw border
-              ctx.fillStyle = BORDER_COLOR;
-              ctx.fillRect(x - BORDER_WIDTH, y - BORDER_WIDTH,
-                           PHOTO_WIDTH + BORDER_WIDTH * 2, PHOTO_HEIGHT + BORDER_WIDTH * 2);
-
-              // Draw photo inside border
-              ctx.drawImage(tempCanvas, x, y, PHOTO_WIDTH, PHOTO_HEIGHT);
-              x += PHOTO_WIDTH + GAP;
+            for (let c = 0; c < cols && placed < pcs; c++) {
+              ctx.fillStyle = "#000";
+              ctx.fillRect(x - BORDER, y - BORDER, photoWidth + 2 * BORDER, photoHeight + 2 * BORDER);
+              ctx.drawImage(tempCanvas, x, y, photoWidth, photoHeight);
               placed++;
+              x += photoWidth + GAP;
             }
-            y += PHOTO_HEIGHT + GAP;
+            y += photoHeight + GAP;
           }
         };
         img.src = evt.target.result;
@@ -120,14 +116,14 @@
     });
 
     document.getElementById('printBtn').addEventListener('click', () => {
-      const dataUrl = canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL("image/png");
       const win = window.open('', '_blank');
       win.document.write(`
         <html>
-        <head><title>Print Passport Photos</title></head>
-        <body style="margin:0">
-          <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
-        </body>
+          <head><title>Print</title></head>
+          <body style="margin:0">
+            <img src="${dataUrl}" style="width:100%" onload="window.print(); window.close();">
+          </body>
         </html>
       `);
     });
