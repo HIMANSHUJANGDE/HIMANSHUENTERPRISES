@@ -2,47 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>A4 Photo Printing System (PCS Input)</title>
+  <title>A4 Photo Printing System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+      background: #f4f4f4;
       text-align: center;
-      background: #f5f5f5;
     }
 
     .controls {
       margin-bottom: 20px;
     }
 
+    input[type="number"] {
+      width: 60px;
+    }
+
+    .print-area {
+      display: none;
+    }
+
     .a4-page {
       width: 21cm;
       height: 29.7cm;
       background: white;
-      margin: 10px auto;
+      margin: 0 auto;
       padding: 1cm;
       box-sizing: border-box;
       border: 1px solid #000;
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
       page-break-after: always;
-      gap: 10px;
     }
 
-    .photo-box {
-      width: 8cm;
-      height: 10cm;
-      border: 4px solid #333;
-      padding: 5px;
-      background: #fff;
+    .photo-wrapper {
+      width: 100%;
+      height: 100%;
+      border: 10px solid #444;
       display: flex;
       justify-content: center;
       align-items: center;
+      box-sizing: border-box;
     }
 
-    .photo-box img {
+    .photo-wrapper img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
@@ -53,18 +58,20 @@
         visibility: hidden;
       }
 
-      .a4-page, .a4-page * {
+      .print-area, .print-area * {
         visibility: visible;
+      }
+
+      .print-area {
+        display: block;
+      }
+
+      .a4-page {
+        margin: 0;
       }
 
       .controls {
         display: none;
-      }
-
-      .a4-page {
-        position: relative;
-        top: 0;
-        left: 0;
       }
     }
   </style>
@@ -72,18 +79,19 @@
 <body>
 
   <div class="controls">
+    <h2>🖨️ A4 Photo Printing System</h2>
     <input type="file" id="imageInput" accept="image/*"><br><br>
     <label>Number of Copies (PCS):</label>
-    <input type="number" id="copiesInput" min="1" value="1"><br><br>
-    <button onclick="generatePrintLayout()">Generate</button>
-    <button onclick="window.print()">🖨️ Print</button>
+    <input type="number" id="pcsInput" min="1" value="1"><br><br>
+    <button onclick="generatePages()">Generate Pages</button>
+    <button onclick="window.print()">Print</button>
   </div>
 
-  <div id="printArea"></div>
+  <div class="print-area" id="printArea"></div>
 
   <script>
     const imageInput = document.getElementById('imageInput');
-    const copiesInput = document.getElementById('copiesInput');
+    const pcsInput = document.getElementById('pcsInput');
     const printArea = document.getElementById('printArea');
     let imageSrc = '';
 
@@ -98,42 +106,31 @@
       }
     });
 
-    function generatePrintLayout() {
-      const copies = parseInt(copiesInput.value) || 1;
+    function generatePages() {
+      const pcs = parseInt(pcsInput.value) || 1;
       if (!imageSrc) {
         alert("Please upload an image first.");
         return;
       }
 
-      printArea.innerHTML = ''; // Clear previous layout
-      let currentPage = createA4Page();
-      let count = 0;
+      printArea.innerHTML = ''; // Clear previous pages
 
-      for (let i = 0; i < copies; i++) {
-        const photoBox = document.createElement('div');
-        photoBox.className = 'photo-box';
+      for (let i = 0; i < pcs; i++) {
+        const page = document.createElement('div');
+        page.className = 'a4-page';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'photo-wrapper';
 
         const img = document.createElement('img');
         img.src = imageSrc;
-        photoBox.appendChild(img);
 
-        currentPage.appendChild(photoBox);
-        count++;
-
-        // 6 photos per page (2 columns x 3 rows of 8x10 cm)
-        if (count % 6 === 0 || i === copies - 1) {
-          printArea.appendChild(currentPage);
-          if (i !== copies - 1) {
-            currentPage = createA4Page();
-          }
-        }
+        wrapper.appendChild(img);
+        page.appendChild(wrapper);
+        printArea.appendChild(page);
       }
-    }
 
-    function createA4Page() {
-      const page = document.createElement('div');
-      page.className = 'a4-page';
-      return page;
+      alert(`${pcs} page(s) generated. Ready to print.`);
     }
   </script>
 
