@@ -2,32 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Passport Photo A4 Printer</title>
+  <title>45 Passport Photos on A4 Landscape</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f0f0f0;
+      font-family: Arial, sans-serif;
       text-align: center;
+      background: #f0f0f0;
       padding: 20px;
     }
 
     .container {
-      background: #fff;
+      background: white;
       padding: 20px;
-      border-radius: 8px;
       display: inline-block;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     canvas {
       margin-top: 20px;
       border: 1px solid #ccc;
       max-width: 100%;
-      height: auto;
     }
 
     input, button {
-      margin: 10px;
+      margin-top: 10px;
       padding: 10px 20px;
       font-size: 16px;
     }
@@ -35,12 +34,12 @@
 </head>
 <body>
   <div class="container">
-    <h1>Passport Photo A4 Printer</h1>
+    <h1>Passport Photo (45pcs) on A4 Landscape</h1>
     <input type="file" id="photoInput" accept="image/*">
     <br>
-    <canvas id="outputCanvas" width="2480" height="3508"></canvas>
+    <canvas id="outputCanvas" width="3508" height="2480"></canvas>
     <br>
-    <button id="printBtn">Print A4 Sheet</button>
+    <button id="printBtn">Print</button>
   </div>
 
   <script>
@@ -48,10 +47,9 @@
     const canvas = document.getElementById('outputCanvas');
     const ctx = canvas.getContext('2d');
 
-    const A4_WIDTH = 2480;
-    const A4_HEIGHT = 3508;
-    const PHOTO_SIZE = 600; // 2x2 inch = 600px @ 300 DPI
-    const GAP = 30;
+    const PHOTO_WIDTH = 413; // 35mm @ 300 DPI
+    const PHOTO_HEIGHT = 531; // 45mm @ 300 DPI
+    const GAP = 20; // spacing between photos
 
     photoInput.addEventListener('change', function (e) {
       const file = e.target.files[0];
@@ -61,36 +59,34 @@
       reader.onload = function (evt) {
         const img = new Image();
         img.onload = function () {
-          // Crop center square
-          const minSize = Math.min(img.width, img.height);
-          const sx = (img.width - minSize) / 2;
-          const sy = (img.height - minSize) / 2;
+          // Crop to center square from the uploaded image
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
 
-          // Create a 600x600 passport image
+          // Resize to PHOTO_WIDTH x PHOTO_HEIGHT
           const tempCanvas = document.createElement('canvas');
           const tempCtx = tempCanvas.getContext('2d');
-          tempCanvas.width = PHOTO_SIZE;
-          tempCanvas.height = PHOTO_SIZE;
-          tempCtx.drawImage(img, sx, sy, minSize, minSize, 0, 0, PHOTO_SIZE, PHOTO_SIZE);
+          tempCanvas.width = PHOTO_WIDTH;
+          tempCanvas.height = PHOTO_HEIGHT;
+          tempCtx.drawImage(img, sx, sy, size, size, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
 
-          // Clear A4 canvas
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, A4_WIDTH, A4_HEIGHT);
+          // Clear the main canvas
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Place multiple copies on A4
+          // Layout: 9 columns × 5 rows = 45 photos
           let x = GAP, y = GAP;
-          const columns = Math.floor((A4_WIDTH + GAP) / (PHOTO_SIZE + GAP));
-          const rows = Math.floor((A4_HEIGHT + GAP) / (PHOTO_SIZE + GAP));
+          const columns = 9;
+          const rows = 5;
 
           for (let row = 0; row < rows; row++) {
             x = GAP;
             for (let col = 0; col < columns; col++) {
-              if (x + PHOTO_SIZE <= A4_WIDTH && y + PHOTO_SIZE <= A4_HEIGHT) {
-                ctx.drawImage(tempCanvas, x, y, PHOTO_SIZE, PHOTO_SIZE);
-                x += PHOTO_SIZE + GAP;
-              }
+              ctx.drawImage(tempCanvas, x, y, PHOTO_WIDTH, PHOTO_HEIGHT);
+              x += PHOTO_WIDTH + GAP;
             }
-            y += PHOTO_SIZE + GAP;
+            y += PHOTO_HEIGHT + GAP;
           }
         };
         img.src = evt.target.result;
@@ -103,10 +99,10 @@
       const win = window.open('', '_blank');
       win.document.write(`
         <html>
-        <head><title>Print Passport Photos</title></head>
-        <body style="margin:0">
-          <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
-        </body>
+          <head><title>Print 45 Passport Photos</title></head>
+          <body style="margin:0">
+            <img src="${dataUrl}" style="width:100%;" onload="window.print();window.close();">
+          </body>
         </html>
       `);
     });
