@@ -2,131 +2,120 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Passport Photo Printer</title>
+  <title>Passport Photo Sheet Generator (A4 Portrait)</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f0f0f0;
-      padding: 20px;
+      font-family: Arial, sans-serif;
       text-align: center;
+      margin: 20px;
     }
-    .container {
+    #canvas-container {
+      width: 794px; /* A4 portrait at 96dpi */
+      height: 1123px;
+      margin: 20px auto;
+    }
+    canvas {
+      border: 1px solid #000;
       background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     input, button {
       margin: 10px;
       padding: 10px;
-      font-size: 16px;
-    }
-    canvas {
-      border: 1px solid #ccc;
-      margin-top: 20px;
-      max-width: 100%;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Passport Size Photo Printer (Auto Rotate)</h2>
-    <label for="pcsInput">Number of copies:</label>
-    <input type="number" id="pcsInput" value="32" min="1" max="100">
-    <br>
-    <input type="file" id="photoInput" accept="image/*">
-    <br>
-    <canvas id="outputCanvas" width="2480" height="3508"></canvas>
-    <br>
-    <button id="printBtn">Print</button>
+  <h2>Passport Size Photo Sheet Generator</h2>
+  <input type="file" id="fileInput" multiple accept="image/*">
+  <br>
+  <button onclick="generateSheet()">Generate</button>
+  <button onclick="downloadSheet()">Download</button>
+
+  <div id="canvas-container">
+    <canvas id="photoCanvas" width="794" height="1123"></canvas>
   </div>
 
   <script>
-    const canvas = document.getElementById('outputCanvas');
+    const canvas = document.getElementById('photoCanvas');
     const ctx = canvas.getContext('2d');
+    const fileInput = document.getElementById('fileInput');
 
-    const PAGE_WIDTH = 2480;
-    const PAGE_HEIGHT = 3508;
+    const MAX_PHOTOS = 32;
+    const COLUMNS = 4;
+    const ROWS = 8;
 
-    const PHOTO_W = 413;  // 35mm @ 300 DPI
-    const PHOTO_H = 531;  // 45mm @ 300 DPI
+    // Passport size at 96 DPI: ~132x170 pixels (3.5x4.5cm)
+    const PHOTO_WIDTH = 132;
+    const PHOTO_HEIGHT = 170;
     const BORDER = 2;
-    const GAP = 20;
+    const MARGIN_X = 20;
+    const MARGIN_Y = 20;
+    const SPACING_X = (canvas.width - (COLUMNS * PHOTO_WIDTH) - (2 * MARGIN_X)) / (COLUMNS - 1);
+    const SPACING_Y = (canvas.height - (ROWS * PHOTO_HEIGHT) - (2 * MARGIN_Y)) / (ROWS - 1);
 
-    document.getElementById('photoInput').addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
+    let images = [];
 
-      const pcs = parseInt(document.getElementById('pcsInput').value) || 32;
-      const reader = new FileReader();
+    fileInput.addEventListener('change', (e) => {
+      images = [];
+      const files = [...e.target.files].slice(0, MAX_PHOTOS);
 
-      reader.onload = function (evt) {
-        const img = new Image();
-        img.onload = function () {
-          const rotate = img.width < img.height; // Rotate to landscape if portrait
-
-          const tempCanvas = document.createElement('canvas');
-          const tempCtx = tempCanvas.getContext('2d');
-
-          if (rotate) {
-            tempCanvas.width = PHOTO_H;
-            tempCanvas.height = PHOTO_W;
-            tempCtx.translate(PHOTO_H / 2, PHOTO_W / 2);
-            tempCtx.rotate(Math.PI / 2);
-            tempCtx.drawImage(img, -img.height / 2, -img.width / 2, img.height, img.width);
-          } else {
-            tempCanvas.width = PHOTO_W;
-            tempCanvas.height = PHOTO_H;
-            tempCtx.drawImage(img, 0, 0, PHOTO_W, PHOTO_H);
-          }
-
-          // Fill canvas white
-          ctx.fillStyle = "#fff";
-          ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
-
-          const photoWidth = tempCanvas.width;
-          const photoHeight = tempCanvas.height;
-
-          const cols = Math.floor((PAGE_WIDTH + GAP) / (photoWidth + GAP));
-          const rows = Math.floor((PAGE_HEIGHT + GAP) / (photoHeight + GAP));
-          const maxPhotos = cols * rows;
-
-          if (pcs > maxPhotos) {
-            alert(`Only ${maxPhotos} photos fit on one A4 page. Showing ${maxPhotos}.`);
-          }
-
-          let placed = 0;
-          let y = GAP;
-          for (let r = 0; r < rows && placed < pcs; r++) {
-            let x = GAP;
-            for (let c = 0; c < cols && placed < pcs; c++) {
-              ctx.fillStyle = "#000";
-              ctx.fillRect(x - BORDER, y - BORDER, photoWidth + 2 * BORDER, photoHeight + 2 * BORDER);
-              ctx.drawImage(tempCanvas, x, y, photoWidth, photoHeight);
-              placed++;
-              x += photoWidth + GAP;
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            images.push(img);
+            if (images.length === files.length) {
+              generateSheet();
             }
-            y += photoHeight + GAP;
-          }
+          };
+          img.src = event.target.result;
         };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
     });
 
-    document.getElementById('printBtn').addEventListener('click', () => {
-      const dataUrl = canvas.toDataURL("image/png");
-      const win = window.open('', '_blank');
-      win.document.write(`
-        <html>
-          <head><title>Print</title></head>
-          <body style="margin:0">
-            <img src="${dataUrl}" style="width:100%" onload="window.print(); window.close();">
-          </body>
-        </html>
-      `);
-    });
+    function generateSheet() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let index = 0;
+
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLUMNS; col++) {
+          if (index >= images.length) return;
+          const img = images[index];
+          const x = MARGIN_X + col * (PHOTO_WIDTH + SPACING_X);
+          const y = MARGIN_Y + row * (PHOTO_HEIGHT + SPACING_Y);
+
+          ctx.save();
+          ctx.translate(x + PHOTO_WIDTH / 2, y + PHOTO_HEIGHT / 2);
+
+          // Rotate if landscape
+          if (img.width > img.height) {
+            ctx.rotate(Math.PI / 2);
+            ctx.drawImage(img, -PHOTO_HEIGHT / 2, -PHOTO_WIDTH / 2, PHOTO_HEIGHT, PHOTO_WIDTH);
+          } else {
+            ctx.drawImage(img, -PHOTO_WIDTH / 2, -PHOTO_HEIGHT / 2, PHOTO_WIDTH, PHOTO_HEIGHT);
+          }
+
+          ctx.restore();
+
+          // Border
+          ctx.lineWidth = BORDER;
+          ctx.strokeStyle = '#000';
+          ctx.strokeRect(x, y, PHOTO_WIDTH, PHOTO_HEIGHT);
+
+          index++;
+        }
+      }
+    }
+
+    function downloadSheet() {
+      const link = document.createElement('a');
+      link.download = 'passport_photo_sheet.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
   </script>
 </body>
 </html>
+
