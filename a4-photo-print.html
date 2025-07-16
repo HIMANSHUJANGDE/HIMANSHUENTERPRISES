@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>A4 Photo Printing System</title>
+  <title>A4 Full-Page Photo Printing System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f4f4f4;
       text-align: center;
+      padding: 20px;
+      background: #f0f0f0;
     }
 
     .controls {
@@ -17,6 +17,7 @@
 
     input[type="number"] {
       width: 60px;
+      padding: 5px;
     }
 
     .print-area {
@@ -26,30 +27,30 @@
     .a4-page {
       width: 21cm;
       height: 29.7cm;
-      background: white;
-      margin: 0 auto;
-      padding: 1cm;
       box-sizing: border-box;
+      margin: 0 auto;
+      padding: 0;
+      background: white;
       border: 1px solid #000;
+      page-break-after: always;
       display: flex;
       justify-content: center;
       align-items: center;
-      page-break-after: always;
     }
 
-    .photo-wrapper {
+    .photo-container {
       width: 100%;
       height: 100%;
       border: 10px solid #444;
+      box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-sizing: border-box;
     }
 
-    .photo-wrapper img {
-      max-width: 100%;
-      max-height: 100%;
+    .photo-container img {
+      width: 100%;
+      height: 100%;
       object-fit: contain;
     }
 
@@ -66,12 +67,13 @@
         display: block;
       }
 
-      .a4-page {
-        margin: 0;
-      }
-
       .controls {
         display: none;
+      }
+
+      .a4-page {
+        margin: 0;
+        border: none;
       }
     }
   </style>
@@ -79,7 +81,7 @@
 <body>
 
   <div class="controls">
-    <h2>🖨️ A4 Photo Printing System</h2>
+    <h2>🖨️ Full-Page A4 Photo Printing</h2>
     <input type="file" id="imageInput" accept="image/*"><br><br>
     <label>Number of Copies (PCS):</label>
     <input type="number" id="pcsInput" min="1" value="1"><br><br>
@@ -95,7 +97,7 @@
     const printArea = document.getElementById('printArea');
     let imageSrc = '';
 
-    imageInput.addEventListener('change', (e) => {
+    imageInput.addEventListener('change', function (e) {
       const file = e.target.files[0];
       if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -107,30 +109,31 @@
     });
 
     function generatePages() {
-      const pcs = parseInt(pcsInput.value) || 1;
+      const pcs = parseInt(pcsInput.value, 10) || 1;
+
       if (!imageSrc) {
-        alert("Please upload an image first.");
+        alert('Please upload an image first.');
         return;
       }
 
-      printArea.innerHTML = ''; // Clear previous pages
+      printArea.innerHTML = ''; // Clear previous content
 
       for (let i = 0; i < pcs; i++) {
         const page = document.createElement('div');
         page.className = 'a4-page';
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'photo-wrapper';
+        const container = document.createElement('div');
+        container.className = 'photo-container';
 
         const img = document.createElement('img');
         img.src = imageSrc;
 
-        wrapper.appendChild(img);
-        page.appendChild(wrapper);
+        container.appendChild(img);
+        page.appendChild(container);
         printArea.appendChild(page);
       }
 
-      alert(`${pcs} page(s) generated. Ready to print.`);
+      alert(`${pcs} full-page photo(s) generated. Ready to print.`);
     }
   </script>
 
