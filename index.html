@@ -29,6 +29,17 @@
         <button id="back-to-login">Back to Login</button>
     </div>
 
+    <!-- Profile Management Section -->
+    <div id="profile-container" class="hidden">
+        <h2>Profile Management</h2>
+        <input type="text" id="new-username" placeholder="New Username">
+        <input type="password" id="new-password" placeholder="New Password">
+        <input type="password" id="confirm-new-password" placeholder="Confirm New Password">
+        <button id="update-profile-btn">Update Profile</button>
+        <button id="back-to-dashboard-from-profile">Back to Dashboard</button>
+        <p id="profile-error" class="error-message"></p>
+    </div>
+
     <!-- File Management Section -->
     <div id="file-dashboard-container" class="hidden">
         <h2>File Management</h2>
@@ -38,17 +49,7 @@
         </div>
         <ul id="file-list"></ul>
         <button id="logout-btn">Logout</button>
-        <button id="change-password-btn">Change Password</button>
-    </div>
-
-    <!-- Change Password Section -->
-    <div id="change-password-container" class="hidden">
-        <h2>Change Password</h2>
-        <input type="password" id="new-password" placeholder="New Password">
-        <input type="password" id="confirm-new-password" placeholder="Confirm New Password">
-        <button id="change-password-btn">Change Password</button>
-        <p id="change-password-error" class="error-message"></p>
-        <button id="back-to-dashboard">Back to Dashboard</button>
+        <button id="profile-btn">Profile</button>
     </div>
 
     <script src="script.js"></script>
