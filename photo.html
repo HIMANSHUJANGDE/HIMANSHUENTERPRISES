@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Passport Photo A4 Printer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      max-width: 100%;
+      height: auto;
+    }
+
+    input, button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Passport Photo A4 Printer</h1>
+    <input type="file" id="photoInput" accept="image/*">
+    <br>
+    <canvas id="outputCanvas" width="2480" height="3508"></canvas>
+    <br>
+    <button id="printBtn">Print A4 Sheet</button>
+  </div>
+
+  <script>
+    const photoInput = document.getElementById('photoInput');
+    const canvas = document.getElementById('outputCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const A4_WIDTH = 2480;
+    const A4_HEIGHT = 3508;
+    const PHOTO_SIZE = 600; // 2x2 inch = 600px @ 300 DPI
+    const GAP = 30;
+
+    photoInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const img = new Image();
+        img.onload = function () {
+          // Crop center square
+          const minSize = Math.min(img.width, img.height);
+          const sx = (img.width - minSize) / 2;
+          const sy = (img.height - minSize) / 2;
+
+          // Create a 600x600 passport image
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCanvas.width = PHOTO_SIZE;
+          tempCanvas.height = PHOTO_SIZE;
+          tempCtx.drawImage(img, sx, sy, minSize, minSize, 0, 0, PHOTO_SIZE, PHOTO_SIZE);
+
+          // Clear A4 canvas
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, A4_WIDTH, A4_HEIGHT);
+
+          // Place multiple copies on A4
+          let x = GAP, y = GAP;
+          const columns = Math.floor((A4_WIDTH + GAP) / (PHOTO_SIZE + GAP));
+          const rows = Math.floor((A4_HEIGHT + GAP) / (PHOTO_SIZE + GAP));
+
+          for (let row = 0; row < rows; row++) {
+            x = GAP;
+            for (let col = 0; col < columns; col++) {
+              if (x + PHOTO_SIZE <= A4_WIDTH && y + PHOTO_SIZE <= A4_HEIGHT) {
+                ctx.drawImage(tempCanvas, x, y, PHOTO_SIZE, PHOTO_SIZE);
+                x += PHOTO_SIZE + GAP;
+              }
+            }
+            y += PHOTO_SIZE + GAP;
+          }
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('printBtn').addEventListener('click', function () {
+      const dataUrl = canvas.toDataURL('image/png');
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html>
+        <head><title>Print Passport Photos</title></head>
+        <body style="margin:0">
+          <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
+        </body>
+        </html>
+      `);
+    });
+  </script>
+</body>
+</html>
