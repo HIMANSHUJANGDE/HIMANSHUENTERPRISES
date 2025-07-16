@@ -1,82 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>A4 Photo Print with Quantity</title>
+  <meta charset="UTF-8">
+  <title>A4 Photo Printer</title>
   <style>
     * {
       box-sizing: border-box;
     }
+
     body {
-      font-family: sans-serif;
-      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+      text-align: center;
       padding: 20px;
-      margin: 0;
     }
 
-    .controls {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .preview {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .preview img {
-      max-width: 200px;
-      margin-bottom: 10px;
-    }
-
-    .a4 {
-      width: 210mm;
-      height: 297mm;
+    .a4-container {
+      width: 21cm;
+      height: 29.7cm;
+      margin: 0 auto;
+      border: 1px solid #000;
+      position: relative;
       background: white;
-      margin: 20px auto;
-      padding: 10mm;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      page-break-after: always;
-    }
-
-    .photo-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 10mm;
-      height: 100%;
-    }
-
-    .photo-slot {
-      border: 1px solid #ccc;
-      background: #eee;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
     }
 
-    .photo-slot img {
+    .photo-wrapper {
+      position: absolute;
+      top: 1cm;
+      left: 1cm;
+      right: 1cm;
+      bottom: 1cm;
+      border: 5px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+    }
+
+    .photo-wrapper img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
     }
 
+    .controls {
+      margin-bottom: 20px;
+    }
+
     @media print {
-      body {
-        margin: 0;
-        padding: 0;
-        background: none;
+      body * {
+        visibility: hidden;
       }
 
-      .controls,
-      .preview {
+      .a4-container, .a4-container * {
+        visibility: visible;
+      }
+
+      .a4-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .controls {
         display: none;
-      }
-
-      .a4 {
-        box-shadow: none;
-        margin: 0;
       }
     }
   </style>
@@ -84,68 +71,30 @@
 <body>
 
   <div class="controls">
-    <input type="file" id="photoInput" accept="image/*" />
-    <input type="number" id="pcsInput" min="1" value="4" />
-    <label for="pcsInput">Copies</label>
-    <button onclick="generatePages()">Generate</button>
-    <button onclick="window.print()">Print</button>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="window.print()">Print A4</button>
   </div>
 
-  <div class="preview" id="preview"></div>
-
-  <div id="pagesContainer"></div>
+  <div class="a4-container" id="a4Container">
+    <div class="photo-wrapper" id="photoWrapper">
+      <img id="photo" src="" alt="Your Photo">
+    </div>
+  </div>
 
   <script>
-    let photoURL = '';
+    const imageInput = document.getElementById('imageInput');
+    const photo = document.getElementById('photo');
 
-    const photoInput = document.getElementById('photoInput');
-    const pcsInput = document.getElementById('pcsInput');
-    const preview = document.getElementById('preview');
-    const pagesContainer = document.getElementById('pagesContainer');
-
-    photoInput.addEventListener('change', function () {
-      const file = this.files[0];
-      if (file) {
-        photoURL = URL.createObjectURL(file);
-        preview.innerHTML = `<img src="${photoURL}" alt="Preview" />`;
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          photo.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
       }
     });
-
-    function generatePages() {
-      const totalCopies = parseInt(pcsInput.value);
-      if (!photoURL || isNaN(totalCopies) || totalCopies < 1) {
-        alert('Please upload a photo and enter a valid number of copies.');
-        return;
-      }
-
-      pagesContainer.innerHTML = '';
-      const photosPerPage = 4;
-
-      for (let i = 0; i < totalCopies; i += photosPerPage) {
-        const page = document.createElement('div');
-        page.className = 'a4';
-
-        const grid = document.createElement('div');
-        grid.className = 'photo-grid';
-
-        for (let j = 0; j < photosPerPage; j++) {
-          const index = i + j;
-          const slot = document.createElement('div');
-          slot.className = 'photo-slot';
-
-          if (index < totalCopies) {
-            const img = document.createElement('img');
-            img.src = photoURL;
-            slot.appendChild(img);
-          }
-
-          grid.appendChild(slot);
-        }
-
-        page.appendChild(grid);
-        pagesContainer.appendChild(page);
-      }
-    }
   </script>
 
 </body>
