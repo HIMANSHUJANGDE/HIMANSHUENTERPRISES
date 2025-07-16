@@ -15,6 +15,18 @@
         <input type="password" id="password" placeholder="Password">
         <button id="login-btn">Login</button>
         <p id="login-error" class="error-message"></p>
+        <button id="show-register">Register</button>
+    </div>
+
+    <!-- Registration Section -->
+    <div id="register-container" class="hidden">
+        <h2>Register</h2>
+        <input type="text" id="register-username" placeholder="Username">
+        <input type="password" id="register-password" placeholder="Password">
+        <input type="password" id="confirm-password" placeholder="Confirm Password">
+        <button id="register-btn">Register</button>
+        <p id="register-error" class="error-message"></p>
+        <button id="back-to-login">Back to Login</button>
     </div>
 
     <!-- File Management Section -->
@@ -26,6 +38,17 @@
         </div>
         <ul id="file-list"></ul>
         <button id="logout-btn">Logout</button>
+        <button id="change-password-btn">Change Password</button>
+    </div>
+
+    <!-- Change Password Section -->
+    <div id="change-password-container" class="hidden">
+        <h2>Change Password</h2>
+        <input type="password" id="new-password" placeholder="New Password">
+        <input type="password" id="confirm-new-password" placeholder="Confirm New Password">
+        <button id="change-password-btn">Change Password</button>
+        <p id="change-password-error" class="error-message"></p>
+        <button id="back-to-dashboard">Back to Dashboard</button>
     </div>
 
     <script src="script.js"></script>
