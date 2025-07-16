@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>A4 Photo Printing System</title>
+  <title>A4 Photo Printing System (PCS Input)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
       text-align: center;
+      background: #f5f5f5;
     }
 
     .controls {
@@ -17,30 +18,31 @@
     .a4-page {
       width: 21cm;
       height: 29.7cm;
-      box-sizing: border-box;
-      margin: 0 auto 20px;
+      background: white;
+      margin: 10px auto;
       padding: 1cm;
+      box-sizing: border-box;
       border: 1px solid #000;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      page-break-after: always;
+      gap: 10px;
+    }
+
+    .photo-box {
+      width: 8cm;
+      height: 10cm;
+      border: 4px solid #333;
+      padding: 5px;
       background: #fff;
       display: flex;
-      align-items: center;
       justify-content: center;
-      page-break-after: always;
+      align-items: center;
     }
 
-    .photo-frame {
-      width: 100%;
-      height: 100%;
-      border: 8px solid #444;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      box-sizing: border-box;
-      background: #f9f9f9;
-    }
-
-    .photo-frame img {
+    .photo-box img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
@@ -55,14 +57,14 @@
         visibility: visible;
       }
 
+      .controls {
+        display: none;
+      }
+
       .a4-page {
         position: relative;
         top: 0;
         left: 0;
-      }
-
-      .controls {
-        display: none;
       }
     }
   </style>
@@ -70,41 +72,69 @@
 <body>
 
   <div class="controls">
-    <input type="file" id="imageInput" accept="image/*" multiple>
-    <button onclick="window.print()">🖨️ Print A4</button>
+    <input type="file" id="imageInput" accept="image/*"><br><br>
+    <label>Number of Copies (PCS):</label>
+    <input type="number" id="copiesInput" min="1" value="1"><br><br>
+    <button onclick="generatePrintLayout()">Generate</button>
+    <button onclick="window.print()">🖨️ Print</button>
   </div>
 
   <div id="printArea"></div>
 
   <script>
     const imageInput = document.getElementById('imageInput');
+    const copiesInput = document.getElementById('copiesInput');
     const printArea = document.getElementById('printArea');
+    let imageSrc = '';
 
-    imageInput.addEventListener('change', (event) => {
-      const files = Array.from(event.target.files);
-      printArea.innerHTML = ''; // Clear previous
-
-      files.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-
-            const frame = document.createElement('div');
-            frame.className = 'photo-frame';
-            frame.appendChild(img);
-
-            const page = document.createElement('div');
-            page.className = 'a4-page';
-            page.appendChild(frame);
-
-            printArea.appendChild(page);
-          };
-          reader.readAsDataURL(file);
-        }
-      });
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          imageSrc = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
     });
+
+    function generatePrintLayout() {
+      const copies = parseInt(copiesInput.value) || 1;
+      if (!imageSrc) {
+        alert("Please upload an image first.");
+        return;
+      }
+
+      printArea.innerHTML = ''; // Clear previous layout
+      let currentPage = createA4Page();
+      let count = 0;
+
+      for (let i = 0; i < copies; i++) {
+        const photoBox = document.createElement('div');
+        photoBox.className = 'photo-box';
+
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        photoBox.appendChild(img);
+
+        currentPage.appendChild(photoBox);
+        count++;
+
+        // 6 photos per page (2 columns x 3 rows of 8x10 cm)
+        if (count % 6 === 0 || i === copies - 1) {
+          printArea.appendChild(currentPage);
+          if (i !== copies - 1) {
+            currentPage = createA4Page();
+          }
+        }
+      }
+    }
+
+    function createA4Page() {
+      const page = document.createElement('div');
+      page.className = 'a4-page';
+      return page;
+    }
   </script>
 
 </body>
