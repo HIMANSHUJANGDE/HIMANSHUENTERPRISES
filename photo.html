@@ -2,66 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Passport Photo Sheet Generator (A4 Portrait)</title>
+  <title>Small Photo Sheet Generator (A4 Layout)</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       text-align: center;
       margin: 20px;
-    }
-    #canvas-container {
-      width: 794px; /* A4 portrait at 96dpi */
-      height: 1123px;
-      margin: 20px auto;
-    }
-    canvas {
-      border: 1px solid #000;
-      background: #fff;
     }
     input, button {
       margin: 10px;
       padding: 10px;
     }
+    canvas {
+      border: 1px solid #000;
+      background: white;
+    }
+    #canvas-container {
+      margin: auto;
+      max-width: 800px;
+    }
   </style>
 </head>
 <body>
-  <h2>Passport Size Photo Sheet Generator</h2>
+  <h2>Small Photo Sheet Generator - A4 Portrait</h2>
   <input type="file" id="fileInput" multiple accept="image/*">
   <br>
   <button onclick="generateSheet()">Generate</button>
   <button onclick="downloadSheet()">Download</button>
-
   <div id="canvas-container">
-    <canvas id="photoCanvas" width="794" height="1123"></canvas>
+    <canvas id="photoCanvas" width="794" height="1123"></canvas> <!-- A4 @ 96 DPI -->
   </div>
 
   <script>
-    const canvas = document.getElementById('photoCanvas');
-    const ctx = canvas.getContext('2d');
-    const fileInput = document.getElementById('fileInput');
+    const canvas = document.getElementById("photoCanvas");
+    const ctx = canvas.getContext("2d");
+    const MAX_PHOTOS = 45;
 
-    const MAX_PHOTOS = 32;
-    const COLUMNS = 4;
-    const ROWS = 8;
-
-    // Passport size at 96 DPI: ~132x170 pixels (3.5x4.5cm)
-    const PHOTO_WIDTH = 132;
-    const PHOTO_HEIGHT = 170;
+    // Small photo size (2.5cm x 3.5cm @ 96dpi ≈ 95x132 px)
+    const PHOTO_WIDTH = 95;
+    const PHOTO_HEIGHT = 132;
     const BORDER = 2;
+    const COLS = 5;
+    const ROWS = 9;
+
     const MARGIN_X = 20;
     const MARGIN_Y = 20;
-    const SPACING_X = (canvas.width - (COLUMNS * PHOTO_WIDTH) - (2 * MARGIN_X)) / (COLUMNS - 1);
-    const SPACING_Y = (canvas.height - (ROWS * PHOTO_HEIGHT) - (2 * MARGIN_Y)) / (ROWS - 1);
+    const SPACING_X = (canvas.width - MARGIN_X * 2 - PHOTO_WIDTH * COLS) / (COLS - 1);
+    const SPACING_Y = (canvas.height - MARGIN_Y * 2 - PHOTO_HEIGHT * ROWS) / (ROWS - 1);
 
     let images = [];
 
-    fileInput.addEventListener('change', (e) => {
+    document.getElementById("fileInput").addEventListener("change", (e) => {
       images = [];
       const files = [...e.target.files].slice(0, MAX_PHOTOS);
-
       files.forEach(file => {
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = function (event) {
           const img = new Image();
           img.onload = () => {
             images.push(img);
@@ -77,31 +73,51 @@
 
     function generateSheet() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       let index = 0;
 
       for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLUMNS; col++) {
+        for (let col = 0; col < COLS; col++) {
           if (index >= images.length) return;
           const img = images[index];
+
           const x = MARGIN_X + col * (PHOTO_WIDTH + SPACING_X);
           const y = MARGIN_Y + row * (PHOTO_HEIGHT + SPACING_Y);
 
           ctx.save();
           ctx.translate(x + PHOTO_WIDTH / 2, y + PHOTO_HEIGHT / 2);
 
-          // Rotate if landscape
+          let drawW = PHOTO_WIDTH;
+          let drawH = PHOTO_HEIGHT;
+
           if (img.width > img.height) {
             ctx.rotate(Math.PI / 2);
-            ctx.drawImage(img, -PHOTO_HEIGHT / 2, -PHOTO_WIDTH / 2, PHOTO_HEIGHT, PHOTO_WIDTH);
-          } else {
-            ctx.drawImage(img, -PHOTO_WIDTH / 2, -PHOTO_HEIGHT / 2, PHOTO_WIDTH, PHOTO_HEIGHT);
+            drawW = PHOTO_HEIGHT;
+            drawH = PHOTO_WIDTH;
+          }
+
+          // Create white background for transparent images
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = drawW;
+          tempCanvas.height = drawH;
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.fillStyle = "white";
+          tempCtx.fillRect(0, 0, drawW, drawH);
+          tempCtx.drawImage(img, 0, 0, drawW, drawH);
+
+          const tempImg = new Image();
+          tempImg.src = tempCanvas.toDataURL();
+          tempImg.onload = () => {
+            ctx.drawImage(tempImg, -PHOTO_WIDTH / 2, -PHOTO_HEIGHT / 2, PHOTO_WIDTH, PHOTO_HEIGHT);
           }
 
           ctx.restore();
 
-          // Border
+          // Draw border
           ctx.lineWidth = BORDER;
-          ctx.strokeStyle = '#000';
+          ctx.strokeStyle = "#000";
           ctx.strokeRect(x, y, PHOTO_WIDTH, PHOTO_HEIGHT);
 
           index++;
@@ -110,12 +126,11 @@
     }
 
     function downloadSheet() {
-      const link = document.createElement('a');
-      link.download = 'passport_photo_sheet.png';
-      link.href = canvas.toDataURL('image/png');
+      const link = document.createElement("a");
+      link.download = "photo_sheet.png";
+      link.href = canvas.toDataURL("image/png");
       link.click();
     }
   </script>
 </body>
 </html>
-
