@@ -1,131 +1,142 @@
-// Constants for localStorage keys
-const usersKey = 'users';
-const currentUserKey = 'currentUser';
+// Store users data in localStorage (for simplicity, no backend)
+let users = JSON.parse(localStorage.getItem('users')) || [];
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+let files = JSON.parse(localStorage.getItem('files')) || [];
 
-// DOM Elements
-const loginContainer = document.getElementById("login-container");
-const registerContainer = document.getElementById("register-container");
-const profileContainer = document.getElementById("profile-container");
-const fileDashboardContainer = document.getElementById("file-dashboard-container");
-const loginBtn = document.getElementById("login-btn");
-const registerBtn = document.getElementById("register-btn");
-const uploadBtn = document.getElementById("upload-btn");
-const fileList = document.getElementById("file-list");
-const logoutBtn = document.getElementById("logout-btn");
-const profileBtn = document.getElementById("profile-btn");
-const updateProfileBtn = document.getElementById("update-profile-btn");
-const backToLoginBtn = document.getElementById("back-to-login");
-const backToDashboardFromProfileBtn = document.getElementById("back-to-dashboard-from-profile");
-const showRegisterBtn = document.getElementById("show-register");
-const registerError = document.getElementById("register-error");
-const loginError = document.getElementById("login-error");
-const profileError = document.getElementById("profile-error");
+// Show login form initially
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const loginSection = document.getElementById('login-section');
+const registerSection = document.getElementById('register-section');
+const dashboard = document.getElementById('dashboard');
+const fileList = document.getElementById('file-list');
+const userNameElement = document.getElementById('user-name');
+const profileUsername = document.getElementById('profile-username');
+const uploadBtn = document.getElementById('upload-btn');
+const fileInput = document.getElementById('file-upload');
+const editProfileButton = document.getElementById('edit-profile');
+const editProfileForm = document.getElementById('edit-profile-form');
+const newUsernameInput = document.getElementById('new-username');
+const saveProfileButton = document.getElementById('save-profile');
 
-let currentUser = null;
-
-// Load user data from localStorage
-function loadUsers() {
-    const users = JSON.parse(localStorage.getItem(usersKey)) || [];
-    return users;
+// Check if logged in
+if (currentUser) {
+  showDashboard();
+} else {
+  showLogin();
 }
 
-// Save user data to localStorage
-function saveUsers(users) {
-    localStorage.setItem(usersKey, JSON.stringify(users));
+// Show Login page
+function showLogin() {
+  loginSection.style.display = 'block';
+  registerSection.style.display = 'none';
+  dashboard.style.display = 'none';
 }
 
-// Register functionality
-registerBtn.addEventListener("click", function () {
-    const username = document.getElementById("register-username").value;
-    const password = document.getElementById("register-password").value;
-    const confirmPassword = document.getElementById("confirm-password").value;
+// Show Registration page
+function showRegister() {
+  loginSection.style.display = 'none';
+  registerSection.style.display = 'block';
+  dashboard.style.display = 'none';
+}
 
-    if (password !== confirmPassword) {
-        registerError.textContent = "Passwords do not match.";
-        return;
-    }
+// Show Dashboard page
+function showDashboard() {
+  loginSection.style.display = 'none';
+  registerSection.style.display = 'none';
+  dashboard.style.display = 'block';
+  userNameElement.textContent = currentUser.username;
+  profileUsername.textContent = `Username: ${currentUser.username}`;
+  loadFiles();
+}
 
-    const users = loadUsers();
-    if (users.some(user => user.username === username)) {
-        registerError.textContent = "Username already taken.";
-        return;
-    }
+// Register new user
+registerForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const username = document.getElementById('register-username').value;
+  const password = document.getElementById('register-password').value;
 
-    users.push({ username, password, files: [] });
-    saveUsers(users);
-
-    registerContainer.classList.add("hidden");
-    loginContainer.classList.remove("hidden");
+  if (users.some(user => user.username === username)) {
+    alert('Username already exists!');
+  } else {
+    const newUser = { username, password };
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('Registration successful! Please log in.');
+    showLogin();
+  }
 });
 
-// Show the registration form
-showRegisterBtn.addEventListener("click", function () {
-    loginContainer.classList.add("hidden");
-    registerContainer.classList.remove("hidden");
+// Login user
+loginForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+
+  const user = users.find(u => u.username === username && u.password === password);
+
+  if (user) {
+    currentUser = user;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    showDashboard();
+  } else {
+    alert('Invalid username or password');
+  }
 });
 
-// Go back to login from registration
-backToLoginBtn.addEventListener("click", function () {
-    registerContainer.classList.add("hidden");
-    loginContainer.classList.remove("hidden");
+// Edit Profile
+editProfileButton.addEventListener('click', () => {
+  editProfileForm.style.display = 'block';
 });
 
-// Login functionality
-loginBtn.addEventListener("click", function () {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    const users = loadUsers();
-    const user = users.find(u => u.username === username && u.password === password);
-
-    if (user) {
-        currentUser = user;
-        localStorage.setItem(currentUserKey, JSON.stringify(currentUser));
-
-        loginContainer.classList.add("hidden");
-        fileDashboardContainer.classList.remove("hidden");
-
-        loadFileList();
-    } else {
-        loginError.textContent = "Invalid credentials. Please try again.";
-    }
+// Save new profile username
+saveProfileButton.addEventListener('click', () => {
+  const newUsername = newUsernameInput.value;
+  currentUser.username = newUsername;
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  profileUsername.textContent = `Username: ${newUsername}`;
+  editProfileForm.style.display = 'none';
 });
 
-// Logout functionality
-logoutBtn.addEventListener("click", function () {
-    localStorage.removeItem(currentUserKey);
-    loginContainer.classList.remove("hidden");
-    fileDashboardContainer.classList.add("hidden");
+// Upload File
+uploadBtn.addEventListener('click', () => {
+  const file = fileInput.files[0];
+  if (file) {
+    const fileData = { name: file.name, size: file.size };
+    files.push(fileData);
+    localStorage.setItem('files', JSON.stringify(files));
+    loadFiles();
+  } else {
+    alert('Please select a file to upload');
+  }
 });
 
-// Show profile management section
-profileBtn.addEventListener("click", function () {
-    fileDashboardContainer.classList.add("hidden");
-    profileContainer.classList.remove("hidden");
+// Load files
+function loadFiles() {
+  fileList.innerHTML = '';
+  files.forEach((file, index) => {
+    const li = document.createElement('li');
+    li.textContent = `${file.name} (${file.size} bytes)`;
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.addEventListener('click', () => deleteFile(index));
+    li.appendChild(deleteButton);
+    fileList.appendChild(li);
+  });
+}
 
-    document.getElementById("new-username").value = currentUser.username;
+// Delete File
+function deleteFile(index) {
+  files.splice(index, 1);
+  localStorage.setItem('files', JSON.stringify(files));
+  loadFiles();
+}
+
+// Show Register link
+document.getElementById('register-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  showRegister();
 });
 
-// Back to dashboard from profile
-backToDashboardFromProfileBtn.addEventListener("click", function () {
-    profileContainer.classList.add("hidden");
-    fileDashboardContainer.classList.remove("hidden");
-});
-
-// Update profile information (username & password)
-updateProfileBtn.addEventListener("click", function () {
-    const newUsername = document.getElementById("new-username").value;
-    const newPassword = document.getElementById("new-password").value;
-    const confirmNewPassword = document.getElementById("confirm-new-password").value;
-
-    if (newPassword !== confirmNewPassword) {
-        profileError.textContent = "Passwords do not match.";
-        return;
-    }
-
-    const users = loadUsers();
-    const userIndex = users.findIndex(u => u.username === currentUser.username);
-
-    if (userIndex !== -1) {
-        users[userIndex].username = newUsername;
-       
+// Show Login link
+document.getElementBy
