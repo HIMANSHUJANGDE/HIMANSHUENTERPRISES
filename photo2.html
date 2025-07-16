@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Small Photo A4 Printer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Small Photo Printer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      text-align: center;
+      background-color: #f5f5f5;
       padding: 20px;
+      text-align: center;
     }
 
     .container {
@@ -34,7 +35,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>Print Small Landscape Photos on A4</h2>
+    <h2>Print Smaller Photos (Landscape) on A4</h2>
     <label for="pcsInput">How many photos:</label>
     <input type="number" id="pcsInput" value="45" min="1" max="100">
     <br>
@@ -55,9 +56,9 @@
     const PAGE_WIDTH = 2480;
     const PAGE_HEIGHT = 3508;
 
-    // Photo size (40mm x 30mm) in pixels
-    const PHOTO_WIDTH = 472;  // landscape
-    const PHOTO_HEIGHT = 354;
+    // Photo size (40mm x 30mm) in pixels (landscape)
+    const PHOTO_WIDTH = 472;  // 40mm @ 300 DPI
+    const PHOTO_HEIGHT = 354; // 30mm @ 300 DPI
     const GAP = 20;
     const BORDER = 2;
 
@@ -71,39 +72,40 @@
       reader.onload = function (evt) {
         const img = new Image();
         img.onload = function () {
-          // Crop center square
-          const size = Math.min(img.width, img.height);
-          const sx = (img.width - size) / 2;
-          const sy = (img.height - size) / 2;
-
-          // Resize photo to target size on a temporary canvas
+          // Resize and rotate photo to landscape automatically
           const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          // Resize image to 472x354 px (landscape orientation)
           tempCanvas.width = PHOTO_WIDTH;
           tempCanvas.height = PHOTO_HEIGHT;
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCtx.drawImage(img, sx, sy, size, size, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
 
-          // Clear canvas
+          // Draw image rotated and resized to fit landscape
+          tempCtx.clearRect(0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+          tempCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+
+          // Clear main canvas (A4 page)
           ctx.fillStyle = "#fff";
           ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
 
-          // Compute layout capacity
+          // Calculate grid layout (columns and rows)
           const cols = Math.floor((PAGE_WIDTH + GAP) / (PHOTO_WIDTH + GAP));
           const rows = Math.floor((PAGE_HEIGHT + GAP) / (PHOTO_HEIGHT + GAP));
           const maxPhotos = cols * rows;
-          const count = Math.min(pcs, maxPhotos);
 
+          // If input pcs exceeds max, show the maximum limit
+          const count = Math.min(pcs, maxPhotos);
           if (pcs > maxPhotos) {
-            alert(`Only ${maxPhotos} photos can fit on one A4 page. Showing ${maxPhotos}.`);
+            alert(`Only ${maxPhotos} photos can fit on A4. Showing ${maxPhotos}.`);
           }
 
-          // Draw grid of photos with border
+          // Draw photos onto the page with border
           let placed = 0;
           let y = GAP;
           for (let r = 0; r < rows && placed < count; r++) {
             let x = GAP;
             for (let c = 0; c < cols && placed < count; c++) {
-              // Border rectangle
+              // Draw border
               ctx.fillStyle = "#000";
               ctx.fillRect(x - BORDER, y - BORDER, PHOTO_WIDTH + BORDER * 2, PHOTO_HEIGHT + BORDER * 2);
 
