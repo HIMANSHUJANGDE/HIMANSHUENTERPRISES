@@ -1,10 +1,8 @@
-// Hardcoded users for simulation
-const users = [
-    { username: "user1", password: "password1", files: [] },
-    { username: "user2", password: "password2", files: [] },
-];
+// User data is stored in localStorage
+const usersKey = 'users';
+const currentUserKey = 'currentUser';
 
-// DOM elements
+// DOM Elements
 const loginContainer = document.getElementById("login-container");
 const registerContainer = document.getElementById("register-container");
 const fileDashboardContainer = document.getElementById("file-dashboard-container");
@@ -24,54 +22,64 @@ const changePasswordError = document.getElementById("change-password-error");
 
 let currentUser = null;
 
-// User Registration
-registerBtn.addEventListener("click", function() {
+// Load user data from localStorage
+function loadUsers() {
+    const users = JSON.parse(localStorage.getItem(usersKey)) || [];
+    return users;
+}
+
+// Save user data to localStorage
+function saveUsers(users) {
+    localStorage.setItem(usersKey, JSON.stringify(users));
+}
+
+// Register functionality
+registerBtn.addEventListener("click", function () {
     const username = document.getElementById("register-username").value;
     const password = document.getElementById("register-password").value;
     const confirmPassword = document.getElementById("confirm-password").value;
 
-    // Check if passwords match
     if (password !== confirmPassword) {
         registerError.textContent = "Passwords do not match.";
         return;
     }
 
-    // Check if user already exists
-    const userExists = users.some(user => user.username === username);
-    if (userExists) {
+    const users = loadUsers();
+    if (users.some(user => user.username === username)) {
         registerError.textContent = "Username already taken.";
         return;
     }
 
-    // Add user
     users.push({ username, password, files: [] });
-    localStorage.setItem("users", JSON.stringify(users));
+    saveUsers(users);
+
     registerContainer.classList.add("hidden");
     loginContainer.classList.remove("hidden");
 });
 
-// Show registration form
-showRegisterBtn.addEventListener("click", function() {
+// Show the registration form
+showRegisterBtn.addEventListener("click", function () {
     loginContainer.classList.add("hidden");
     registerContainer.classList.remove("hidden");
 });
 
-// Back to login from register
-backToLoginBtn.addEventListener("click", function() {
+// Go back to login from registration
+backToLoginBtn.addEventListener("click", function () {
     registerContainer.classList.add("hidden");
     loginContainer.classList.remove("hidden");
 });
 
 // Login functionality
-loginBtn.addEventListener("click", function() {
+loginBtn.addEventListener("click", function () {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
+    const users = loadUsers();
     const user = users.find(u => u.username === username && u.password === password);
 
     if (user) {
         currentUser = user;
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        localStorage.setItem(currentUserKey, JSON.stringify(currentUser));
 
         loginContainer.classList.add("hidden");
         fileDashboardContainer.classList.remove("hidden");
@@ -83,47 +91,41 @@ loginBtn.addEventListener("click", function() {
 });
 
 // Logout functionality
-logoutBtn.addEventListener("click", function() {
-    localStorage.removeItem("currentUser");
-
+logoutBtn.addEventListener("click", function () {
+    localStorage.removeItem(currentUserKey);
     loginContainer.classList.remove("hidden");
     fileDashboardContainer.classList.add("hidden");
 });
 
-// File upload
-uploadBtn.addEventListener("click", function() {
-    const fileInput = document.getElementById("file-input");
-    const file = fileInput.files[0];
+// Change password functionality
+changePasswordBtn.addEventListener("click", function () {
+    const newPassword = document.getElementById("new-password").value;
+    const confirmNewPassword = document.getElementById("confirm-new-password").value;
 
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const fileData = {
-                name: file.name,
-                content: event.target.result
-            };
+    if (newPassword !== confirmNewPassword) {
+        changePasswordError.textContent = "Passwords do not match.";
+        return;
+    }
 
-            currentUser.files.push(fileData);
-            localStorage.setItem("currentUser", JSON.stringify(currentUser));
-            loadFileList();
-        };
-        reader.readAsText(file);
+    const users = loadUsers();
+    const userIndex = users.findIndex(u => u.username === currentUser.username);
+    if (userIndex !== -1) {
+        users[userIndex].password = newPassword;
+        saveUsers(users);
+        currentUser.password = newPassword;
+        localStorage.setItem(currentUserKey, JSON.stringify(currentUser));
+
+        changePasswordContainer.classList.add("hidden");
+        fileDashboardContainer.classList.remove("hidden");
     }
 });
 
-// Load file list
-function loadFileList() {
-    fileList.innerHTML = "";
-    currentUser.files.forEach((file, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `${file.name} <button onclick="downloadFile(${index})">Download</button> <button onclick="deleteFile(${index})">Delete</button>`;
-        fileList.appendChild(li);
-    });
-}
+// Back to file dashboard from change password
+backToDashboardBtn.addEventListener("click", function () {
+    changePasswordContainer.classList.add("hidden");
+    fileDashboardContainer.classList.remove("hidden");
+});
 
-// File download
-function downloadFile(index) {
-    const file = currentUser.files[index];
-    const blob = new Blob([file.content], { type: 'text/plain' });
-    const link = document.createElement("a");
-   
+// Upload file functionality
+uploadBtn.addEventListener("click", function () {
+    const
