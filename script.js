@@ -1,24 +1,25 @@
-// User data is stored in localStorage
+// Constants for localStorage keys
 const usersKey = 'users';
 const currentUserKey = 'currentUser';
 
 // DOM Elements
 const loginContainer = document.getElementById("login-container");
 const registerContainer = document.getElementById("register-container");
+const profileContainer = document.getElementById("profile-container");
 const fileDashboardContainer = document.getElementById("file-dashboard-container");
-const changePasswordContainer = document.getElementById("change-password-container");
 const loginBtn = document.getElementById("login-btn");
 const registerBtn = document.getElementById("register-btn");
 const uploadBtn = document.getElementById("upload-btn");
 const fileList = document.getElementById("file-list");
 const logoutBtn = document.getElementById("logout-btn");
-const changePasswordBtn = document.getElementById("change-password-btn");
+const profileBtn = document.getElementById("profile-btn");
+const updateProfileBtn = document.getElementById("update-profile-btn");
 const backToLoginBtn = document.getElementById("back-to-login");
-const backToDashboardBtn = document.getElementById("back-to-dashboard");
+const backToDashboardFromProfileBtn = document.getElementById("back-to-dashboard-from-profile");
 const showRegisterBtn = document.getElementById("show-register");
 const registerError = document.getElementById("register-error");
 const loginError = document.getElementById("login-error");
-const changePasswordError = document.getElementById("change-password-error");
+const profileError = document.getElementById("profile-error");
 
 let currentUser = null;
 
@@ -97,35 +98,34 @@ logoutBtn.addEventListener("click", function () {
     fileDashboardContainer.classList.add("hidden");
 });
 
-// Change password functionality
-changePasswordBtn.addEventListener("click", function () {
+// Show profile management section
+profileBtn.addEventListener("click", function () {
+    fileDashboardContainer.classList.add("hidden");
+    profileContainer.classList.remove("hidden");
+
+    document.getElementById("new-username").value = currentUser.username;
+});
+
+// Back to dashboard from profile
+backToDashboardFromProfileBtn.addEventListener("click", function () {
+    profileContainer.classList.add("hidden");
+    fileDashboardContainer.classList.remove("hidden");
+});
+
+// Update profile information (username & password)
+updateProfileBtn.addEventListener("click", function () {
+    const newUsername = document.getElementById("new-username").value;
     const newPassword = document.getElementById("new-password").value;
     const confirmNewPassword = document.getElementById("confirm-new-password").value;
 
     if (newPassword !== confirmNewPassword) {
-        changePasswordError.textContent = "Passwords do not match.";
+        profileError.textContent = "Passwords do not match.";
         return;
     }
 
     const users = loadUsers();
     const userIndex = users.findIndex(u => u.username === currentUser.username);
+
     if (userIndex !== -1) {
-        users[userIndex].password = newPassword;
-        saveUsers(users);
-        currentUser.password = newPassword;
-        localStorage.setItem(currentUserKey, JSON.stringify(currentUser));
-
-        changePasswordContainer.classList.add("hidden");
-        fileDashboardContainer.classList.remove("hidden");
-    }
-});
-
-// Back to file dashboard from change password
-backToDashboardBtn.addEventListener("click", function () {
-    changePasswordContainer.classList.add("hidden");
-    fileDashboardContainer.classList.remove("hidden");
-});
-
-// Upload file functionality
-uploadBtn.addEventListener("click", function () {
-    const
+        users[userIndex].username = newUsername;
+       
