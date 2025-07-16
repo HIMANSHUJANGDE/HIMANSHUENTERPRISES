@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi-Photo A4 Printing with Quantity</title>
+  <title>4-Photo A4 Printing with Copies</title>
   <style>
     * {
       box-sizing: border-box;
     }
-
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       background: #f0f0f0;
       padding: 20px;
       margin: 0;
@@ -23,23 +22,22 @@
     .photo-list {
       display: flex;
       flex-wrap: wrap;
+      gap: 15px;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
 
     .photo-item {
       background: #fff;
-      border: 1px solid #ccc;
       padding: 10px;
-      width: 150px;
+      border: 1px solid #ccc;
+      width: 160px;
       text-align: center;
     }
 
     .photo-item img {
-      max-width: 100%;
+      width: 100%;
       height: auto;
-      display: block;
       margin-bottom: 5px;
     }
 
@@ -49,7 +47,7 @@
       background: white;
       margin: 20px auto;
       padding: 10mm;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
       page-break-after: always;
     }
 
@@ -64,8 +62,8 @@
     .photo-slot {
       background: #ddd;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       overflow: hidden;
     }
 
@@ -81,10 +79,12 @@
         margin: 0;
         padding: 0;
       }
+
       .controls,
       .photo-list {
         display: none;
       }
+
       .a4 {
         box-shadow: none;
         margin: 0;
@@ -96,12 +96,11 @@
 
   <div class="controls">
     <input type="file" id="fileInput" accept="image/*" multiple />
-    <button onclick="generatePages()">Generate</button>
+    <button onclick="generatePages()">Generate Pages</button>
     <button onclick="window.print()">Print</button>
   </div>
 
-  <div class="photo-list" id="photoList"></div>
-
+  <div id="photoList" class="photo-list"></div>
   <div id="pagesContainer"></div>
 
   <script>
@@ -109,54 +108,55 @@
     const photoList = document.getElementById('photoList');
     const pagesContainer = document.getElementById('pagesContainer');
 
-    let images = [];
+    let imageData = [];
 
-    fileInput.addEventListener('change', function (e) {
-      images = [];
+    fileInput.addEventListener('change', function () {
+      imageData = [];
       photoList.innerHTML = '';
       pagesContainer.innerHTML = '';
 
-      const files = Array.from(e.target.files);
+      const files = Array.from(this.files);
       files.forEach((file, index) => {
         const url = URL.createObjectURL(file);
-        images.push({ url, copies: 1 });
+        imageData.push({ url, copies: 1 });
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'photo-item';
+        const item = document.createElement('div');
+        item.className = 'photo-item';
 
         const img = document.createElement('img');
         img.src = url;
 
         const label = document.createElement('label');
-        label.textContent = "Copies:";
+        label.textContent = 'Copies: ';
 
         const input = document.createElement('input');
         input.type = 'number';
         input.min = 1;
         input.value = 1;
         input.style.width = '60px';
-        input.oninput = () => images[index].copies = parseInt(input.value) || 1;
+        input.addEventListener('input', () => {
+          imageData[index].copies = parseInt(input.value) || 1;
+        });
 
-        wrapper.appendChild(img);
-        wrapper.appendChild(label);
-        wrapper.appendChild(input);
-
-        photoList.appendChild(wrapper);
+        item.appendChild(img);
+        item.appendChild(label);
+        item.appendChild(input);
+        photoList.appendChild(item);
       });
     });
 
     function generatePages() {
       pagesContainer.innerHTML = '';
 
-      // Expand images based on copy count
-      const expanded = [];
-      images.forEach(img => {
-        for (let i = 0; i < img.copies; i++) {
-          expanded.push(img.url);
+      // Flatten image list by copies
+      const allImages = [];
+      imageData.forEach(({ url, copies }) => {
+        for (let i = 0; i < copies; i++) {
+          allImages.push(url);
         }
       });
 
-      for (let i = 0; i < expanded.length; i += 4) {
+      for (let i = 0; i < allImages.length; i += 4) {
         const page = document.createElement('div');
         page.className = 'a4';
 
@@ -164,13 +164,13 @@
         grid.className = 'photo-grid';
 
         for (let j = 0; j < 4; j++) {
-          const idx = i + j;
           const slot = document.createElement('div');
           slot.className = 'photo-slot';
 
-          if (idx < expanded.length) {
+          const imgIndex = i + j;
+          if (imgIndex < allImages.length) {
             const img = document.createElement('img');
-            img.src = expanded[idx];
+            img.src = allImages[imgIndex];
             slot.appendChild(img);
           }
 
