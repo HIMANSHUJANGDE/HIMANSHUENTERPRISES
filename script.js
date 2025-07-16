@@ -8,10 +8,11 @@ const users = [
 const loginContainer = document.getElementById("login-container");
 const fileDashboardContainer = document.getElementById("file-dashboard-container");
 const loginBtn = document.getElementById("login-btn");
-const createFileBtn = document.getElementById("create-file-btn");
+const uploadBtn = document.getElementById("upload-btn");
 const fileList = document.getElementById("file-list");
 const logoutBtn = document.getElementById("logout-btn");
 const loginError = document.getElementById("login-error");
+const fileInput = document.getElementById("file-input");
 
 // Login functionality
 loginBtn.addEventListener("click", function() {
@@ -41,23 +42,29 @@ logoutBtn.addEventListener("click", function() {
     fileDashboardContainer.classList.add("hidden");
 });
 
-// Create a new file
-createFileBtn.addEventListener("click", function() {
-    const fileName = prompt("Enter the file name:");
+// Upload a file
+uploadBtn.addEventListener("click", function() {
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
 
-    if (fileName) {
-        const fileContent = prompt("Enter the content for the file:");
+        reader.onload = function(event) {
+            const fileData = {
+                name: file.name,
+                content: event.target.result,
+            };
 
-        if (fileContent) {
             const currentUser = localStorage.getItem("currentUser");
-            const fileData = { name: fileName, content: fileContent };
-
             let userFiles = JSON.parse(localStorage.getItem(currentUser)) || [];
             userFiles.push(fileData);
             localStorage.setItem(currentUser, JSON.stringify(userFiles));
 
             loadFileList();
-        }
+        };
+
+        reader.readAsText(file);
+    } else {
+        alert("Please select a file to upload.");
     }
 });
 
@@ -69,9 +76,22 @@ function loadFileList() {
 
     userFiles.forEach((file, index) => {
         const li = document.createElement("li");
-        li.innerHTML = `${file.name} <button onclick="deleteFile(${index})">Delete</button>`;
+        li.innerHTML = `${file.name} <button onclick="downloadFile(${index})">Download</button> <button onclick="deleteFile(${index})">Delete</button>`;
         fileList.appendChild(li);
     });
+}
+
+// Download a file
+function downloadFile(index) {
+    const currentUser = localStorage.getItem("currentUser");
+    const userFiles = JSON.parse(localStorage.getItem(currentUser)) || [];
+    const file = userFiles[index];
+
+    const blob = new Blob([file.content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = file.name;
+    link.click();
 }
 
 // Delete a file
