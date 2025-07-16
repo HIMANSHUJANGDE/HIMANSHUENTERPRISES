@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>45 Passport Photos (Landscape) on A4 Portrait</title>
+  <title>50 Passport Photos A4 Portrait</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,6 +23,7 @@
       margin-top: 20px;
       border: 1px solid #ccc;
       max-width: 100%;
+      height: auto;
     }
 
     input, button {
@@ -34,7 +35,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>45 Landscape Passport Photos on A4 Portrait</h1>
+    <h1>50 Landscape Passport Photos on A4 Portrait</h1>
     <input type="file" id="photoInput" accept="image/*">
     <br>
     <canvas id="outputCanvas" width="2480" height="3508"></canvas>
@@ -43,18 +44,22 @@
   </div>
 
   <script>
-    const photoInput = document.getElementById('photoInput');
     const canvas = document.getElementById('outputCanvas');
     const ctx = canvas.getContext('2d');
+    const photoInput = document.getElementById('photoInput');
 
     // A4 portrait size at 300 DPI
     const PAGE_WIDTH = 2480;
     const PAGE_HEIGHT = 3508;
 
-    // Landscape passport photo dimensions in pixels
-    const PHOTO_WIDTH = 531; // 45mm
+    // Landscape passport photo dimensions
+    const PHOTO_WIDTH = 531;  // 45mm
     const PHOTO_HEIGHT = 413; // 35mm
-    const GAP = 20;
+    const GAP = 15;
+
+    // Target layout: 5 columns × 10 rows = 50 photos
+    const COLUMNS = 5;
+    const ROWS = 10;
 
     photoInput.addEventListener('change', function (e) {
       const file = e.target.files[0];
@@ -64,32 +69,29 @@
       reader.onload = function (evt) {
         const img = new Image();
         img.onload = function () {
-          // Crop square from center
-          const minSize = Math.min(img.width, img.height);
-          const sx = (img.width - minSize) / 2;
-          const sy = (img.height - minSize) / 2;
+          // Crop to square center
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
 
-          // Resize to PHOTO_WIDTH x PHOTO_HEIGHT (landscape)
+          // Resize to 531x413 (landscape)
           const tempCanvas = document.createElement('canvas');
           const tempCtx = tempCanvas.getContext('2d');
           tempCanvas.width = PHOTO_WIDTH;
           tempCanvas.height = PHOTO_HEIGHT;
-          tempCtx.drawImage(img, sx, sy, minSize, minSize, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+          tempCtx.drawImage(img, sx, sy, size, size, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
 
-          // Clear main canvas
+          // Clear the main canvas
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
 
-          // Layout: 5 columns x 9 rows = 45 photos
+          // Draw 50 photos on A4 (5x10)
           let x = GAP;
           let y = GAP;
 
-          const cols = 5;
-          const rows = 9;
-
-          for (let row = 0; row < rows; row++) {
+          for (let row = 0; row < ROWS; row++) {
             x = GAP;
-            for (let col = 0; col < cols; col++) {
+            for (let col = 0; col < COLUMNS; col++) {
               if (x + PHOTO_WIDTH <= PAGE_WIDTH && y + PHOTO_HEIGHT <= PAGE_HEIGHT) {
                 ctx.drawImage(tempCanvas, x, y);
               }
@@ -103,13 +105,13 @@
       reader.readAsDataURL(file);
     });
 
-    document.getElementById('printBtn').addEventListener('click', function () {
+    document.getElementById('printBtn').addEventListener('click', () => {
       const dataUrl = canvas.toDataURL('image/png');
       const win = window.open('', '_blank');
       win.document.write(`
         <html>
-          <head><title>Print 45 Landscape Passport Photos</title></head>
-          <body style="margin:0">
+          <head><title>Print 50 Passport Photos</title></head>
+          <body style="margin:0;">
             <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
           </body>
         </html>
