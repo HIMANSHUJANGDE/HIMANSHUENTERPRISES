@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>50 Passport Photos A4 Portrait</title>
+  <title>Passport Photo Generator A4</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,28 +14,34 @@
     .container {
       background: white;
       padding: 20px;
-      display: inline-block;
-      border-radius: 8px;
+      border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: inline-block;
     }
 
     canvas {
       margin-top: 20px;
       border: 1px solid #ccc;
       max-width: 100%;
-      height: auto;
     }
 
     input, button {
-      margin-top: 10px;
-      padding: 10px 20px;
+      margin: 10px;
+      padding: 10px 15px;
       font-size: 16px;
+    }
+
+    label {
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>50 Landscape Passport Photos on A4 Portrait</h1>
+    <h2>Passport Photo Printer (A4 Portrait, Landscape Photos)</h2>
+    <label for="pcsInput">How many copies (pcs):</label>
+    <input type="number" id="pcsInput" value="50" min="1" max="100">
+    <br>
     <input type="file" id="photoInput" accept="image/*">
     <br>
     <canvas id="outputCanvas" width="2480" height="3508"></canvas>
@@ -46,56 +52,64 @@
   <script>
     const canvas = document.getElementById('outputCanvas');
     const ctx = canvas.getContext('2d');
-    const photoInput = document.getElementById('photoInput');
 
-    // A4 portrait size at 300 DPI
-    const PAGE_WIDTH = 2480;
-    const PAGE_HEIGHT = 3508;
+    const PHOTO_WIDTH = 531; // 45mm @ 300 DPI
+    const PHOTO_HEIGHT = 413; // 35mm @ 300 DPI
+    const GAP = 20;
+    const BORDER_COLOR = '#000';
+    const BORDER_WIDTH = 2;
 
-    // Landscape passport photo dimensions
-    const PHOTO_WIDTH = 531;  // 45mm
-    const PHOTO_HEIGHT = 413; // 35mm
-    const GAP = 15;
-
-    // Target layout: 5 columns × 10 rows = 50 photos
-    const COLUMNS = 5;
-    const ROWS = 10;
-
-    photoInput.addEventListener('change', function (e) {
+    document.getElementById('photoInput').addEventListener('change', function (e) {
       const file = e.target.files[0];
       if (!file) return;
+
+      const pcs = parseInt(document.getElementById('pcsInput').value) || 50;
 
       const reader = new FileReader();
       reader.onload = function (evt) {
         const img = new Image();
         img.onload = function () {
-          // Crop to square center
+          // Crop center square from image
           const size = Math.min(img.width, img.height);
           const sx = (img.width - size) / 2;
           const sy = (img.height - size) / 2;
 
-          // Resize to 531x413 (landscape)
+          // Resize to landscape format
           const tempCanvas = document.createElement('canvas');
           const tempCtx = tempCanvas.getContext('2d');
           tempCanvas.width = PHOTO_WIDTH;
           tempCanvas.height = PHOTO_HEIGHT;
+
           tempCtx.drawImage(img, sx, sy, size, size, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
 
-          // Clear the main canvas
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
+          // Clear canvas
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Draw 50 photos on A4 (5x10)
-          let x = GAP;
+          const columns = Math.floor((canvas.width + GAP) / (PHOTO_WIDTH + GAP));
+          const rows = Math.floor((canvas.height + GAP) / (PHOTO_HEIGHT + GAP));
+          const maxPhotos = columns * rows;
+
+          if (pcs > maxPhotos) {
+            alert(`Max photos on A4 portrait = ${maxPhotos}. Only placing ${maxPhotos}.`);
+          }
+
+          let count = Math.min(pcs, maxPhotos);
+          let placed = 0;
           let y = GAP;
 
-          for (let row = 0; row < ROWS; row++) {
-            x = GAP;
-            for (let col = 0; col < COLUMNS; col++) {
-              if (x + PHOTO_WIDTH <= PAGE_WIDTH && y + PHOTO_HEIGHT <= PAGE_HEIGHT) {
-                ctx.drawImage(tempCanvas, x, y);
-              }
+          for (let r = 0; r < rows && placed < count; r++) {
+            let x = GAP;
+            for (let c = 0; c < columns && placed < count; c++) {
+              // Draw border
+              ctx.fillStyle = BORDER_COLOR;
+              ctx.fillRect(x - BORDER_WIDTH, y - BORDER_WIDTH,
+                           PHOTO_WIDTH + BORDER_WIDTH * 2, PHOTO_HEIGHT + BORDER_WIDTH * 2);
+
+              // Draw photo inside border
+              ctx.drawImage(tempCanvas, x, y, PHOTO_WIDTH, PHOTO_HEIGHT);
               x += PHOTO_WIDTH + GAP;
+              placed++;
             }
             y += PHOTO_HEIGHT + GAP;
           }
@@ -110,10 +124,10 @@
       const win = window.open('', '_blank');
       win.document.write(`
         <html>
-          <head><title>Print 50 Passport Photos</title></head>
-          <body style="margin:0;">
-            <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
-          </body>
+        <head><title>Print Passport Photos</title></head>
+        <body style="margin:0">
+          <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
+        </body>
         </html>
       `);
     });
