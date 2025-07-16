@@ -2,26 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Small Photo Printer A4</title>
+  <title>Small Photo A4 Printer</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f8f8f8;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
       text-align: center;
+      padding: 20px;
     }
 
     .container {
       background: #fff;
       padding: 20px;
-      border-radius: 8px;
       display: inline-block;
+      border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     input, button {
-      padding: 10px 15px;
       margin: 10px;
+      padding: 10px 20px;
       font-size: 16px;
     }
 
@@ -29,15 +29,14 @@
       margin-top: 20px;
       border: 1px solid #ccc;
       max-width: 100%;
-      height: auto;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Print Smaller Photos (Landscape) on A4</h2>
-    <label>Number of copies (pcs):</label>
-    <input type="number" id="pcsInput" value="50" min="1" max="100">
+    <h2>Print Small Landscape Photos on A4</h2>
+    <label for="pcsInput">How many photos:</label>
+    <input type="number" id="pcsInput" value="45" min="1" max="100">
     <br>
     <input type="file" id="photoInput" accept="image/*">
     <br>
@@ -49,36 +48,35 @@
   <script>
     const canvas = document.getElementById('outputCanvas');
     const ctx = canvas.getContext('2d');
-
-    // Smaller-than-passport photo dimensions (landscape): 40mm x 30mm
-    const PHOTO_WIDTH = 472; // 40mm @ 300 DPI
-    const PHOTO_HEIGHT = 354; // 30mm @ 300 DPI
-    const GAP = 15;
-    const BORDER_WIDTH = 2;
-    const BORDER_COLOR = "#000";
-
-    const PAGE_WIDTH = 2480; // A4 portrait width (px)
-    const PAGE_HEIGHT = 3508; // A4 portrait height (px)
-
-    const photoInput = document.getElementById('photoInput');
     const pcsInput = document.getElementById('pcsInput');
+    const photoInput = document.getElementById('photoInput');
+
+    // A4 size in px at 300 DPI
+    const PAGE_WIDTH = 2480;
+    const PAGE_HEIGHT = 3508;
+
+    // Photo size (40mm x 30mm) in pixels
+    const PHOTO_WIDTH = 472;  // landscape
+    const PHOTO_HEIGHT = 354;
+    const GAP = 20;
+    const BORDER = 2;
 
     photoInput.addEventListener('change', function (e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const pcs = parseInt(pcsInput.value) || 50;
+      const pcs = parseInt(pcsInput.value) || 45;
 
       const reader = new FileReader();
       reader.onload = function (evt) {
         const img = new Image();
         img.onload = function () {
-          // Crop to square from center
+          // Crop center square
           const size = Math.min(img.width, img.height);
           const sx = (img.width - size) / 2;
           const sy = (img.height - size) / 2;
 
-          // Create resized temp canvas
+          // Resize photo to target size on a temporary canvas
           const tempCanvas = document.createElement('canvas');
           tempCanvas.width = PHOTO_WIDTH;
           tempCanvas.height = PHOTO_HEIGHT;
@@ -89,26 +87,25 @@
           ctx.fillStyle = "#fff";
           ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
 
-          // Calculate max photos per page
+          // Compute layout capacity
           const cols = Math.floor((PAGE_WIDTH + GAP) / (PHOTO_WIDTH + GAP));
           const rows = Math.floor((PAGE_HEIGHT + GAP) / (PHOTO_HEIGHT + GAP));
           const maxPhotos = cols * rows;
-
           const count = Math.min(pcs, maxPhotos);
+
+          if (pcs > maxPhotos) {
+            alert(`Only ${maxPhotos} photos can fit on one A4 page. Showing ${maxPhotos}.`);
+          }
+
+          // Draw grid of photos with border
           let placed = 0;
           let y = GAP;
-
           for (let r = 0; r < rows && placed < count; r++) {
             let x = GAP;
             for (let c = 0; c < cols && placed < count; c++) {
-              // Draw border
-              ctx.fillStyle = BORDER_COLOR;
-              ctx.fillRect(
-                x - BORDER_WIDTH,
-                y - BORDER_WIDTH,
-                PHOTO_WIDTH + BORDER_WIDTH * 2,
-                PHOTO_HEIGHT + BORDER_WIDTH * 2
-              );
+              // Border rectangle
+              ctx.fillStyle = "#000";
+              ctx.fillRect(x - BORDER, y - BORDER, PHOTO_WIDTH + BORDER * 2, PHOTO_HEIGHT + BORDER * 2);
 
               // Draw photo
               ctx.drawImage(tempCanvas, x, y, PHOTO_WIDTH, PHOTO_HEIGHT);
@@ -117,10 +114,6 @@
               x += PHOTO_WIDTH + GAP;
             }
             y += PHOTO_HEIGHT + GAP;
-          }
-
-          if (pcs > maxPhotos) {
-            alert(`Only ${maxPhotos} photos fit on A4. Showing ${maxPhotos}.`);
           }
         };
         img.src = evt.target.result;
@@ -133,10 +126,10 @@
       const win = window.open('', '_blank');
       win.document.write(`
         <html>
-          <head><title>Print Small Photos</title></head>
-          <body style="margin:0;">
-            <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
-          </body>
+        <head><title>Print Small Photos</title></head>
+        <body style="margin:0;">
+          <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
+        </body>
         </html>
       `);
     });
