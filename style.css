@@ -9,16 +9,12 @@ body {
     background-color: #f4f4f9;
 }
 
-#login-container, #file-dashboard-container {
+.container {
     width: 300px;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     background-color: white;
-}
-
-#login-container {
-    text-align: center;
 }
 
 input[type="text"], input[type="password"], input[type="file"] {
