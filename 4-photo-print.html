@@ -2,37 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>4 Photo Print - A4</title>
+  <title>Multi-Photo A4 Print (4 per page)</title>
   <style>
     * {
       box-sizing: border-box;
     }
-
     body {
       font-family: Arial, sans-serif;
       background: #f0f0f0;
       padding: 20px;
       margin: 0;
     }
-
     .controls {
       margin-bottom: 20px;
       text-align: center;
     }
-
     .controls input {
       margin: 5px;
     }
-
     .a4 {
       width: 210mm;
       height: 297mm;
       background: white;
-      margin: auto;
+      margin: 20px auto;
       padding: 10mm;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      page-break-after: always;
     }
-
     .photo-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -40,36 +36,30 @@
       gap: 10mm;
       height: 100%;
     }
-
     .photo-slot {
-      background: #ccc;
+      background: #ddd;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
     }
-
     .photo-slot img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
     }
-
     @media print {
       body {
         background: none;
-        padding: 0;
         margin: 0;
+        padding: 0;
       }
-
       .controls {
         display: none;
       }
-
       .a4 {
-        box-shadow: none;
         margin: 0;
-        page-break-after: always;
+        box-shadow: none;
       }
     }
   </style>
@@ -81,21 +71,39 @@
     <button onclick="window.print()">Print</button>
   </div>
 
-  <div class="a4" id="printArea">
-    <div class="photo-grid">
-      <div class="photo-slot"><img id="img1" /></div>
-      <div class="photo-slot"><img id="img2" /></div>
-      <div class="photo-slot"><img id="img3" /></div>
-      <div class="photo-slot"><img id="img4" /></div>
-    </div>
-  </div>
+  <div id="pagesContainer"></div>
 
   <script>
-    document.getElementById("fileInput").addEventListener("change", function (e) {
-      const files = e.target.files;
-      for (let i = 0; i < Math.min(4, files.length); i++) {
-        const img = document.getElementById(`img${i + 1}`);
-        img.src = URL.createObjectURL(files[i]);
+    const input = document.getElementById('fileInput');
+    const container = document.getElementById('pagesContainer');
+
+    input.addEventListener('change', function(e) {
+      const files = Array.from(e.target.files);
+      container.innerHTML = ''; // Clear old pages
+
+      for (let i = 0; i < files.length; i += 4) {
+        const page = document.createElement('div');
+        page.className = 'a4';
+
+        const grid = document.createElement('div');
+        grid.className = 'photo-grid';
+
+        for (let j = 0; j < 4; j++) {
+          const fileIndex = i + j;
+          const slot = document.createElement('div');
+          slot.className = 'photo-slot';
+
+          if (fileIndex < files.length) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(files[fileIndex]);
+            slot.appendChild(img);
+          }
+
+          grid.appendChild(slot);
+        }
+
+        page.appendChild(grid);
+        container.appendChild(page);
       }
     });
   </script>
