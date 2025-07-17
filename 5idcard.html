@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ID Card JPG Upload + Copies + Print</title>
+  <meta charset="UTF-8" />
+  <title>Double-Sided ID Card Printer</title>
   <style>
     @page {
       size: A4;
@@ -40,7 +40,7 @@
       background: #fff;
       border: 1px dashed #aaa;
       padding: 10px;
-      width: 200px;
+      width: 220px;
     }
 
     .upload-item label {
@@ -72,6 +72,10 @@
       max-height: 100%;
     }
 
+    .page-break {
+      page-break-before: always;
+    }
+
     @media print {
       .controls,
       .upload-group {
@@ -87,27 +91,38 @@
 <body>
 
   <div class="controls">
-    <button onclick="generateCards()">🧾 Generate Cards</button>
+    <button onclick="generateCards()">🧾 Generate Double-Sided Cards</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
 
   <div class="upload-group" id="uploadGroup">
-    <!-- 5 upload blocks -->
+    <!-- 5 card upload slots -->
   </div>
 
-  <div class="id-card-container" id="cardContainer"></div>
+  <h2 style="text-align:center;">Front Side</h2>
+  <div class="id-card-container" id="frontContainer"></div>
+
+  <div class="page-break"></div>
+
+  <h2 style="text-align:center;">Back Side</h2>
+  <div class="id-card-container" id="backContainer"></div>
 
   <script>
     const uploadGroup = document.getElementById('uploadGroup');
-    const cardContainer = document.getElementById('cardContainer');
+    const frontContainer = document.getElementById('frontContainer');
+    const backContainer = document.getElementById('backContainer');
 
+    // Create 5 upload blocks
     for (let i = 0; i < 5; i++) {
       const block = document.createElement('div');
       block.className = 'upload-item';
 
       block.innerHTML = `
-        <label>Upload Card ${i + 1}:</label>
-        <input type="file" accept="image/jpeg" id="file${i}" />
+        <label><strong>Card ${i + 1}</strong></label>
+        <label>Front JPG:</label>
+        <input type="file" accept="image/jpeg" id="front${i}" />
+        <label>Back JPG:</label>
+        <input type="file" accept="image/jpeg" id="back${i}" />
         <label>Copies (pcs):</label>
         <input type="number" id="copies${i}" value="1" min="1" max="20" />
       `;
@@ -116,31 +131,45 @@
     }
 
     function generateCards() {
-      cardContainer.innerHTML = ''; // Clear previous
+      frontContainer.innerHTML = '';
+      backContainer.innerHTML = '';
 
       for (let i = 0; i < 5; i++) {
-        const fileInput = document.getElementById(`file${i}`);
-        const copiesInput = document.getElementById(`copies${i}`);
+        const frontInput = document.getElementById(`front${i}`);
+        const backInput = document.getElementById(`back${i}`);
+        const copies = parseInt(document.getElementById(`copies${i}`).value);
 
-        const file = fileInput.files[0];
-        const copies = parseInt(copiesInput.value);
+        const frontFile = frontInput.files[0];
+        const backFile = backInput.files[0];
 
-        if (!file || isNaN(copies) || copies < 1) continue;
+        if (!frontFile || !backFile || isNaN(copies) || copies < 1) continue;
 
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          for (let j = 0; j < copies; j++) {
-            const card = document.createElement('div');
-            card.className = 'id-card';
+        const frontReader = new FileReader();
+        const backReader = new FileReader();
 
-            const img = document.createElement('img');
-            img.src = event.target.result;
+        frontReader.onload = function (eventFront) {
+          const frontImgSrc = eventFront.target.result;
 
-            card.appendChild(img);
-            cardContainer.appendChild(card);
-          }
+          backReader.onload = function (eventBack) {
+            const backImgSrc = eventBack.target.result;
+
+            for (let j = 0; j < copies; j++) {
+              const frontCard = document.createElement('div');
+              frontCard.className = 'id-card';
+              frontCard.innerHTML = `<img src="${frontImgSrc}" alt="Front">`;
+              frontContainer.appendChild(frontCard);
+
+              const backCard = document.createElement('div');
+              backCard.className = 'id-card';
+              backCard.innerHTML = `<img src="${backImgSrc}" alt="Back">`;
+              backContainer.appendChild(backCard);
+            }
+          };
+
+          backReader.readAsDataURL(backFile);
         };
-        reader.readAsDataURL(file);
+
+        frontReader.readAsDataURL(frontFile);
       }
     }
   </script>
