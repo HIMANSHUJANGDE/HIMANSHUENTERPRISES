@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>5 ID Card Print (8.5×5.5cm Landscape)</title>
+  <title>ID Card Both Side Print (8.5x5.5cm)</title>
   <style>
     @page {
       size: A4 portrait;
@@ -13,7 +13,7 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 10mm;
-      background: #f0f0f0;
+      background: #f9f9f9;
     }
 
     .controls {
@@ -41,20 +41,20 @@
       border: 1px dashed #aaa;
       padding: 10px;
       width: 250px;
-      font-size: 14px;
     }
 
     .upload-item label {
       display: block;
-      margin-top: 8px;
+      margin-top: 6px;
+      font-size: 14px;
     }
 
     .upload-item input[type="file"],
     .upload-item input[type="number"] {
       width: 100%;
       padding: 5px;
+      margin-top: 2px;
       font-size: 14px;
-      margin-top: 3px;
     }
 
     .card-list {
@@ -66,8 +66,8 @@
     .merged-card {
       width: 8.5cm;
       height: 5.5cm;
-      display: flex;
       border: 1px solid #000;
+      display: flex;
       background: #fff;
       page-break-inside: avoid;
     }
@@ -85,7 +85,7 @@
 
     @media print {
       body {
-        background: #fff;
+        background: white;
       }
 
       .controls,
@@ -115,7 +115,7 @@
     const uploadGroup = document.getElementById('uploadGroup');
     const cardList = document.getElementById('cardList');
 
-    // Generate upload blocks
+    // Create upload fields for 5 cards
     for (let i = 0; i < MAX_CARDS; i++) {
       const div = document.createElement('div');
       div.className = 'upload-item';
@@ -126,7 +126,7 @@
         <label>Back JPG</label>
         <input type="file" accept="image/jpeg" id="back${i}">
         <label>Copies (pcs)</label>
-        <input type="number" id="copies${i}" value="1" min="1" max="20">
+        <input type="number" id="copies${i}" value="1" min="1" max="50">
       `;
       uploadGroup.appendChild(div);
     }
