@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Multi-Photo Printing AIO</title>
+  <title>Multi-Photo Print (45 pcs max)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: #f5f5f5;
       padding: 20px;
       text-align: center;
     }
@@ -15,13 +15,33 @@
       margin-bottom: 20px;
     }
 
+    input[type="number"] {
+      width: 60px;
+      padding: 4px;
+      margin-left: 10px;
+    }
+
+    .photo-inputs {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .photo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .a4 {
       width: 210mm;
       height: 297mm;
       background: white;
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
-      padding: 10mm;
       margin: auto;
+      padding: 10mm;
       box-sizing: border-box;
       display: flex;
       flex-wrap: wrap;
@@ -39,8 +59,8 @@
 
     @media print {
       body {
-        background: none;
         margin: 0;
+        background: none;
         padding: 0;
       }
 
@@ -50,8 +70,8 @@
 
       .a4 {
         box-shadow: none;
-        border: none;
         padding: 0;
+        border: none;
       }
 
       .photo {
@@ -63,14 +83,16 @@
 </head>
 <body>
 
-  <h2>🖼️ Multi-Photo Print (Up to 45) on A4</h2>
+  <h2>🖼️ Multi-Photo Print with Quantity Input (max 45)</h2>
 
   <div class="controls">
-    <input type="file" id="photoUpload" accept="image/*" multiple>
+    <input type="file" id="photoUpload" accept="image/*" multiple />
     <select id="sizeSelect">
-      <option value="passport">Passport (35x45mm)</option>
-      <option value="small">Small (25x35mm)</option>
+      <option value="passport">Passport (35×45mm)</option>
+      <option value="small">Small (25×35mm)</option>
     </select>
+    <button onclick="preparePhotos()">Set Quantity</button>
+    <div class="photo-inputs" id="photoInputs"></div>
     <button onclick="generateLayout()">Generate Layout</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
@@ -78,35 +100,61 @@
   <div class="a4" id="printArea"></div>
 
   <script>
-    let uploadedImages = [];
-
-    const mmToPx = (mm) => mm * 3.78;
+    const mmToPx = mm => mm * 3.78;
+    let imageFiles = [];
 
     document.getElementById("photoUpload").addEventListener("change", function (event) {
-      uploadedImages = [];
-      const files = Array.from(event.target.files).slice(0, 45); // limit to 45
+      const files = Array.from(event.target.files).slice(0, 45);
+      imageFiles = files;
+      document.getElementById("photoInputs").innerHTML = '';
+    });
 
-      files.forEach(file => {
+    function preparePhotos() {
+      const inputContainer = document.getElementById("photoInputs");
+      inputContainer.innerHTML = '';
+
+      if (imageFiles.length === 0) {
+        alert("Please upload photos first.");
+        return;
+      }
+
+      imageFiles.forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = function (e) {
-          uploadedImages.push(e.target.result);
+          const row = document.createElement("div");
+          row.className = "photo-row";
+
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          img.width = 60;
+          img.height = 80;
+
+          const label = document.createElement("label");
+          label.textContent = `Copies: `;
+
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = 1;
+          input.max = 45;
+          input.value = 1;
+          input.dataset.index = index;
+
+          row.appendChild(img);
+          row.appendChild(label);
+          row.appendChild(input);
+          inputContainer.appendChild(row);
         };
         reader.readAsDataURL(file);
       });
-    });
+    }
 
     function generateLayout() {
       const printArea = document.getElementById("printArea");
       const selectedSize = document.getElementById("sizeSelect").value;
+      const inputContainer = document.getElementById("photoInputs");
 
       printArea.innerHTML = "";
 
-      if (uploadedImages.length === 0) {
-        alert("Please upload up to 45 images.");
-        return;
-      }
-
-      // Set size
       let widthMM = 35, heightMM = 45;
       if (selectedSize === "small") {
         widthMM = 25;
@@ -115,16 +163,46 @@
 
       const widthPx = mmToPx(widthMM);
       const heightPx = mmToPx(heightMM);
-      const totalPhotos = Math.min(uploadedImages.length, 45);
 
-      for (let i = 0; i < totalPhotos; i++) {
+      const inputs = inputContainer.querySelectorAll("input[type='number']");
+      let total = 0;
+      const imagesToPrint = [];
+
+      inputs.forEach(input => {
+        const count = parseInt(input.value) || 0;
+        const index = parseInt(input.dataset.index);
+        const file = imageFiles[index];
+
+        total += count;
+        if (total > 45) {
+          alert("Total photos must not exceed 45.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          for (let i = 0; i < count; i++) {
+            imagesToPrint.push(e.target.result);
+            if (imagesToPrint.length === total) {
+              layoutPhotos(imagesToPrint, widthPx, heightPx);
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function layoutPhotos(images, widthPx, heightPx) {
+      const printArea = document.getElementById("printArea");
+      printArea.innerHTML = "";
+      images.forEach(src => {
         const img = document.createElement("img");
-        img.src = uploadedImages[i];
+        img.src = src;
         img.className = "photo";
         img.width = widthPx;
         img.height = heightPx;
         printArea.appendChild(img);
-      }
+      });
     }
   </script>
 
