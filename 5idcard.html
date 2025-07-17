@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>10 ID Cards - Double-Sided A4 Print</title>
+  <title>Merged ID Card Printing (Front + Back)</title>
   <style>
     @page {
       size: A4;
@@ -13,7 +13,7 @@
       font-family: sans-serif;
       margin: 0;
       padding: 10mm;
-      background: #f0f0f0;
+      background: #f9f9f9;
     }
 
     .controls {
@@ -49,31 +49,29 @@
       margin-top: 5px;
     }
 
-    .id-card-container {
+    .card-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10mm;
     }
 
-    .id-card {
+    .merged-card {
       border: 1px solid #000;
       background: white;
-      padding: 5px;
-      box-sizing: border-box;
-      height: 250px;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 250px;
       overflow: hidden;
     }
 
-    .id-card img {
-      max-width: 100%;
-      max-height: 100%;
+    .merged-card img {
+      width: 50%;
+      height: 100%;
+      object-fit: contain;
+      border-right: 1px solid #000;
     }
 
-    .page-break {
-      page-break-before: always;
+    .merged-card img:last-child {
+      border-right: none;
     }
 
     @media print {
@@ -91,30 +89,21 @@
 <body>
 
   <div class="controls">
-    <button onclick="generateCards()">🧾 Generate Cards</button>
+    <button onclick="generateCards()">🧾 Generate Merged Cards</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
 
-  <div class="upload-group" id="uploadGroup">
-    <!-- Upload slots inserted here -->
-  </div>
+  <div class="upload-group" id="uploadGroup"></div>
 
-  <h2 style="text-align:center;">Front Side</h2>
-  <div class="id-card-container" id="frontContainer"></div>
-
-  <div class="page-break"></div>
-
-  <h2 style="text-align:center;">Back Side</h2>
-  <div class="id-card-container" id="backContainer"></div>
+  <div class="card-grid" id="mergedCardGrid"></div>
 
   <script>
     const uploadGroup = document.getElementById('uploadGroup');
-    const frontContainer = document.getElementById('frontContainer');
-    const backContainer = document.getElementById('backContainer');
-    const CARD_COUNT = 10;
+    const mergedCardGrid = document.getElementById('mergedCardGrid');
+    const MAX_CARDS = 5;
 
-    // Create 10 upload blocks
-    for (let i = 0; i < CARD_COUNT; i++) {
+    // Create 5 upload blocks
+    for (let i = 0; i < MAX_CARDS; i++) {
       const block = document.createElement('div');
       block.className = 'upload-item';
 
@@ -132,10 +121,9 @@
     }
 
     function generateCards() {
-      frontContainer.innerHTML = '';
-      backContainer.innerHTML = '';
+      mergedCardGrid.innerHTML = '';
 
-      for (let i = 0; i < CARD_COUNT; i++) {
+      for (let i = 0; i < MAX_CARDS; i++) {
         const frontInput = document.getElementById(`front${i}`);
         const backInput = document.getElementById(`back${i}`);
         const copies = parseInt(document.getElementById(`copies${i}`).value);
@@ -149,21 +137,19 @@
         const backReader = new FileReader();
 
         frontReader.onload = function (eventFront) {
-          const frontImgSrc = eventFront.target.result;
+          const frontSrc = eventFront.target.result;
 
           backReader.onload = function (eventBack) {
-            const backImgSrc = eventBack.target.result;
+            const backSrc = eventBack.target.result;
 
             for (let j = 0; j < copies; j++) {
-              const frontCard = document.createElement('div');
-              frontCard.className = 'id-card';
-              frontCard.innerHTML = `<img src="${frontImgSrc}" alt="Front ${i + 1}">`;
-              frontContainer.appendChild(frontCard);
-
-              const backCard = document.createElement('div');
-              backCard.className = 'id-card';
-              backCard.innerHTML = `<img src="${backImgSrc}" alt="Back ${i + 1}">`;
-              backContainer.appendChild(backCard);
+              const cardDiv = document.createElement('div');
+              cardDiv.className = 'merged-card';
+              cardDiv.innerHTML = `
+                <img src="${frontSrc}" alt="Front ${i + 1}">
+                <img src="${backSrc}" alt="Back ${i + 1}">
+              `;
+              mergedCardGrid.appendChild(cardDiv);
             }
           };
 
