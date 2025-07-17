@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ID Card Print (Landscape 8.5x5.5)</title>
+  <title>5 ID Card Print (8.5×5.5cm Landscape)</title>
   <style>
     @page {
       size: A4 portrait;
@@ -23,8 +23,8 @@
 
     .controls button {
       padding: 10px 20px;
-      margin: 5px;
       font-size: 16px;
+      margin: 5px;
       cursor: pointer;
     }
 
@@ -41,20 +41,20 @@
       border: 1px dashed #aaa;
       padding: 10px;
       width: 250px;
+      font-size: 14px;
     }
 
     .upload-item label {
       display: block;
-      margin-top: 6px;
-      font-size: 14px;
+      margin-top: 8px;
     }
 
     .upload-item input[type="file"],
     .upload-item input[type="number"] {
       width: 100%;
       padding: 5px;
-      margin-top: 2px;
       font-size: 14px;
+      margin-top: 3px;
     }
 
     .card-list {
@@ -66,8 +66,8 @@
     .merged-card {
       width: 8.5cm;
       height: 5.5cm;
-      border: 1px solid #000;
       display: flex;
+      border: 1px solid #000;
       background: #fff;
       page-break-inside: avoid;
     }
@@ -85,7 +85,7 @@
 
     @media print {
       body {
-        background: white;
+        background: #fff;
       }
 
       .controls,
@@ -115,7 +115,7 @@
     const uploadGroup = document.getElementById('uploadGroup');
     const cardList = document.getElementById('cardList');
 
-    // Create upload UI for 5 cards
+    // Generate upload blocks
     for (let i = 0; i < MAX_CARDS; i++) {
       const div = document.createElement('div');
       div.className = 'upload-item';
