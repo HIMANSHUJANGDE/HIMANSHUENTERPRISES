@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>ID Card JPG Upload & Print</title>
+  <meta charset="UTF-8">
+  <title>ID Card JPG Upload + Copies + Print</title>
   <style>
     @page {
       size: A4;
@@ -24,8 +24,29 @@
     .controls input,
     .controls button {
       padding: 10px;
-      font-size: 16px;
+      font-size: 14px;
       margin: 5px;
+    }
+
+    .upload-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .upload-item {
+      background: #fff;
+      border: 1px dashed #aaa;
+      padding: 10px;
+      width: 200px;
+    }
+
+    .upload-item label {
+      display: block;
+      font-size: 14px;
+      margin-top: 5px;
     }
 
     .id-card-container {
@@ -35,14 +56,14 @@
     }
 
     .id-card {
-      background: white;
       border: 1px solid #000;
-      box-sizing: border-box;
+      background: white;
       padding: 5px;
+      box-sizing: border-box;
+      height: 250px;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 250px;
       overflow: hidden;
     }
 
@@ -52,9 +73,11 @@
     }
 
     @media print {
-      .controls {
+      .controls,
+      .upload-group {
         display: none;
       }
+
       body {
         background: white;
       }
@@ -64,37 +87,62 @@
 <body>
 
   <div class="controls">
-    <input type="file" id="imageUpload" multiple accept="image/jpeg, image/jpg" />
-    <button onclick="window.print()">🖨️ Print ID Cards</button>
+    <button onclick="generateCards()">🧾 Generate Cards</button>
+    <button onclick="window.print()">🖨️ Print</button>
+  </div>
+
+  <div class="upload-group" id="uploadGroup">
+    <!-- 5 upload blocks -->
   </div>
 
   <div class="id-card-container" id="cardContainer"></div>
 
   <script>
-    const uploadInput = document.getElementById('imageUpload');
+    const uploadGroup = document.getElementById('uploadGroup');
     const cardContainer = document.getElementById('cardContainer');
 
-    uploadInput.addEventListener('change', function (e) {
-      const files = Array.from(e.target.files);
-      cardContainer.innerHTML = ''; // Clear previous cards
+    for (let i = 0; i < 5; i++) {
+      const block = document.createElement('div');
+      block.className = 'upload-item';
 
-      files.forEach((file, index) => {
-        if (!file.type.startsWith('image/')) return;
+      block.innerHTML = `
+        <label>Upload Card ${i + 1}:</label>
+        <input type="file" accept="image/jpeg" id="file${i}" />
+        <label>Copies (pcs):</label>
+        <input type="number" id="copies${i}" value="1" min="1" max="20" />
+      `;
+
+      uploadGroup.appendChild(block);
+    }
+
+    function generateCards() {
+      cardContainer.innerHTML = ''; // Clear previous
+
+      for (let i = 0; i < 5; i++) {
+        const fileInput = document.getElementById(`file${i}`);
+        const copiesInput = document.getElementById(`copies${i}`);
+
+        const file = fileInput.files[0];
+        const copies = parseInt(copiesInput.value);
+
+        if (!file || isNaN(copies) || copies < 1) continue;
 
         const reader = new FileReader();
         reader.onload = function (event) {
-          const img = document.createElement('img');
-          img.src = event.target.result;
+          for (let j = 0; j < copies; j++) {
+            const card = document.createElement('div');
+            card.className = 'id-card';
 
-          const card = document.createElement('div');
-          card.className = 'id-card';
-          card.appendChild(img);
+            const img = document.createElement('img');
+            img.src = event.target.result;
 
-          cardContainer.appendChild(card);
+            card.appendChild(img);
+            cardContainer.appendChild(card);
+          }
         };
         reader.readAsDataURL(file);
-      });
-    });
+      }
+    }
   </script>
 
 </body>
