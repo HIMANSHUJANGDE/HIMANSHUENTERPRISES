@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Multi-Photo Print (45 pcs max)</title>
+  <title>Advanced Photo Print (AIO)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,14 +15,7 @@
       margin-bottom: 20px;
     }
 
-    input[type="number"] {
-      width: 60px;
-      padding: 4px;
-      margin-left: 10px;
-    }
-
     .photo-inputs {
-      margin-top: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -33,6 +26,11 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    input[type="number"], select {
+      padding: 4px;
     }
 
     .a4 {
@@ -40,7 +38,7 @@
       height: 297mm;
       background: white;
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
-      margin: auto;
+      margin: 20px auto;
       padding: 10mm;
       box-sizing: border-box;
       display: flex;
@@ -55,13 +53,13 @@
       padding: 1mm;
       background: #fff;
       box-sizing: border-box;
+      object-fit: cover;
     }
 
     @media print {
       body {
-        margin: 0;
         background: none;
-        padding: 0;
+        margin: 0;
       }
 
       .controls {
@@ -71,7 +69,6 @@
       .a4 {
         box-shadow: none;
         padding: 0;
-        border: none;
       }
 
       .photo {
@@ -83,16 +80,27 @@
 </head>
 <body>
 
-  <h2>🖼️ Multi-Photo Print with Quantity Input (max 45)</h2>
+  <h2>🖼️ Print Up to 45 Photos on A4 (Portrait or Landscape)</h2>
 
   <div class="controls">
-    <input type="file" id="photoUpload" accept="image/*" multiple />
+    <input type="file" id="photoUpload" accept="image/*" multiple><br><br>
+
+    <label>Photo Size:</label>
     <select id="sizeSelect">
-      <option value="passport">Passport (35×45mm)</option>
-      <option value="small">Small (25×35mm)</option>
+      <option value="passport">Passport (35x45mm)</option>
+      <option value="small">Small (25x35mm)</option>
     </select>
-    <button onclick="preparePhotos()">Set Quantity</button>
+
+    <label>Orientation:</label>
+    <select id="orientationSelect">
+      <option value="portrait">Portrait</option>
+      <option value="landscape">Landscape</option>
+    </select>
+
+    <button onclick="preparePhotos()">Set Copies</button>
+
     <div class="photo-inputs" id="photoInputs"></div>
+
     <button onclick="generateLayout()">Generate Layout</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
@@ -104,8 +112,7 @@
     let imageFiles = [];
 
     document.getElementById("photoUpload").addEventListener("change", function (event) {
-      const files = Array.from(event.target.files).slice(0, 45);
-      imageFiles = files;
+      imageFiles = Array.from(event.target.files).slice(0, 45); // max 45 files
       document.getElementById("photoInputs").innerHTML = '';
     });
 
@@ -127,7 +134,8 @@
           const img = document.createElement("img");
           img.src = e.target.result;
           img.width = 60;
-          img.height = 80;
+          img.height = 60;
+          img.style.objectFit = 'cover';
 
           const label = document.createElement("label");
           label.textContent = `Copies: `;
@@ -151,14 +159,21 @@
     function generateLayout() {
       const printArea = document.getElementById("printArea");
       const selectedSize = document.getElementById("sizeSelect").value;
+      const orientation = document.getElementById("orientationSelect").value;
       const inputContainer = document.getElementById("photoInputs");
 
       printArea.innerHTML = "";
 
+      // Size
       let widthMM = 35, heightMM = 45;
       if (selectedSize === "small") {
         widthMM = 25;
         heightMM = 35;
+      }
+
+      // Swap for landscape
+      if (orientation === "landscape") {
+        [widthMM, heightMM] = [heightMM, widthMM];
       }
 
       const widthPx = mmToPx(widthMM);
@@ -175,7 +190,7 @@
 
         total += count;
         if (total > 45) {
-          alert("Total photos must not exceed 45.");
+          alert("Total photo count exceeds 45.");
           return;
         }
 
