@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Double-Sided ID Card Printer</title>
+  <title>10 ID Cards - Double-Sided A4 Print</title>
   <style>
     @page {
       size: A4;
@@ -23,7 +23,7 @@
 
     .controls input,
     .controls button {
-      padding: 10px;
+      padding: 8px;
       font-size: 14px;
       margin: 5px;
     }
@@ -40,12 +40,12 @@
       background: #fff;
       border: 1px dashed #aaa;
       padding: 10px;
-      width: 220px;
+      width: 240px;
     }
 
     .upload-item label {
       display: block;
-      font-size: 14px;
+      font-size: 13px;
       margin-top: 5px;
     }
 
@@ -91,12 +91,12 @@
 <body>
 
   <div class="controls">
-    <button onclick="generateCards()">🧾 Generate Double-Sided Cards</button>
+    <button onclick="generateCards()">🧾 Generate Cards</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
 
   <div class="upload-group" id="uploadGroup">
-    <!-- 5 card upload slots -->
+    <!-- Upload slots inserted here -->
   </div>
 
   <h2 style="text-align:center;">Front Side</h2>
@@ -111,9 +111,10 @@
     const uploadGroup = document.getElementById('uploadGroup');
     const frontContainer = document.getElementById('frontContainer');
     const backContainer = document.getElementById('backContainer');
+    const CARD_COUNT = 10;
 
-    // Create 5 upload blocks
-    for (let i = 0; i < 5; i++) {
+    // Create 10 upload blocks
+    for (let i = 0; i < CARD_COUNT; i++) {
       const block = document.createElement('div');
       block.className = 'upload-item';
 
@@ -124,7 +125,7 @@
         <label>Back JPG:</label>
         <input type="file" accept="image/jpeg" id="back${i}" />
         <label>Copies (pcs):</label>
-        <input type="number" id="copies${i}" value="1" min="1" max="20" />
+        <input type="number" id="copies${i}" value="1" min="1" max="50" />
       `;
 
       uploadGroup.appendChild(block);
@@ -134,7 +135,7 @@
       frontContainer.innerHTML = '';
       backContainer.innerHTML = '';
 
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < CARD_COUNT; i++) {
         const frontInput = document.getElementById(`front${i}`);
         const backInput = document.getElementById(`back${i}`);
         const copies = parseInt(document.getElementById(`copies${i}`).value);
@@ -156,12 +157,12 @@
             for (let j = 0; j < copies; j++) {
               const frontCard = document.createElement('div');
               frontCard.className = 'id-card';
-              frontCard.innerHTML = `<img src="${frontImgSrc}" alt="Front">`;
+              frontCard.innerHTML = `<img src="${frontImgSrc}" alt="Front ${i + 1}">`;
               frontContainer.appendChild(frontCard);
 
               const backCard = document.createElement('div');
               backCard.className = 'id-card';
-              backCard.innerHTML = `<img src="${backImgSrc}" alt="Back">`;
+              backCard.innerHTML = `<img src="${backImgSrc}" alt="Back ${i + 1}">`;
               backContainer.appendChild(backCard);
             }
           };
