@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Advanced Photo Print (AIO)</title>
+  <title>Passport/Small Photo Print - 45 AIO</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      background: #f4f4f4;
       padding: 20px;
       text-align: center;
     }
@@ -26,7 +26,10 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 5px;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
     }
 
     input[type="number"], select {
@@ -37,8 +40,8 @@
       width: 210mm;
       height: 297mm;
       background: white;
-      box-shadow: 0 0 5px rgba(0,0,0,0.3);
       margin: 20px auto;
+      box-shadow: 0 0 6px rgba(0,0,0,0.2);
       padding: 10mm;
       box-sizing: border-box;
       display: flex;
@@ -51,15 +54,15 @@
     .photo {
       border: 0.2mm dashed #888;
       padding: 1mm;
-      background: #fff;
       box-sizing: border-box;
+      background: #fff;
       object-fit: cover;
     }
 
     @media print {
       body {
-        background: none;
         margin: 0;
+        background: none;
       }
 
       .controls {
@@ -80,7 +83,7 @@
 </head>
 <body>
 
-  <h2>🖼️ Print Up to 45 Photos on A4 (Portrait or Landscape)</h2>
+  <h2>🖨️ Photo Printing on A4 (up to 45 pcs)</h2>
 
   <div class="controls">
     <input type="file" id="photoUpload" accept="image/*" multiple><br><br>
@@ -91,17 +94,11 @@
       <option value="small">Small (25x35mm)</option>
     </select>
 
-    <label>Orientation:</label>
-    <select id="orientationSelect">
-      <option value="portrait">Portrait</option>
-      <option value="landscape">Landscape</option>
-    </select>
-
-    <button onclick="preparePhotos()">Set Copies</button>
+    <button onclick="preparePhotos()">Set Copies + Orientation</button>
 
     <div class="photo-inputs" id="photoInputs"></div>
 
-    <button onclick="generateLayout()">Generate Layout</button>
+    <button onclick="generateLayout()">🧱 Generate Layout</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
 
@@ -112,7 +109,7 @@
     let imageFiles = [];
 
     document.getElementById("photoUpload").addEventListener("change", function (event) {
-      imageFiles = Array.from(event.target.files).slice(0, 45); // max 45 files
+      imageFiles = Array.from(event.target.files).slice(0, 45);
       document.getElementById("photoInputs").innerHTML = '';
     });
 
@@ -121,7 +118,7 @@
       inputContainer.innerHTML = '';
 
       if (imageFiles.length === 0) {
-        alert("Please upload photos first.");
+        alert("Please upload at least one photo.");
         return;
       }
 
@@ -137,19 +134,35 @@
           img.height = 60;
           img.style.objectFit = 'cover';
 
-          const label = document.createElement("label");
-          label.textContent = `Copies: `;
+          const pcsLabel = document.createElement("label");
+          pcsLabel.textContent = "Copies:";
 
-          const input = document.createElement("input");
-          input.type = "number";
-          input.min = 1;
-          input.max = 45;
-          input.value = 1;
-          input.dataset.index = index;
+          const pcsInput = document.createElement("input");
+          pcsInput.type = "number";
+          pcsInput.min = 1;
+          pcsInput.max = 45;
+          pcsInput.value = 1;
+          pcsInput.dataset.index = index;
+
+          const orientLabel = document.createElement("label");
+          orientLabel.textContent = "Orientation:";
+
+          const orientSelect = document.createElement("select");
+          orientSelect.dataset.index = index;
+          const optP = document.createElement("option");
+          optP.value = "portrait";
+          optP.text = "Portrait";
+          const optL = document.createElement("option");
+          optL.value = "landscape";
+          optL.text = "Landscape";
+          orientSelect.appendChild(optP);
+          orientSelect.appendChild(optL);
 
           row.appendChild(img);
-          row.appendChild(label);
-          row.appendChild(input);
+          row.appendChild(pcsLabel);
+          row.appendChild(pcsInput);
+          row.appendChild(orientLabel);
+          row.appendChild(orientSelect);
           inputContainer.appendChild(row);
         };
         reader.readAsDataURL(file);
@@ -159,63 +172,67 @@
     function generateLayout() {
       const printArea = document.getElementById("printArea");
       const selectedSize = document.getElementById("sizeSelect").value;
-      const orientation = document.getElementById("orientationSelect").value;
       const inputContainer = document.getElementById("photoInputs");
 
       printArea.innerHTML = "";
 
-      // Size
-      let widthMM = 35, heightMM = 45;
+      let baseWidth = 35, baseHeight = 45;
       if (selectedSize === "small") {
-        widthMM = 25;
-        heightMM = 35;
+        baseWidth = 25;
+        baseHeight = 35;
       }
-
-      // Swap for landscape
-      if (orientation === "landscape") {
-        [widthMM, heightMM] = [heightMM, widthMM];
-      }
-
-      const widthPx = mmToPx(widthMM);
-      const heightPx = mmToPx(heightMM);
 
       const inputs = inputContainer.querySelectorAll("input[type='number']");
+      const orientationInputs = inputContainer.querySelectorAll("select");
+
       let total = 0;
-      const imagesToPrint = [];
+      const photoQueue = [];
 
-      inputs.forEach(input => {
-        const count = parseInt(input.value) || 0;
-        const index = parseInt(input.dataset.index);
-        const file = imageFiles[index];
+      inputs.forEach((pcsInput, i) => {
+        const count = parseInt(pcsInput.value) || 0;
+        const index = parseInt(pcsInput.dataset.index);
+        const orientation = orientationInputs[i].value;
 
-        total += count;
-        if (total > 45) {
-          alert("Total photo count exceeds 45.");
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          for (let i = 0; i < count; i++) {
-            imagesToPrint.push(e.target.result);
-            if (imagesToPrint.length === total) {
-              layoutPhotos(imagesToPrint, widthPx, heightPx);
-            }
+        if (count > 0 && imageFiles[index]) {
+          total += count;
+          if (total > 45) {
+            alert("Maximum total photo count is 45.");
+            return;
           }
-        };
-        reader.readAsDataURL(file);
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            for (let j = 0; j < count; j++) {
+              photoQueue.push({
+                src: e.target.result,
+                orientation: orientation
+              });
+
+              if (photoQueue.length === total) {
+                layoutPhotos(photoQueue, baseWidth, baseHeight);
+              }
+            }
+          };
+          reader.readAsDataURL(imageFiles[index]);
+        }
       });
     }
 
-    function layoutPhotos(images, widthPx, heightPx) {
+    function layoutPhotos(images, widthMM, heightMM) {
       const printArea = document.getElementById("printArea");
       printArea.innerHTML = "";
-      images.forEach(src => {
+
+      images.forEach(photo => {
         const img = document.createElement("img");
-        img.src = src;
+        img.src = photo.src;
         img.className = "photo";
-        img.width = widthPx;
-        img.height = heightPx;
+
+        const w = photo.orientation === 'landscape' ? heightMM : widthMM;
+        const h = photo.orientation === 'landscape' ? widthMM : heightMM;
+
+        img.width = mmToPx(w);
+        img.height = mmToPx(h);
+
         printArea.appendChild(img);
       });
     }
