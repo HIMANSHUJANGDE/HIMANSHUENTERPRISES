@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Aadhaar Card Size Print</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5 ID Card Merge Printing System</title>
   <style>
     @page {
       size: A4;
@@ -49,6 +50,119 @@
       margin-top: 5px;
     }
 
-    .card-grid {
-      display: grid;
-      grid-
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10mm;
+    }
+
+    .merged-card {
+      width: 1016px; /* Aadhaar card width (8.6 cm = 1016px at 300 DPI) */
+      height: 638px; /* Aadhaar card height (5.4 cm = 638px at 300 DPI) */
+      border: 1px solid #000;
+      background: white;
+      display: flex;
+      flex-direction: row; /* Merge front and back side by side */
+      overflow: hidden;
+    }
+
+    .merged-card img {
+      width: 50%;
+      height: 100%;
+      object-fit: cover;
+      border-right: 1px solid #000;
+    }
+
+    .merged-card img:last-child {
+      border-right: none;
+    }
+
+    @media print {
+      .controls,
+      .upload-group {
+        display: none;
+      }
+
+      body {
+        background: white;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <button onclick="generateCards()">🧾 Generate Merged Cards</button>
+    <button onclick="window.print()">🖨️ Print</button>
+  </div>
+
+  <div class="upload-group" id="uploadGroup"></div>
+
+  <div class="card-list" id="mergedCardList"></div>
+
+  <script>
+    const uploadGroup = document.getElementById('uploadGroup');
+    const mergedCardList = document.getElementById('mergedCardList');
+    const MAX_CARDS = 5;
+
+    // Create upload inputs for 5 cards
+    for (let i = 0; i < MAX_CARDS; i++) {
+      const block = document.createElement('div');
+      block.className = 'upload-item';
+
+      block.innerHTML = `
+        <label><strong>Card ${i + 1}</strong></label>
+        <label>Front JPG:</label>
+        <input type="file" accept="image/jpeg" id="front${i}" />
+        <label>Back JPG:</label>
+        <input type="file" accept="image/jpeg" id="back${i}" />
+        <label>Copies (pcs):</label>
+        <input type="number" id="copies${i}" value="1" min="1" max="50" />
+      `;
+
+      uploadGroup.appendChild(block);
+    }
+
+    function generateCards() {
+      mergedCardList.innerHTML = '';
+
+      for (let i = 0; i < MAX_CARDS; i++) {
+        const frontInput = document.getElementById(`front${i}`);
+        const backInput = document.getElementById(`back${i}`);
+        const copies = parseInt(document.getElementById(`copies${i}`).value);
+
+        const frontFile = frontInput.files[0];
+        const backFile = backInput.files[0];
+
+        if (!frontFile || !backFile || isNaN(copies) || copies < 1) continue;
+
+        const frontReader = new FileReader();
+        const backReader = new FileReader();
+
+        frontReader.onload = function (eventFront) {
+          const frontSrc = eventFront.target.result;
+
+          backReader.onload = function (eventBack) {
+            const backSrc = eventBack.target.result;
+
+            for (let j = 0; j < copies; j++) {
+              const cardDiv = document.createElement('div');
+              cardDiv.className = 'merged-card';
+              cardDiv.innerHTML = `
+                <img src="${frontSrc}" alt="Front ${i + 1}">
+                <img src="${backSrc}" alt="Back ${i + 1}">
+              `;
+              mergedCardList.appendChild(cardDiv);
+            }
+          };
+
+          backReader.readAsDataURL(backFile);
+        };
+
+        frontReader.readAsDataURL(frontFile);
+      }
+    }
+  </script>
+
+</body>
+</html>
