@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ID Card Print System - Landscape</title>
+  <meta charset="UTF-8" />
+  <title>5 ID Card Print (Landscape)</title>
   <style>
     @page {
       size: A4 portrait;
@@ -10,7 +10,7 @@
     }
 
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 10mm;
       background: #f0f0f0;
@@ -23,8 +23,9 @@
 
     .controls button {
       padding: 10px 20px;
+      margin: 5px;
       font-size: 16px;
-      margin: 0 10px;
+      cursor: pointer;
     }
 
     .upload-group {
@@ -37,15 +38,23 @@
 
     .upload-item {
       background: #fff;
-      border: 1px dashed #999;
+      border: 1px dashed #aaa;
       padding: 10px;
-      width: 240px;
-      font-size: 14px;
+      width: 250px;
     }
 
     .upload-item label {
       display: block;
-      margin: 6px 0 2px;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    .upload-item input[type="file"],
+    .upload-item input[type="number"] {
+      width: 100%;
+      padding: 5px;
+      margin-top: 2px;
+      font-size: 14px;
     }
 
     .card-list {
@@ -58,9 +67,9 @@
       width: 8.6cm;
       height: 5.4cm;
       border: 1px solid #000;
-      background: #fff;
       display: flex;
-      overflow: hidden;
+      background: #fff;
+      page-break-inside: avoid;
     }
 
     .merged-card img {
@@ -75,13 +84,17 @@
     }
 
     @media print {
+      body {
+        background: white;
+      }
+
       .controls,
       .upload-group {
         display: none;
       }
 
-      body {
-        background: white;
+      .merged-card {
+        page-break-inside: avoid;
       }
     }
   </style>
@@ -89,20 +102,20 @@
 <body>
 
   <div class="controls">
-    <button onclick="generateCards()">Generate Cards</button>
-    <button onclick="window.print()">Print</button>
+    <button onclick="generateCards()">🖼️ Generate Cards</button>
+    <button onclick="window.print()">🖨️ Print</button>
   </div>
 
   <div class="upload-group" id="uploadGroup"></div>
 
-  <div class="card-list" id="mergedCardList"></div>
+  <div class="card-list" id="cardList"></div>
 
   <script>
     const MAX_CARDS = 5;
     const uploadGroup = document.getElementById('uploadGroup');
-    const mergedCardList = document.getElementById('mergedCardList');
+    const cardList = document.getElementById('cardList');
 
-    // Create upload fields
+    // Create upload blocks
     for (let i = 0; i < MAX_CARDS; i++) {
       const div = document.createElement('div');
       div.className = 'upload-item';
@@ -119,17 +132,14 @@
     }
 
     function generateCards() {
-      mergedCardList.innerHTML = '';
+      cardList.innerHTML = '';
 
       for (let i = 0; i < MAX_CARDS; i++) {
         const frontInput = document.getElementById(`front${i}`);
         const backInput = document.getElementById(`back${i}`);
         const copies = parseInt(document.getElementById(`copies${i}`).value);
 
-        const frontFile = frontInput.files[0];
-        const backFile = backInput.files[0];
-
-        if (!frontFile || !backFile || isNaN(copies) || copies < 1) continue;
+        if (!frontInput.files[0] || !backInput.files[0] || isNaN(copies) || copies < 1) continue;
 
         const frontReader = new FileReader();
         const backReader = new FileReader();
@@ -144,17 +154,17 @@
               const card = document.createElement('div');
               card.className = 'merged-card';
               card.innerHTML = `
-                <img src="${frontSrc}" alt="Front ${i + 1}">
-                <img src="${backSrc}" alt="Back ${i + 1}">
+                <img src="${frontSrc}" alt="Front">
+                <img src="${backSrc}" alt="Back">
               `;
-              mergedCardList.appendChild(card);
+              cardList.appendChild(card);
             }
           };
 
-          backReader.readAsDataURL(backFile);
+          backReader.readAsDataURL(backInput.files[0]);
         };
 
-        frontReader.readAsDataURL(frontFile);
+        frontReader.readAsDataURL(frontInput.files[0]);
       }
     }
   </script>
