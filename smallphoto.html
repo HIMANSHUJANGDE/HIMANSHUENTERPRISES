@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Photo Print AIO (45 Max)</title>
+  <title>Landscape Photo Print - AIO</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f0f0;
+      background: #f5f5f5;
       padding: 20px;
       text-align: center;
     }
@@ -21,10 +21,11 @@
       align-items: center;
       gap: 10px;
       max-height: 300px;
-      overflow: auto;
-      padding: 10px;
-      background: #fff;
+      overflow-y: auto;
+      margin-top: 10px;
       border: 1px solid #ccc;
+      background: #fff;
+      padding: 10px;
     }
 
     .photo-row {
@@ -32,19 +33,20 @@
       align-items: center;
       gap: 10px;
       background: #fafafa;
-      padding: 8px 12px;
-      border-radius: 5px;
-      box-shadow: 0 0 3px rgba(0,0,0,0.1);
+      padding: 10px;
+      border-radius: 6px;
+      width: 90%;
     }
 
-    input[type="number"], select {
-      padding: 4px;
+    input[type="number"] {
+      width: 60px;
     }
 
-    .a4 {
-      width: 210mm;
-      height: 297mm;
+    .a4-landscape {
+      width: 297mm;
+      height: 210mm;
       background: white;
+      margin: 20px auto;
       box-shadow: 0 0 6px rgba(0,0,0,0.2);
       padding: 10mm;
       box-sizing: border-box;
@@ -53,11 +55,10 @@
       gap: 3mm;
       justify-content: flex-start;
       align-content: flex-start;
-      margin: auto;
     }
 
     .photo {
-      border: 0.2mm solid #ccc;
+      border: 0.2mm solid #888;
       padding: 1mm;
       background: #fff;
       object-fit: cover;
@@ -67,7 +68,6 @@
     @media print {
       body {
         margin: 0;
-        padding: 0;
         background: none;
       }
 
@@ -75,9 +75,10 @@
         display: none;
       }
 
-      .a4 {
+      .a4-landscape {
         box-shadow: none;
         padding: 0;
+        margin: 0;
       }
 
       .photo {
@@ -89,7 +90,7 @@
 </head>
 <body>
 
-  <h2>🖼️ A4 Photo Print Tool (Max 45 Photos)</h2>
+  <h2>🖨️ Print Photos (Landscape Layout on A4)</h2>
 
   <div class="controls">
     <input type="file" id="photoUpload" accept="image/*" multiple><br><br>
@@ -100,31 +101,30 @@
       <option value="small">Small (25x35mm)</option>
     </select>
 
-    <button onclick="preparePhotos()">📝 Set Copies & Orientation</button>
-
+    <button onclick="preparePhotos()">Set Copies</button>
     <div class="photo-inputs" id="photoInputs"></div>
-
+    <br>
     <button onclick="generateLayout()">📄 Generate Layout</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
 
-  <div class="a4" id="printArea"></div>
+  <div class="a4-landscape" id="printArea"></div>
 
   <script>
     const mmToPx = mm => mm * 3.78;
     let imageFiles = [];
 
     document.getElementById("photoUpload").addEventListener("change", function () {
-      imageFiles = Array.from(this.files).slice(0, 45);
+      imageFiles = Array.from(this.files).slice(0, 45); // max 45 files
       document.getElementById("photoInputs").innerHTML = '';
     });
 
     function preparePhotos() {
-      const container = document.getElementById("photoInputs");
-      container.innerHTML = '';
+      const inputContainer = document.getElementById("photoInputs");
+      inputContainer.innerHTML = '';
 
       if (imageFiles.length === 0) {
-        alert("Please upload photos first.");
+        alert("Please upload at least one photo.");
         return;
       }
 
@@ -137,28 +137,23 @@
           const img = document.createElement("img");
           img.src = e.target.result;
           img.width = 60;
-          img.height = 60;
+          img.height = 45;
+          img.style.objectFit = "cover";
 
-          const pcsInput = document.createElement("input");
-          pcsInput.type = "number";
-          pcsInput.min = 1;
-          pcsInput.max = 45;
-          pcsInput.value = 1;
-          pcsInput.dataset.index = index;
+          const label = document.createElement("label");
+          label.textContent = "Copies:";
 
-          const orientSelect = document.createElement("select");
-          orientSelect.dataset.index = index;
-          orientSelect.innerHTML = `
-            <option value="portrait">Portrait</option>
-            <option value="landscape">Landscape</option>
-          `;
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = 1;
+          input.max = 45;
+          input.value = 1;
+          input.dataset.index = index;
 
           row.appendChild(img);
-          row.appendChild(document.createTextNode("Copies:"));
-          row.appendChild(pcsInput);
-          row.appendChild(document.createTextNode("Orientation:"));
-          row.appendChild(orientSelect);
-          container.appendChild(row);
+          row.appendChild(label);
+          row.appendChild(input);
+          inputContainer.appendChild(row);
         };
         reader.readAsDataURL(file);
       });
@@ -166,65 +161,55 @@
 
     function generateLayout() {
       const printArea = document.getElementById("printArea");
-      printArea.innerHTML = "";
+      printArea.innerHTML = '';
 
       const size = document.getElementById("sizeSelect").value;
-      let wMM = size === "passport" ? 35 : 25;
-      let hMM = size === "passport" ? 45 : 35;
+      let widthMM = size === "passport" ? 45 : 35;
+      let heightMM = size === "passport" ? 35 : 25; // rotated for landscape
 
-      const photoRows = document.querySelectorAll(".photo-row");
-      const totalPhotos = [];
+      const photoInputs = document.querySelectorAll(".photo-row input[type='number']");
+      let total = 0;
+      const photoQueue = [];
 
-      let totalCount = 0;
-
-      photoRows.forEach(row => {
-        const pcs = parseInt(row.querySelector("input[type='number']").value) || 0;
-        const orient = row.querySelector("select").value;
-        const index = parseInt(row.querySelector("input[type='number']").dataset.index);
+      photoInputs.forEach(input => {
+        const count = parseInt(input.value) || 0;
+        const index = parseInt(input.dataset.index);
         const file = imageFiles[index];
 
-        if (totalCount + pcs > 45) {
-          alert("Total photo count must not exceed 45.");
+        if (total + count > 45) {
+          alert("Total photo count exceeds 45. Please adjust.");
           return;
         }
 
         const reader = new FileReader();
         reader.onload = function (e) {
-          for (let i = 0; i < pcs; i++) {
-            totalPhotos.push({
-              src: e.target.result,
-              orientation: orient
-            });
-
-            if (totalPhotos.length === (totalCount + pcs)) {
-              if (totalPhotos.length === photoRows.length * pcs || totalPhotos.length === 45) {
-                layoutPhotos(totalPhotos, wMM, hMM);
-              }
+          for (let i = 0; i < count; i++) {
+            photoQueue.push(e.target.result);
+            if (photoQueue.length === total + count) {
+              layoutPhotos(photoQueue, widthMM, heightMM);
             }
           }
         };
         reader.readAsDataURL(file);
 
-        totalCount += pcs;
+        total += count;
       });
     }
 
-    function layoutPhotos(images, wMM, hMM) {
-      const area = document.getElementById("printArea");
-      area.innerHTML = "";
+    function layoutPhotos(images, widthMM, heightMM) {
+      const printArea = document.getElementById("printArea");
+      printArea.innerHTML = '';
 
-      images.forEach(photo => {
+      const widthPx = mmToPx(widthMM);
+      const heightPx = mmToPx(heightMM);
+
+      images.forEach(src => {
         const img = document.createElement("img");
-        img.src = photo.src;
+        img.src = src;
         img.className = "photo";
-
-        const width = photo.orientation === "landscape" ? hMM : wMM;
-        const height = photo.orientation === "landscape" ? wMM : hMM;
-
-        img.width = mmToPx(width);
-        img.height = mmToPx(height);
-
-        area.appendChild(img);
+        img.width = widthPx;
+        img.height = heightPx;
+        printArea.appendChild(img);
       });
     }
   </script>
