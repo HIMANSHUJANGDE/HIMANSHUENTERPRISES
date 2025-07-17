@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Passport/Small Photo Print - 45 AIO</title>
+  <title>Photo Print AIO (45 Max)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: #f0f0f0;
       padding: 20px;
       text-align: center;
     }
@@ -20,16 +20,21 @@
       flex-direction: column;
       align-items: center;
       gap: 10px;
+      max-height: 300px;
+      overflow: auto;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
     }
 
     .photo-row {
       display: flex;
       align-items: center;
       gap: 10px;
-      background: #fff;
+      background: #fafafa;
       padding: 8px 12px;
-      border-radius: 6px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      border-radius: 5px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.1);
     }
 
     input[type="number"], select {
@@ -40,7 +45,6 @@
       width: 210mm;
       height: 297mm;
       background: white;
-      margin: 20px auto;
       box-shadow: 0 0 6px rgba(0,0,0,0.2);
       padding: 10mm;
       box-sizing: border-box;
@@ -49,19 +53,21 @@
       gap: 3mm;
       justify-content: flex-start;
       align-content: flex-start;
+      margin: auto;
     }
 
     .photo {
-      border: 0.2mm dashed #888;
+      border: 0.2mm solid #ccc;
       padding: 1mm;
-      box-sizing: border-box;
       background: #fff;
       object-fit: cover;
+      box-sizing: border-box;
     }
 
     @media print {
       body {
         margin: 0;
+        padding: 0;
         background: none;
       }
 
@@ -83,7 +89,7 @@
 </head>
 <body>
 
-  <h2>🖨️ Photo Printing on A4 (up to 45 pcs)</h2>
+  <h2>🖼️ A4 Photo Print Tool (Max 45 Photos)</h2>
 
   <div class="controls">
     <input type="file" id="photoUpload" accept="image/*" multiple><br><br>
@@ -94,11 +100,11 @@
       <option value="small">Small (25x35mm)</option>
     </select>
 
-    <button onclick="preparePhotos()">Set Copies + Orientation</button>
+    <button onclick="preparePhotos()">📝 Set Copies & Orientation</button>
 
     <div class="photo-inputs" id="photoInputs"></div>
 
-    <button onclick="generateLayout()">🧱 Generate Layout</button>
+    <button onclick="generateLayout()">📄 Generate Layout</button>
     <button onclick="window.print()">🖨️ Print</button>
   </div>
 
@@ -108,17 +114,17 @@
     const mmToPx = mm => mm * 3.78;
     let imageFiles = [];
 
-    document.getElementById("photoUpload").addEventListener("change", function (event) {
-      imageFiles = Array.from(event.target.files).slice(0, 45);
+    document.getElementById("photoUpload").addEventListener("change", function () {
+      imageFiles = Array.from(this.files).slice(0, 45);
       document.getElementById("photoInputs").innerHTML = '';
     });
 
     function preparePhotos() {
-      const inputContainer = document.getElementById("photoInputs");
-      inputContainer.innerHTML = '';
+      const container = document.getElementById("photoInputs");
+      container.innerHTML = '';
 
       if (imageFiles.length === 0) {
-        alert("Please upload at least one photo.");
+        alert("Please upload photos first.");
         return;
       }
 
@@ -132,10 +138,6 @@
           img.src = e.target.result;
           img.width = 60;
           img.height = 60;
-          img.style.objectFit = 'cover';
-
-          const pcsLabel = document.createElement("label");
-          pcsLabel.textContent = "Copies:";
 
           const pcsInput = document.createElement("input");
           pcsInput.type = "number";
@@ -144,26 +146,19 @@
           pcsInput.value = 1;
           pcsInput.dataset.index = index;
 
-          const orientLabel = document.createElement("label");
-          orientLabel.textContent = "Orientation:";
-
           const orientSelect = document.createElement("select");
           orientSelect.dataset.index = index;
-          const optP = document.createElement("option");
-          optP.value = "portrait";
-          optP.text = "Portrait";
-          const optL = document.createElement("option");
-          optL.value = "landscape";
-          optL.text = "Landscape";
-          orientSelect.appendChild(optP);
-          orientSelect.appendChild(optL);
+          orientSelect.innerHTML = `
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          `;
 
           row.appendChild(img);
-          row.appendChild(pcsLabel);
+          row.appendChild(document.createTextNode("Copies:"));
           row.appendChild(pcsInput);
-          row.appendChild(orientLabel);
+          row.appendChild(document.createTextNode("Orientation:"));
           row.appendChild(orientSelect);
-          inputContainer.appendChild(row);
+          container.appendChild(row);
         };
         reader.readAsDataURL(file);
       });
@@ -171,69 +166,65 @@
 
     function generateLayout() {
       const printArea = document.getElementById("printArea");
-      const selectedSize = document.getElementById("sizeSelect").value;
-      const inputContainer = document.getElementById("photoInputs");
-
       printArea.innerHTML = "";
 
-      let baseWidth = 35, baseHeight = 45;
-      if (selectedSize === "small") {
-        baseWidth = 25;
-        baseHeight = 35;
-      }
+      const size = document.getElementById("sizeSelect").value;
+      let wMM = size === "passport" ? 35 : 25;
+      let hMM = size === "passport" ? 45 : 35;
 
-      const inputs = inputContainer.querySelectorAll("input[type='number']");
-      const orientationInputs = inputContainer.querySelectorAll("select");
+      const photoRows = document.querySelectorAll(".photo-row");
+      const totalPhotos = [];
 
-      let total = 0;
-      const photoQueue = [];
+      let totalCount = 0;
 
-      inputs.forEach((pcsInput, i) => {
-        const count = parseInt(pcsInput.value) || 0;
-        const index = parseInt(pcsInput.dataset.index);
-        const orientation = orientationInputs[i].value;
+      photoRows.forEach(row => {
+        const pcs = parseInt(row.querySelector("input[type='number']").value) || 0;
+        const orient = row.querySelector("select").value;
+        const index = parseInt(row.querySelector("input[type='number']").dataset.index);
+        const file = imageFiles[index];
 
-        if (count > 0 && imageFiles[index]) {
-          total += count;
-          if (total > 45) {
-            alert("Maximum total photo count is 45.");
-            return;
-          }
+        if (totalCount + pcs > 45) {
+          alert("Total photo count must not exceed 45.");
+          return;
+        }
 
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            for (let j = 0; j < count; j++) {
-              photoQueue.push({
-                src: e.target.result,
-                orientation: orientation
-              });
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          for (let i = 0; i < pcs; i++) {
+            totalPhotos.push({
+              src: e.target.result,
+              orientation: orient
+            });
 
-              if (photoQueue.length === total) {
-                layoutPhotos(photoQueue, baseWidth, baseHeight);
+            if (totalPhotos.length === (totalCount + pcs)) {
+              if (totalPhotos.length === photoRows.length * pcs || totalPhotos.length === 45) {
+                layoutPhotos(totalPhotos, wMM, hMM);
               }
             }
-          };
-          reader.readAsDataURL(imageFiles[index]);
-        }
+          }
+        };
+        reader.readAsDataURL(file);
+
+        totalCount += pcs;
       });
     }
 
-    function layoutPhotos(images, widthMM, heightMM) {
-      const printArea = document.getElementById("printArea");
-      printArea.innerHTML = "";
+    function layoutPhotos(images, wMM, hMM) {
+      const area = document.getElementById("printArea");
+      area.innerHTML = "";
 
       images.forEach(photo => {
         const img = document.createElement("img");
         img.src = photo.src;
         img.className = "photo";
 
-        const w = photo.orientation === 'landscape' ? heightMM : widthMM;
-        const h = photo.orientation === 'landscape' ? widthMM : heightMM;
+        const width = photo.orientation === "landscape" ? hMM : wMM;
+        const height = photo.orientation === "landscape" ? wMM : hMM;
 
-        img.width = mmToPx(w);
-        img.height = mmToPx(h);
+        img.width = mmToPx(width);
+        img.height = mmToPx(height);
 
-        printArea.appendChild(img);
+        area.appendChild(img);
       });
     }
   </script>
