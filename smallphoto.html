@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Photo Printing AIO (45x)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .a4 {
+      width: 210mm;
+      height: 297mm;
+      margin: auto;
+      background: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      padding: 10mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3mm;
+      justify-content: flex-start;
+      align-content: flex-start;
+    }
+
+    .photo {
+      border: 0.2mm dashed #888;
+      padding: 1mm;
+      background: #fff;
+      box-sizing: border-box;
+    }
+
+    @media print {
+      body {
+        background: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .controls {
+        display: none;
+      }
+
+      .a4 {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+
+      .photo {
+        border: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🖼️ Print 45 Passport/Small Photos on A4</h2>
+
+  <div class="controls">
+    <input type="file" id="photoUpload" accept="image/*">
+    <select id="sizeSelect">
+      <option value="passport">Passport (35x45mm)</option>
+      <option value="small">Small (25x35mm)</option>
+    </select>
+    <button onclick="generateLayout()">Generate Layout</button>
+    <button onclick="window.print()">🖨️ Print</button>
+  </div>
+
+  <div class="a4" id="printArea"></div>
+
+  <script>
+    let uploadedImage = null;
+
+    const mmToPx = (mm) => mm * 3.78;
+
+    document.getElementById("photoUpload").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        uploadedImage = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function generateLayout() {
+      const printArea = document.getElementById("printArea");
+      const selectedSize = document.getElementById("sizeSelect").value;
+
+      if (!uploadedImage) {
+        alert("Please upload a photo first.");
+        return;
+      }
+
+      printArea.innerHTML = "";
+
+      // Sizes in mm
+      let widthMM = 35, heightMM = 45;
+      if (selectedSize === "small") {
+        widthMM = 25;
+        heightMM = 35;
+      }
+
+      const widthPx = mmToPx(widthMM);
+      const heightPx = mmToPx(heightMM);
+      const totalPhotos = 45;
+
+      for (let i = 0; i < totalPhotos; i++) {
+        const img = document.createElement("img");
+        img.src = uploadedImage;
+        img.className = "photo";
+        img.width = widthPx;
+        img.height = heightPx;
+        printArea.appendChild(img);
+      }
+    }
+  </script>
+
+</body>
+</html>
