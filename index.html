@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>45 Photo Print Layout - A4 Portrait</title>
+  <meta charset="UTF-8">
+  <title>Small Photo Print Layout - 45 per A4 Page</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 0;
       font-family: sans-serif;
-      background: #eee;
+      background: #f0f0f0;
     }
     .controls {
       padding: 10px;
-      background: #fff;
+      background: white;
       text-align: center;
     }
     .controls input,
     .controls button {
       margin: 5px;
-      padding: 8px 12px;
+      padding: 8px;
       font-size: 14px;
     }
     .page {
@@ -39,29 +37,25 @@
     .photo {
       width: 3.5cm;
       height: 2.5cm;
-      margin: 2mm;
+      margin: 1mm;
       border: 1px solid #000;
-      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
     .photo img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: rotate(0deg); /* landscape */
+      transform: rotate(0deg); /* landscape layout */
     }
     @media print {
-      body {
-        background: none;
-      }
-      .controls {
-        display: none;
-      }
+      body { background: none; }
+      .controls { display: none; }
       .page {
-        box-shadow: none;
         margin: 0;
+        box-shadow: none;
         page-break-after: always;
       }
     }
@@ -71,6 +65,8 @@
 
 <div class="controls">
   <input type="file" id="fileInput" multiple accept="image/*">
+  <input type="number" id="pcsInput" placeholder="Enter PCS (copies per image)" min="1" value="1">
+  <button onclick="generateLayout()">🖨️ Generate</button>
   <button onclick="window.print()">🖨️ Print</button>
 </div>
 
@@ -78,21 +74,37 @@
 
 <script>
   const fileInput = document.getElementById('fileInput');
+  const pcsInput = document.getElementById('pcsInput');
   const output = document.getElementById('output');
+
   const PHOTOS_PER_PAGE = 45;
 
-  fileInput.addEventListener('change', function () {
+  function generateLayout() {
     const files = Array.from(fileInput.files);
-    const pagesNeeded = Math.ceil(files.length / PHOTOS_PER_PAGE);
+    const pcs = parseInt(pcsInput.value) || 1;
 
-    output.innerHTML = ''; // Clear old pages
+    if (files.length === 0) {
+      alert("Please upload at least one photo.");
+      return;
+    }
+
+    const allImages = [];
+
+    files.forEach(file => {
+      for (let i = 0; i < pcs; i++) {
+        allImages.push(file);
+      }
+    });
+
+    output.innerHTML = '';
+    const pagesNeeded = Math.ceil(allImages.length / PHOTOS_PER_PAGE);
 
     for (let i = 0; i < pagesNeeded; i++) {
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
 
-      const currentFiles = files.slice(i * PHOTOS_PER_PAGE, (i + 1) * PHOTOS_PER_PAGE);
-      
+      const currentFiles = allImages.slice(i * PHOTOS_PER_PAGE, (i + 1) * PHOTOS_PER_PAGE);
+
       currentFiles.forEach(file => {
         const reader = new FileReader();
         reader.onload = function (e) {
@@ -110,7 +122,7 @@
 
       output.appendChild(pageDiv);
     }
-  });
+  }
 </script>
 
 </body>
