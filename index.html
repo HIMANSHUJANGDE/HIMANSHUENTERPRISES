@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mini Photo Print (Landscape A4 - 45 Photos)</title>
+  <meta charset="UTF-8">
+  <title>Mini Photo Print - 45 PCS (A4 Landscape)</title>
   <style>
     :root {
-      --photo-width-mm: 24mm;
-      --photo-height-mm: 32mm;
+      --photo-width: 24mm;
+      --photo-height: 32mm;
       --columns: 9;
       --rows: 5;
-      --gap-mm: 3mm;
+      --gap: 2mm;
     }
 
     body {
       margin: 0;
       padding: 10mm;
-      background: #e0e0e0;
-      font-family: sans-serif;
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
     }
 
     .controls {
@@ -25,32 +25,34 @@
 
     .controls input,
     .controls button {
-      padding: 6px 12px;
       font-size: 14px;
+      padding: 6px 12px;
+      margin-right: 6px;
     }
 
     .print-area {
-      background: #fff;
+      background: white;
       width: 297mm;
       height: 210mm;
       box-sizing: border-box;
       display: grid;
-      grid-template-columns: repeat(var(--columns), var(--photo-width-mm));
-      grid-template-rows: repeat(var(--rows), var(--photo-height-mm));
-      gap: var(--gap-mm);
+      grid-template-columns: repeat(var(--columns), var(--photo-width));
+      grid-template-rows: repeat(var(--rows), var(--photo-height));
+      gap: var(--gap);
       padding: 5mm;
-      margin: 0 auto;
+      margin: auto;
+      box-shadow: 0 0 4px rgba(0,0,0,0.2);
     }
 
     .photo-box {
-      width: var(--photo-width-mm);
-      height: var(--photo-height-mm);
-      border: 1px solid #000;
+      border: 1px solid black;
+      width: var(--photo-width);
+      height: var(--photo-height);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #fff;
       overflow: hidden;
+      background: #fff;
     }
 
     .photo-box img {
@@ -62,14 +64,16 @@
     @media print {
       body {
         padding: 0;
-        background: #fff;
+        background: white;
       }
+
       .controls {
         display: none;
       }
+
       .print-area {
-        margin: 0;
         box-shadow: none;
+        margin: 0;
         page-break-after: always;
       }
     }
@@ -78,31 +82,31 @@
 <body>
 
   <div class="controls">
-    <input type="file" id="photoUpload" multiple accept="image/*">
+    <input type="file" id="fileInput" multiple accept="image/*">
     <button onclick="window.print()">Print</button>
   </div>
 
   <div class="print-area" id="printArea"></div>
 
   <script>
-    const photoInput = document.getElementById('photoUpload');
+    const input = document.getElementById('fileInput');
     const printArea = document.getElementById('printArea');
 
-    photoInput.addEventListener('change', () => {
-      const files = Array.from(photoInput.files).slice(0, 45); // Limit to 45
-      printArea.innerHTML = ''; // Clear previous
+    input.addEventListener('change', () => {
+      const files = Array.from(input.files).slice(0, 45); // Limit to 45
+      printArea.innerHTML = ''; // Clear previous photos
 
       files.forEach(file => {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          const box = document.createElement('div');
-          box.className = 'photo-box';
+        reader.onload = e => {
+          const photoBox = document.createElement('div');
+          photoBox.className = 'photo-box';
 
           const img = document.createElement('img');
           img.src = e.target.result;
 
-          box.appendChild(img);
-          printArea.appendChild(box);
+          photoBox.appendChild(img);
+          printArea.appendChild(photoBox);
         };
         reader.readAsDataURL(file);
       });
