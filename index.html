@@ -1,487 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Complete Photo Editor + BG Remove & Change</title>
-<style>
-  body {
-    background: #222;
-    color: #eee;
-    font-family: Arial, sans-serif;
-    margin: 0; padding: 20px;
-    text-align: center;
-  }
-  h1 {
-    margin-bottom: 12px;
-  }
-  #editor {
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  canvas {
-    max-width: 100%;
-    border: 2px solid #444;
-    cursor: crosshair;
-  }
-  .controls {
-    margin: 10px 0;
-  }
-  button, input[type="color"], input[type="text"] {
-    margin: 4px 6px;
-    padding: 6px 12px;
-    background: #444;
-    border: none;
-    color: #eee;
-    cursor: pointer;
-    border-radius: 3px;
-  }
-  button:hover, input[type="color"]:hover, input[type="text"]:hover {
-    background: #555;
-  }
-  input[type="range"] {
-    vertical-align: middle;
-  }
-  label {
-    margin: 0 8px;
-  }
-  #cropRect {
-    position: absolute;
-    border: 2px dashed lime;
-    display: none;
-    pointer-events: none;
-  }
-  #canvas-container {
-    position: relative;
-    display: inline-block;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>AI Photo Editor</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; text-align: center; }
+    canvas { border: 1px solid #999; display: block; margin: 10px auto; max-width: 100%; }
+    input, button { margin: 5px; padding: 8px; }
+  </style>
 </head>
 <body>
-  <div id="editor">
-    <h1>Complete Photo Editor + BG Remove & Change</h1>
+  <h1>🖼 AI Photo Editor</h1>
+  <input type="file" id="imgUpload" accept="image/*"><br>
+  <button id="removeBtn" disabled>🪄 Remove BG (AI)</button><br>
+  <input type="color" id="bgColor" value="#ffffff" disabled>
+  <input type="file" id="bgImage" accept="image/*" disabled><br>
+  <button id="downloadBtn" disabled>Download Result</button>
+  <canvas id="canvas"></canvas>
 
-    <div class="controls">
-      <input type="file" id="upload" accept="image/*" />
-      <input type="file" id="bgUpload" accept="image/*" />
-      <input type="color" id="bgColor" title="Background Color" value="#222" />
-    </div>
+  <script type="module">
+    import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal/dist/browser.esm.js';
 
-    <div class="controls">
-      <input type="text" id="apiKey" placeholder="Enter remove.bg API key" style="width:300px" />
-      <button id="removeBgBtn">Remove Background</button>
-    </div>
+    const upload = document.getElementById('imgUpload'),
+          removeBtn = document.getElementById('removeBtn'),
+          bgColor = document.getElementById('bgColor'),
+          bgImage = document.getElementById('bgImage'),
+          downloadBtn = document.getElementById('downloadBtn'),
+          canvas = document.getElementById('canvas'),
+          ctx = canvas.getContext('2d');
+    let origImg = new Image(), maskBlob = null;
 
-    <div id="canvas-container">
-      <canvas id="canvas"></canvas>
-      <div id="cropRect"></div>
-    </div>
-
-    <div class="controls">
-      <label>Brightness<input type="range" id="brightness" min="0" max="2" step="0.1" value="1" /></label>
-      <label>Contrast<input type="range" id="contrast" min="0" max="2" step="0.1" value="1" /></label>
-      <label>Saturation<input type="range" id="saturation" min="0" max="2" step="0.1" value="1" /></label>
-      <label>Hue<input type="range" id="hue" min="0" max="360" step="1" value="0" /></label>
-      <label>Blur<input type="range" id="blur" min="0" max="10" step="0.5" value="0" /></label>
-      <button id="resetFilters">Reset Filters</button>
-    </div>
-
-    <div class="controls">
-      <button id="rotateBtn">Rotate 90°</button>
-      <button id="flipHBtn">Flip Horizontal</button>
-      <button id="flipVBtn">Flip Vertical</button>
-    </div>
-
-    <div class="controls">
-      <button id="startCropBtn">Start Crop</button>
-      <button id="applyCropBtn">Apply Crop</button>
-      <button id="cancelCropBtn">Cancel Crop</button>
-    </div>
-
-    <div class="controls">
-      <button id="drawToggleBtn">Toggle Draw</button>
-      <button id="addTextBtn">Add Text</button>
-      <button id="clearDrawBtn">Clear Drawing/Text</button>
-    </div>
-
-    <div class="controls">
-      <button id="replaceBgBtn">Toggle Background Replacement</button>
-    </div>
-
-    <div class="controls">
-      <button id="downloadBtn">Download Image</button>
-    </div>
-  </div>
-
-<script>
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-
-  const upload = document.getElementById("upload");
-  const bgUpload = document.getElementById("bgUpload");
-  const bgColor = document.getElementById("bgColor");
-
-  const brightness = document.getElementById("brightness");
-  const contrast = document.getElementById("contrast");
-  const saturation = document.getElementById("saturation");
-  const hue = document.getElementById("hue");
-  const blur = document.getElementById("blur");
-
-  const resetFiltersBtn = document.getElementById("resetFilters");
-
-  const rotateBtn = document.getElementById("rotateBtn");
-  const flipHBtn = document.getElementById("flipHBtn");
-  const flipVBtn = document.getElementById("flipVBtn");
-
-  const startCropBtn = document.getElementById("startCropBtn");
-  const applyCropBtn = document.getElementById("applyCropBtn");
-  const cancelCropBtn = document.getElementById("cancelCropBtn");
-
-  const drawToggleBtn = document.getElementById("drawToggleBtn");
-  const addTextBtn = document.getElementById("addTextBtn");
-  const clearDrawBtn = document.getElementById("clearDrawBtn");
-
-  const replaceBgBtn = document.getElementById("replaceBgBtn");
-
-  const removeBgBtn = document.getElementById("removeBgBtn");
-  const apiKeyInput = document.getElementById("apiKey");
-
-  const cropRect = document.getElementById("cropRect");
-  const canvasContainer = document.getElementById("canvas-container");
-
-  let img = new Image();
-  let bgImg = null;
-
-  // Editor state
-  let filters = { b: 1, c: 1, s: 1, h: 0, bl: 0 };
-  let rotation = 0;
-  let flipH = false;
-  let flipV = false;
-
-  let cropping = false;
-  let cropStart = null;
-  let cropArea = null;
-
-  let drawMode = false;
-  let isDrawing = false;
-  let annotations = [];
-
-  let replaceMode = false;
-
-  // Load main image
-  upload.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      img.onload = () => {
-        resetAll();
+    upload.onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      origImg = new Image();
+      origImg.onload = () => {
+        canvas.width = origImg.width;
+        canvas.height = origImg.height;
+        ctx.drawImage(origImg, 0, 0);
+        removeBtn.disabled = false;
       };
-      img.src = reader.result;
+      origImg.src = url;
     };
-    reader.readAsDataURL(file);
-  });
 
-  // Load background image
-  bgUpload.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const tmp = new Image();
-      tmp.onload = () => {
-        bgImg = tmp;
-        drawAll();
+    removeBtn.onclick = async () => {
+      removeBtn.textContent = 'Processing…';
+      maskBlob = await imglyRemoveBackground(origImg.src);
+      const maskImg = new Image();
+      maskImg.onload = () => {
+        canvas.width = maskImg.width;
+        canvas.height = maskImg.height;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(maskImg, 0, 0);
+        ctx.globalCompositeOperation = 'source-in';
+        ctx.drawImage(origImg, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
+        bgColor.disabled = bgImage.disabled = downloadBtn.disabled = false;
+        removeBtn.textContent = '✅ Remove BG (AI)';
       };
-      tmp.src = reader.result;
+      maskImg.src = URL.createObjectURL(maskBlob);
     };
-    reader.readAsDataURL(file);
-  });
 
-  // Filter controls
-  [brightness, contrast, saturation, hue, blur].forEach(el =>
-    el.addEventListener("input", () => {
-      filters.b = +brightness.value;
-      filters.c = +contrast.value;
-      filters.s = +saturation.value;
-      filters.h = +hue.value;
-      filters.bl = +blur.value;
-      drawAll();
-    })
-  );
-
-  resetFiltersBtn.addEventListener("click", () => {
-    brightness.value = 1;
-    contrast.value = 1;
-    saturation.value = 1;
-    hue.value = 0;
-    blur.value = 0;
-    filters = { b: 1, c: 1, s: 1, h: 0, bl: 0 };
-    drawAll();
-  });
-
-  rotateBtn.addEventListener("click", () => {
-    rotation = (rotation + 90) % 360;
-    drawAll();
-  });
-
-  flipHBtn.addEventListener("click", () => {
-    flipH = !flipH;
-    drawAll();
-  });
-
-  flipVBtn.addEventListener("click", () => {
-    flipV = !flipV;
-    drawAll();
-  });
-
-  // Crop handlers
-  startCropBtn.addEventListener("click", () => {
-    cropping = true;
-    cropRect.style.display = "block";
-  });
-
-  applyCropBtn.addEventListener("click", () => {
-    if (!cropArea) return;
-    const tmpCanvas = document.createElement("canvas");
-    const tmpCtx = tmpCanvas.getContext("2d");
-    tmpCanvas.width = cropArea.w;
-    tmpCanvas.height = cropArea.h;
-    tmpCtx.drawImage(
-      canvas,
-      cropArea.x,
-      cropArea.y,
-      cropArea.w,
-      cropArea.h,
-      0,
-      0,
-      cropArea.w,
-      cropArea.h
-    );
-    canvas.width = tmpCanvas.width;
-    canvas.height = tmpCanvas.height;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(tmpCanvas, 0, 0);
-    cropping = false;
-    cropStart = null;
-    cropArea = null;
-    cropRect.style.display = "none";
-    drawAll();
-  });
-
-  cancelCropBtn.addEventListener("click", () => {
-    cropping = false;
-    cropStart = null;
-    cropArea = null;
-    cropRect.style.display = "none";
-  });
-
-  canvas.addEventListener("mousedown", e => {
-    if (cropping) {
-      cropStart = getMousePos(e);
-    }
-    if (drawMode) {
-      isDrawing = true;
-      annotations.push({
-        type: "line",
-        points: [getMousePos(e)],
-        color: "#ff0",
-        size: 2,
-      });
-    }
-  });
-
-  canvas.addEventListener("mousemove", e => {
-    const pos = getMousePos(e);
-    if (cropping && cropStart) {
-      cropArea = {
-        x: Math.min(cropStart.x, pos.x),
-        y: Math.min(cropStart.y, pos.y),
-        w: Math.abs(pos.x - cropStart.x),
-        h: Math.abs(pos.y - cropStart.y),
-      };
-      cropRect.style.left = cropArea.x + "px";
-      cropRect.style.top = cropArea.y + "px";
-      cropRect.style.width = cropArea.w + "px";
-      cropRect.style.height = cropArea.h + "px";
-    }
-    if (drawMode && isDrawing) {
-      let current = annotations[annotations.length - 1];
-      current.points.push(pos);
-      drawAll();
-    }
-  });
-
-  window.addEventListener("mouseup", () => {
-    if (cropping) cropStart = null;
-    isDrawing = false;
-  });
-
-  drawToggleBtn.addEventListener("click", () => {
-    drawMode = !drawMode;
-    canvas.style.cursor = drawMode ? "crosshair" : "default";
-  });
-
-  addTextBtn.addEventListener("click", () => {
-    const text = prompt("Enter text:");
-    if (!text) return;
-    const posStr = prompt("Enter position x,y (default 50,50):") || "50,50";
-    const [x, y] = posStr.split(",").map(Number);
-    annotations.push({
-      type: "text",
-      x: x || 50,
-      y: y || 50,
-      text: text,
-      color: "#0f0",
-      size: 20,
-    });
-    drawAll();
-  });
-
-  clearDrawBtn.addEventListener("click", () => {
-    annotations = [];
-    drawAll();
-  });
-
-  replaceBgBtn.addEventListener("click", () => {
-    replaceMode = !replaceMode;
-    drawAll();
-  });
-
-  removeBgBtn.addEventListener("click", removeBG);
-
-  function getMousePos(evt) {
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: Math.round(evt.clientX - rect.left),
-      y: Math.round(evt.clientY - rect.top),
-    };
-  }
-
-  function resetAll() {
-    rotation = 0;
-    flipH = false;
-    flipV = false;
-    annotations = [];
-    replaceMode = false;
-    brightness.value = 1;
-    contrast.value = 1;
-    saturation.value = 1;
-    hue.value = 0;
-    blur.value = 0;
-    filters = { b: 1, c: 1, s: 1, h: 0, bl: 0 };
-
-    canvas.width = img.width;
-    canvas.height = img.height;
-    drawAll();
-  }
-
-  function drawAll() {
-    if (!img.src) return;
-    canvas.width = img.width;
-    canvas.height = img.height;
-
-    // Draw background (color or image) if in replace mode
-    if (replaceMode) {
-      if (bgImg) {
-        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = bgColor.value;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = bgColor.value;
+    bgColor.oninput = () => {
+      const color = bgColor.value;
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.fillStyle = color;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+      ctx.globalCompositeOperation = 'source-over';
+    };
 
-    // Apply filters, rotation, flips
-    ctx.save();
-    ctx.filter = `brightness(${filters.b}) contrast(${filters.c}) saturate(${filters.s}) hue-rotate(${filters.h}deg) blur(${filters.bl}px)`;
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
-    ctx.drawImage(img, -img.width / 2, -img.height / 2);
-    ctx.restore();
-
-    // Draw annotations (lines & text)
-    annotations.forEach(a => {
-      if (a.type === "line") {
-        ctx.strokeStyle = a.color;
-        ctx.lineWidth = a.size;
-        ctx.beginPath();
-        a.points.forEach((p, i) => {
-          if (i === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        });
-        ctx.stroke();
-      } else if (a.type === "text") {
-        ctx.fillStyle = a.color;
-        ctx.font = `${a.size}px sans-serif`;
-        ctx.fillText(a.text, a.x, a.y);
-      }
-    });
-  }
-
-  async function removeBG() {
-    if (!img.src) {
-      alert("Upload an image first.");
-      return;
-    }
-    const key = apiKeyInput.value.trim();
-    if (!key) {
-      alert("Please enter your remove.bg API key.");
-      return;
-    }
-
-    try {
-      // Convert canvas image to blob
-      const dataURL = canvas.toDataURL("image/png");
-      const blob = await (await fetch(dataURL)).blob();
-
-      const formData = new FormData();
-      formData.append("image_file", blob, "image.png");
-      formData.append("size", "auto");
-
-      removeBgBtn.disabled = true;
-      removeBgBtn.textContent = "Removing...";
-
-      const response = await fetch("https://api.remove.bg/v1.0/removebg", {
-        method: "POST",
-        headers: {
-          "X-Api-Key": kmWvwT2X2hcAnTdQEwhdWwGo,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to remove background");
-      }
-
-      const resultBlob = await response.blob();
-      const objectUrl = URL.createObjectURL(resultBlob);
-      img.onload = () => {
-        resetAll();
-        removeBgBtn.disabled = false;
-        removeBgBtn.textContent = "Remove Background";
+    bgImage.onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const bg = new Image();
+      bg.onload = () => {
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = 'source-over';
       };
-      img.src = objectUrl;
-    } catch (e) {
-      alert("Error removing background: " + e.message);
-      removeBgBtn.disabled = false;
-      removeBgBtn.textContent = "Remove Background";
-    }
-  }
+      bg.src = url;
+    };
 
-  document.getElementById("downloadBtn").addEventListener("click", () => {
-    if (!img.src) return alert("Load an image first");
-    const link = document.createElement("a");
-    link.download = "edited-image.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  });
-</script>
+    downloadBtn.onclick = () => {
+      const link = document.createElement('a');
+      link.download = 'edited.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    };
+  </script>
 </body>
 </html>
-
