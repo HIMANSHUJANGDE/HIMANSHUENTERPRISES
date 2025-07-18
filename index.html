@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Photo Print - 45 PCS (A4 Landscape)</title>
+  <title>45 Mini Landscape Photos on A4 Portrait</title>
   <style>
     :root {
-      --photo-width: 24mm;
-      --photo-height: 32mm;
-      --columns: 9;
-      --rows: 5;
-      --gap: 2mm;
+      --photo-width: 32mm;
+      --photo-height: 24mm;
+      --columns: 5;
+      --rows: 9;
+      --gap: 3mm;
     }
 
     body {
@@ -32,8 +32,8 @@
 
     .print-area {
       background: white;
-      width: 297mm;
-      height: 210mm;
+      width: 210mm;
+      height: 297mm;
       box-sizing: border-box;
       display: grid;
       grid-template-columns: repeat(var(--columns), var(--photo-width));
@@ -41,7 +41,7 @@
       gap: var(--gap);
       padding: 5mm;
       margin: auto;
-      box-shadow: 0 0 4px rgba(0,0,0,0.2);
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
     }
 
     .photo-box {
@@ -56,8 +56,8 @@
     }
 
     .photo-box img {
-      max-width: 100%;
       max-height: 100%;
+      max-width: 100%;
       object-fit: cover;
     }
 
@@ -94,7 +94,7 @@
 
     input.addEventListener('change', () => {
       const files = Array.from(input.files).slice(0, 45); // Limit to 45
-      printArea.innerHTML = ''; // Clear previous photos
+      printArea.innerHTML = ''; // Clear existing
 
       files.forEach(file => {
         const reader = new FileReader();
