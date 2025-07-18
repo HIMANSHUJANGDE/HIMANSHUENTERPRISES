@@ -1,143 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smaller-than-Passport Photo Printing System</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passport Photo Printing System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
 
-        .container {
-            width: 100%;
-            text-align: center;
-        }
+    .container {
+      width: 90%;
+      max-width: 900px;
+      text-align: center;
+    }
 
-        .upload-section {
-            margin: 20px 0;
-        }
+    input[type="file"] {
+      margin: 10px 0;
+    }
 
-        input[type="file"] {
-            padding: 10px;
-            font-size: 16px;
-        }
+    .photo-upload {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
 
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(9, 1fr); /* 9 columns */
-            grid-template-rows: repeat(5, 1fr); /* 5 rows */
-            grid-gap: 0; /* No gap between images */
-            justify-items: center;
-            margin-top: 0;
-        }
+    .photo-upload img {
+      width: 45mm;
+      height: 60mm;
+      border: 2px solid black;
+      object-fit: cover;
+    }
 
-        .photo-item {
-            position: relative;
-            width: 35mm; /* Slightly smaller than passport size */
-            height: 45mm;
-            border: 1px solid #000;
-            overflow: hidden;
-            background-color: #fff;
-        }
+    .bordered-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 5mm;
+      width: 210mm;
+      height: 297mm;
+      padding: 10mm;
+      margin-top: 20px;
+      background-color: white;
+    }
 
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .photo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #000;
+      height: 60mm;
+      width: 45mm;
+      margin: 0;
+    }
 
-        .print-button {
-            margin-top: 30px;
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
+    .photo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-        @media print {
-            body {
-                margin: 0;
-                padding: 0;
-            }
+    .form-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-            .container {
-                text-align: left;
-                width: 100%;
-            }
-
-            .photo-grid {
-                grid-template-columns: repeat(9, 1fr);
-                grid-template-rows: repeat(5, 1fr);
-                grid-gap: 0;
-                justify-items: center;
-            }
-
-            .photo-item {
-                width: 35mm;
-                height: 45mm;
-                border: 1px solid #000;
-            }
-
-            .photo-item img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-        }
-    </style>
+    .form-container input[type="number"] {
+      margin: 10px 0;
+      width: 60px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Smaller-than-Passport Photo Printing System</h1>
 
-        <div class="upload-section">
-            <input type="file" id="photoInput" accept="image/*" multiple>
-        </div>
+<div class="container">
+  <h1>Passport Photo Printing System</h1>
 
-        <div class="photo-grid" id="photoGrid"></div>
+  <div class="form-container">
+    <label for="upload">Upload Passport Photos:</label>
+    <input type="file" id="upload" accept="image/*" multiple>
+    <br>
+    <label for="pcs">Enter number of photos to upload:</label>
+    <input type="number" id="pcs" value="1" min="1" max="45">
+    <button onclick="generateLayout()">Generate Layout</button>
+  </div>
 
-        <button class="print-button" onclick="window.print();">Print Photos</button>
-    </div>
+  <div class="photo-upload" id="photo-upload-container"></div>
 
-    <script>
-        const photoInput = document.getElementById("photoInput");
-        const photoGrid = document.getElementById("photoGrid");
+  <div id="passport-layout" class="bordered-container"></div>
+</div>
 
-        photoInput.addEventListener("change", function(event) {
-            const files = event.target.files;
-            const totalPhotos = Math.min(files.length, 45); // Limit to 45 photos per page
-            const photoItems = [];
+<script>
+  function generateLayout() {
+    const pcs = document.getElementById('pcs').value;
+    const uploadInput = document.getElementById('upload');
+    const files = uploadInput.files;
+    const photoContainer = document.getElementById('passport-layout');
+    photoContainer.innerHTML = '';
 
-            for (let i = 0; i < totalPhotos; i++) {
-                const file = files[i];
-                const reader = new FileReader();
+    if (files.length < pcs) {
+      alert('Please upload at least ' + pcs + ' photos.');
+      return;
+    }
 
-                reader.onload = function(e) {
-                    const imgSrc = e.target.result;
-                    const photoItem = document.createElement("div");
-                    photoItem.classList.add("photo-item");
+    const selectedFiles = Array.from(files).slice(0, pcs);
 
-                    const img = document.createElement("img");
-                    img.src = imgSrc;
-                    photoItem.appendChild(img);
+    // Create grid with the photos
+    selectedFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const photoURL = event.target.result;
 
-                    photoItems.push(photoItem);
-                    if (photoItems.length === totalPhotos) {
-                        photoGrid.innerHTML = ''; // Clear previous photos
-                        photoItems.forEach(item => photoGrid.appendChild(item)); // Add new photos
-                    }
-                };
+        for (let i = 0; i < pcs; i++) {
+          const photoDiv = document.createElement('div');
+          photoDiv.classList.add('photo-container');
+          
+          const img = document.createElement('img');
+          img.src = photoURL;
+          photoDiv.appendChild(img);
 
-                reader.readAsDataURL(file);
-            }
-        });
-    </script>
+          // Add to the layout grid
+          photoContainer.appendChild(photoDiv);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Optional: Display selected images in a preview section
+  document.getElementById('upload').addEventListener('change', function(event) {
+    const previewContainer = document.getElementById('photo-upload-container');
+    previewContainer.innerHTML = ''; // Clear previous preview
+
+    Array.from(event.target.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const imgElement = document.createElement('img');
+        imgElement.src = e.target.result;
+        previewContainer.appendChild(imgElement);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+</script>
+
 </body>
 </html>
