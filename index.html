@@ -1,114 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mini Photo Print Layout</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Printing Layout</title>
+    <style>
 
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f0f0f0;
-    }
 
-    .controls {
-      margin-bottom: 20px;
-    }
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
 
-    .photo-grid {
-      width: 210mm;
-      height: 297mm;
-      display: flex;
-      flex-wrap: wrap;
-      background: white;
-      position: relative;
-      page-break-after: always;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
+.container {
+    width: 80%;
+    margin: 0 auto;
+}
 
-    .photo {
-      width: calc(100% / 9);   /* 9 columns */
-      height: calc((297mm - 10mm) / 5);  /* 5 rows, minus top padding */
-      border: 1px solid #000;
-      padding: 1mm;
-    }
+.layout-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-top: 20px;
+}
 
-    .photo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: rotate(90deg); /* Landscape */
-    }
+.layout-container img {
+    width: 30%;
+    margin: 0;
+    padding: 5px;
+    box-sizing: border-box;
+    object-fit: cover;
+    height: 120px; /* Adjust size for your needs */
+}
 
-    @media print {
-      body {
-        background: none;
-        padding: 0;
-      }
-      .controls {
-        display: none;
-      }
-      .photo-grid {
-        box-shadow: none;
-      }
-    }
-  </style>
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+
+      
+    </style>
 </head>
 <body>
-  <div class="controls">
-    <input type="file" id="photoUpload" accept="image/*" multiple />
-    <label>
-      Copies per photo:
-      <input type="number" id="copies" value="1" min="1" max="45" style="width: 60px;" />
-    </label>
-    <button onclick="generateLayout()">Generate Layout</button>
-    <button onclick="window.print()">Print</button>
-  </div>
+    <div class="container">
+        <h1>Upload Photos and Print</h1>
+        <div>
+            <input type="file" id="photoUpload" accept="image/*" multiple>
+        </div>
+        <div>
+            <label for="numCopies">Number of Copies per Photo: </label>
+            <input type="number" id="numCopies" value="5" min="1">
+        </div>
+        <button id="generateLayout">Generate Layout</button>
+        <div id="layoutContainer" class="layout-container"></div>
+        <button id="printButton">Print Layout</button>
+    </div>
 
-  <div id="pagesContainer"></div>
+    <script>
 
-  <script>
-    function generateLayout() {
-      const files = document.getElementById('photoUpload').files;
-      const copies = parseInt(document.getElementById('copies').value);
-      const container = document.getElementById('pagesContainer');
-      container.innerHTML = '';
 
-      if (!files.length) {
-        alert("Please upload at least one photo.");
+document.getElementById('generateLayout').addEventListener('click', function() {
+    const fileInput = document.getElementById('photoUpload');
+    const layoutContainer = document.getElementById('layoutContainer');
+    const numCopies = document.getElementById('numCopies').value;
+
+    // Clear previous layout
+    layoutContainer.innerHTML = '';
+
+    // Get files from input
+    const files = fileInput.files;
+
+    if (files.length === 0) {
+        alert('Please upload some photos first!');
         return;
-      }
-
-      const images = [];
-
-      for (const file of files) {
-        for (let i = 0; i < copies; i++) {
-          images.push(URL.createObjectURL(file));
-        }
-      }
-
-      const photosPerPage = 45;
-      let page, photoDiv;
-
-      for (let i = 0; i < images.length; i++) {
-        if (i % photosPerPage === 0) {
-          page = document.createElement('div');
-          page.className = 'photo-grid';
-          container.appendChild(page);
-        }
-
-        photoDiv = document.createElement('div');
-        photoDiv.className = 'photo';
-
-        const img = document.createElement('img');
-        img.src = images[i];
-
-        photoDiv.appendChild(img);
-        page.appendChild(photoDiv);
-      }
     }
-  </script>
+
+    // Create layout based on uploaded photos
+    let photoCount = 0;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            for (let j = 0; j < numCopies; j++) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                layoutContainer.appendChild(img);
+                photoCount++;
+            }
+
+            // Check if all images have been processed
+            if (photoCount === files.length * numCopies) {
+                console.log('Layout generated.');
+            }
+        };
+
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('printButton').addEventListener('click', function() {
+    const layoutContainer = document.getElementById('layoutContainer');
+
+    const printWindow = window.open('', '', 'height=600, width=800');
+    printWindow.document.write('<html><head><title>Print Layout</title></head><body>');
+    printWindow.document.write('<style>body { margin: 0; padding: 0; } .layout-container { display: flex; flex-wrap: wrap; justify-content: flex-start; } .layout-container img { width: 30%; height: 120px; margin: 0; padding: 5px; }</style>');
+    printWindow.document.write(layoutContainer.innerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+});
+
+
+      
+    </script>
 </body>
 </html>
