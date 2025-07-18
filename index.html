@@ -2,104 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photo Printing System</title>
+  <title>45 Photo Print Layout</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-    }
-    .container {
-      width: 210mm;
-      height: 297mm;
-      margin: 0 auto;
-      padding: 10mm;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr); /* 5 photos per row */
-      grid-template-rows: repeat(9, 1fr); /* 9 rows for total of 45 photos */
-      gap: 5mm;
-      box-sizing: border-box;
-    }
-
-    .photo {
-      width: 30mm;
-      height: 40mm;
-      object-fit: cover;
-      border: 1px solid #ccc;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .photo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s;
+      font-family: sans-serif;
+      margin: 20px;
+      text-align: center;
     }
 
     input[type="file"] {
       margin-bottom: 10px;
     }
+
+    .print-page {
+      width: 210mm;
+      height: 297mm;
+      margin: auto;
+      background: white;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(9, 1fr);
+      gap: 2mm;
+      padding: 5mm;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+    }
+
+    .photo-slot {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #333;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .photo-slot img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+      transform-origin: center center;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      .print-page {
+        border: none;
+      }
+    }
   </style>
 </head>
 <body>
 
-<h2>Upload Photos for Printing</h2>
+  <h2 class="no-print">Upload up to 45 Photos</h2>
+  <input class="no-print" type="file" id="photoUpload" multiple accept="image/*">
+  <div class="print-page" id="photoGrid"></div>
 
-<input type="file" id="fileInput" multiple accept="image/*" />
-<div class="container" id="photoContainer"></div>
+  <script>
+    const photoUpload = document.getElementById('photoUpload');
+    const photoGrid = document.getElementById('photoGrid');
 
-<script>
-  const fileInput = document.getElementById('fileInput');
-  const photoContainer = document.getElementById('photoContainer');
+    photoUpload.addEventListener('change', function () {
+      const files = Array.from(this.files).slice(0, 45); // max 45
+      photoGrid.innerHTML = ''; // clear previous
 
-  fileInput.addEventListener('change', handleFileUpload);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = () => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'photo-slot';
 
-  function handleFileUpload(event) {
-    const files = event.target.files;
-    photoContainer.innerHTML = ''; // Clear existing photos
+            // Rotate landscape images
+            if (img.width > img.height) {
+              img.style.transform = 'rotate(90deg)';
+            }
 
-    if (files.length > 45) {
-      alert("You can only upload up to 45 photos.");
-      return;
-    }
-
-    // Loop through each file
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const photoDiv = document.createElement('div');
-      photoDiv.classList.add('photo');
-
-      const img = document.createElement('img');
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        img.src = e.target.result;
-        img.onload = function() {
-          // Auto rotate if needed (landscape to portrait)
-          const imgWidth = img.width;
-          const imgHeight = img.height;
-          
-          // If the image is in landscape mode, rotate it to portrait mode
-          if (imgWidth > imgHeight) {
-            img.style.transform = 'rotate(90deg)';
-          }
+            wrapper.appendChild(img);
+            photoGrid.appendChild(wrapper);
+            fillRemaining(); // ensure 45 slots
+          };
+          img.src = e.target.result;
         };
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
 
-      photoDiv.appendChild(img);
-      photoContainer.appendChild(photoDiv);
-    }
-
-    // Fill the rest with empty divs to ensure 45 photos
-    const totalPhotos = photoContainer.children.length;
-    for (let i = totalPhotos; i < 45; i++) {
-      const emptyDiv = document.createElement('div');
-      emptyDiv.classList.add('photo');
-      photoContainer.appendChild(emptyDiv);
-    }
-  }
-</script>
+      function fillRemaining() {
+        const count = photoGrid.children.length;
+        for (let i = count; i < 45; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'photo-slot';
+          photoGrid.appendChild(empty);
+        }
+      }
+    });
+  </script>
 
 </body>
 </html>
