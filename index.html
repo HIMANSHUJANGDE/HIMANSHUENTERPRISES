@@ -1,192 +1,487 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Photo Editor + BG Remove API</title>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Complete Photo Editor + BG Remove & Change</title>
 <style>
-  body{font-family:sans-serif;background:#222;color:#fff;text-align:center;padding:20px;margin:0}
-  .editor{max-width:1000px;margin:auto}
-  .canvas-wrap{position:relative;display:inline-block}
-  canvas{border:1px solid #555;max-width:100%;cursor:crosshair}
-  #cropBox{position:absolute;border:2px dashed lime;display:none;pointer-events:none}
-  .controls{margin:10px 0}
-  input[type=range]{width:120px;margin:0 4px;vertical-align:middle}
-  button,input[type=color],input[type=text]{margin:4px;padding:6px 12px;background:#444;border:none;color:#fff;cursor:pointer}
-  button:hover,input[type=color]:hover,input[type=text]:hover{background:#555}
-  input[type=text]{width:200px}
+  body {
+    background: #222;
+    color: #eee;
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 20px;
+    text-align: center;
+  }
+  h1 {
+    margin-bottom: 12px;
+  }
+  #editor {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  canvas {
+    max-width: 100%;
+    border: 2px solid #444;
+    cursor: crosshair;
+  }
+  .controls {
+    margin: 10px 0;
+  }
+  button, input[type="color"], input[type="text"] {
+    margin: 4px 6px;
+    padding: 6px 12px;
+    background: #444;
+    border: none;
+    color: #eee;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  button:hover, input[type="color"]:hover, input[type="text"]:hover {
+    background: #555;
+  }
+  input[type="range"] {
+    vertical-align: middle;
+  }
+  label {
+    margin: 0 8px;
+  }
+  #cropRect {
+    position: absolute;
+    border: 2px dashed lime;
+    display: none;
+    pointer-events: none;
+  }
+  #canvas-container {
+    position: relative;
+    display: inline-block;
+  }
 </style>
 </head>
 <body>
-<div class="editor">
-  <h1>Photo Editor + BG Remove API</h1>
-  <div class="controls">
-    <input type="file" id="upload" accept="image/*">
-    <input type="file" id="bgUpload" accept="image/*">
-    <input type="color" id="bgColor" value="#222" title="Background Color">
-    <input type="text" id="apiKey" placeholder="remove.bg API Key">
-    <button onclick="removeBGviaAPI()">Remove BG (API)</button>
-  </div>
+  <div id="editor">
+    <h1>Complete Photo Editor + BG Remove & Change</h1>
 
-  <div class="canvas-wrap">
-    <canvas id="canvas"></canvas><div id="cropBox"></div>
-  </div>
+    <div class="controls">
+      <input type="file" id="upload" accept="image/*" />
+      <input type="file" id="bgUpload" accept="image/*" />
+      <input type="color" id="bgColor" title="Background Color" value="#222" />
+    </div>
 
-  <div class="controls">
-    B<input type="range" id="brightness" min="0" max="2" step="0.1" value="1">
-    C<input type="range" id="contrast" min="0" max="2" step="0.1" value="1">
-    S<input type="range" id="saturation" min="0" max="2" step="0.1" value="1">
-    H<input type="range" id="hue" min="0" max="360" step="1" value="0">
-    Blur<input type="range" id="blur" min="0" max="10" step="0.5" value="0">
-    <button onclick="resetFilters()">Reset Filters</button>
-  </div>
+    <div class="controls">
+      <input type="text" id="apiKey" placeholder="Enter remove.bg API key" style="width:300px" />
+      <button id="removeBgBtn">Remove Background</button>
+    </div>
 
-  <div class="controls">
-    <button onclick="applyPreset('grayscale')">Grayscale</button>
-    <button onclick="applyPreset('sepia')">Sepia</button>
-    <button onclick="applyPreset('invert')">Invert</button>
-  </div>
+    <div id="canvas-container">
+      <canvas id="canvas"></canvas>
+      <div id="cropRect"></div>
+    </div>
 
-  <div class="controls">
-    <button onclick="rotateImage()">Rotate 90°</button>
-    <button onclick="flipImage('h')">Flip H</button>
-    <button onclick="flipImage('v')">Flip V</button>
-  </div>
+    <div class="controls">
+      <label>Brightness<input type="range" id="brightness" min="0" max="2" step="0.1" value="1" /></label>
+      <label>Contrast<input type="range" id="contrast" min="0" max="2" step="0.1" value="1" /></label>
+      <label>Saturation<input type="range" id="saturation" min="0" max="2" step="0.1" value="1" /></label>
+      <label>Hue<input type="range" id="hue" min="0" max="360" step="1" value="0" /></label>
+      <label>Blur<input type="range" id="blur" min="0" max="10" step="0.5" value="0" /></label>
+      <button id="resetFilters">Reset Filters</button>
+    </div>
 
-  <div class="controls">
-    <button onclick="startCrop()">Start Crop</button>
-    <button onclick="applyCrop()">Apply Crop</button>
-    <button onclick="cancelCrop()">Cancel Crop</button>
-  </div>
+    <div class="controls">
+      <button id="rotateBtn">Rotate 90°</button>
+      <button id="flipHBtn">Flip Horizontal</button>
+      <button id="flipVBtn">Flip Vertical</button>
+    </div>
 
-  <div class="controls">
-    <button onclick="toggleDraw()">Draw</button>
-    <button onclick="addText()">Add Text</button>
-    <button onclick="clearAnnotations()">Clear Drawing/Text</button>
-  </div>
+    <div class="controls">
+      <button id="startCropBtn">Start Crop</button>
+      <button id="applyCropBtn">Apply Crop</button>
+      <button id="cancelCropBtn">Cancel Crop</button>
+    </div>
 
-  <div class="controls">
-    <button onclick="toggleReplaceMode()">Replace BG</button>
-  </div>
+    <div class="controls">
+      <button id="drawToggleBtn">Toggle Draw</button>
+      <button id="addTextBtn">Add Text</button>
+      <button id="clearDrawBtn">Clear Drawing/Text</button>
+    </div>
 
-  <div class="controls">
-    <button onclick="downloadImage()">Download PNG</button>
+    <div class="controls">
+      <button id="replaceBgBtn">Toggle Background Replacement</button>
+    </div>
+
+    <div class="controls">
+      <button id="downloadBtn">Download Image</button>
+    </div>
   </div>
-</div>
 
 <script>
-const canvas=document.getElementById("canvas"), ctx=canvas.getContext("2d");
-const upload=document.getElementById("upload"), bgUpload=document.getElementById("bgUpload"), bgColor=document.getElementById("bgColor");
-const cropBox=document.getElementById("cropBox"), apiKeyInput=document.getElementById("apiKey");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
 
-let img=new Image(), bgImg=null;
-let filters={b:1,c:1,s:1,h:0,bl:0}, rotation=0, flipH=false, flipV=false;
-let cropping=false, cropStart=null, cropRect=null;
-let drawMode=false, isDrawing=false, annotations=[], replaceMode=false;
+  const upload = document.getElementById("upload");
+  const bgUpload = document.getElementById("bgUpload");
+  const bgColor = document.getElementById("bgColor");
 
-// Load main image
-upload.onchange=e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const fr=new FileReader(); fr.onload=()=>{ img.onload=resetAll; img.src=fr.result; }; fr.readAsDataURL(f);
-};
-// Load background image
-bgUpload.onchange=e=>{
-  const f=e.target.files[0]; if(!f)return;
-  const fr=new FileReader(); fr.onload=()=>{
-    const tmp=new Image(); tmp.onload=()=>{ bgImg=tmp; drawAll(); }; tmp.src=fr.result;
-  }; fr.readAsDataURL(f);
-};
-// Filter controls
-["brightness","contrast","saturation","hue","blur"].forEach(id=>{
-  document.getElementById(id).oninput=()=>{
-    filters.b=+brightness.value; filters.c=+contrast.value;
-    filters.s=+saturation.value; filters.h=+hue.value; filters.bl=+blur.value;
+  const brightness = document.getElementById("brightness");
+  const contrast = document.getElementById("contrast");
+  const saturation = document.getElementById("saturation");
+  const hue = document.getElementById("hue");
+  const blur = document.getElementById("blur");
+
+  const resetFiltersBtn = document.getElementById("resetFilters");
+
+  const rotateBtn = document.getElementById("rotateBtn");
+  const flipHBtn = document.getElementById("flipHBtn");
+  const flipVBtn = document.getElementById("flipVBtn");
+
+  const startCropBtn = document.getElementById("startCropBtn");
+  const applyCropBtn = document.getElementById("applyCropBtn");
+  const cancelCropBtn = document.getElementById("cancelCropBtn");
+
+  const drawToggleBtn = document.getElementById("drawToggleBtn");
+  const addTextBtn = document.getElementById("addTextBtn");
+  const clearDrawBtn = document.getElementById("clearDrawBtn");
+
+  const replaceBgBtn = document.getElementById("replaceBgBtn");
+
+  const removeBgBtn = document.getElementById("removeBgBtn");
+  const apiKeyInput = document.getElementById("apiKey");
+
+  const cropRect = document.getElementById("cropRect");
+  const canvasContainer = document.getElementById("canvas-container");
+
+  let img = new Image();
+  let bgImg = null;
+
+  // Editor state
+  let filters = { b: 1, c: 1, s: 1, h: 0, bl: 0 };
+  let rotation = 0;
+  let flipH = false;
+  let flipV = false;
+
+  let cropping = false;
+  let cropStart = null;
+  let cropArea = null;
+
+  let drawMode = false;
+  let isDrawing = false;
+  let annotations = [];
+
+  let replaceMode = false;
+
+  // Load main image
+  upload.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      img.onload = () => {
+        resetAll();
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Load background image
+  bgUpload.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const tmp = new Image();
+      tmp.onload = () => {
+        bgImg = tmp;
+        drawAll();
+      };
+      tmp.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Filter controls
+  [brightness, contrast, saturation, hue, blur].forEach(el =>
+    el.addEventListener("input", () => {
+      filters.b = +brightness.value;
+      filters.c = +contrast.value;
+      filters.s = +saturation.value;
+      filters.h = +hue.value;
+      filters.bl = +blur.value;
+      drawAll();
+    })
+  );
+
+  resetFiltersBtn.addEventListener("click", () => {
+    brightness.value = 1;
+    contrast.value = 1;
+    saturation.value = 1;
+    hue.value = 0;
+    blur.value = 0;
+    filters = { b: 1, c: 1, s: 1, h: 0, bl: 0 };
     drawAll();
-  };
-});
-function resetFilters(){brightness.value=contrast.value=saturation.value=1; hue.value=0; blur.value=0; filters={b:1,c:1,s:1,h:0,bl:0}; drawAll();}
-function applyPreset(type){
-  if(type==="grayscale") filters={b:1,c:1,s:0,h:0,bl:0};
-  if(type==="sepia") filters={b:1,c:1,s:1,h:30,bl:0};
-  if(type==="invert") filters={b:1,c:1,s:1,h:180,bl:0};
-  drawAll();
-}
-function rotateImage(){ rotation=(rotation+90)%360; drawAll(); }
-function flipImage(d){ if(d==="h") flipH=!flipH; else flipV=!flipV; drawAll(); }
-function startCrop(){ cropping=true; cropBox.style.display="block"; }
-canvas.onmousedown=e=>{
-  const p=mouse(e);
-  if(drawMode){ isDrawing=true; annotations.push({type:'line',points:[p],color:'#ff0',size:2}); }
-  else if(cropping){ cropStart=p; }
-};
-canvas.onmousemove=e=>{
-  const p=mouse(e);
-  if(cropping && cropStart){
-    cropRect={x:Math.min(cropStart.x,p.x),y:Math.min(cropStart.y,p.y),w:Math.abs(p.x-cropStart.x),h:Math.abs(p.y-cropStart.y)};
-    Object.assign(cropBox.style,{left:cropRect.x+'px',top:cropRect.y+'px',width:cropRect.w+'px',height:cropRect.h+'px'});
-  } else if(drawMode && isDrawing){
-    let cur=annotations[annotations.length-1]; cur.points.push(p); drawAll();
-  }
-};
-window.onmouseup=()=>{cropping=false; isDrawing=false;};
-function applyCrop(){
-  if(!cropRect) return;
-  const tmp=document.createElement("canvas"), t=tmp.getContext("2d");
-  tmp.width=cropRect.w; tmp.height=cropRect.h;
-  t.drawImage(canvas,cropRect.x,cropRect.y,cropRect.w,cropRect.h,0,0,cropRect.w,cropRect.h);
-  canvas.width=tmp.width;canvas.height=tmp.height;ctx.drawImage(tmp,0,0);
-  cropBox.style.display="none"; cropRect=cropStart=null;
-  drawAll();
-}
-function cancelCrop(){cropping=false; cropBox.style.display="none"; cropRect=cropStart=null;}
-function toggleDraw(){ drawMode=!drawMode; canvas.style.cursor=drawMode?'crosshair':'default'; }
-function addText(){
-  const txt=prompt("Enter text"); if(!txt)return;
-  const pos=prompt("Enter x,y")?.split(",").map(Number)||[50,50];
-  annotations.push({type:'text',x:pos[0],y:pos[1],text:txt,color:'#0f0',size:20}); drawAll();
-}
-function clearAnnotations(){ annotations=[]; drawAll(); }
-function toggleReplaceMode(){ replaceMode=!replaceMode; drawAll(); }
-function drawAll(){
-  if(!img.src) return;
-  canvas.width=img.width; canvas.height=img.height;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  if(replaceMode){
-    if(bgImg) ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
-    else{ ctx.fillStyle=bgColor.value; ctx.fillRect(0,0,canvas.width,canvas.height); }
-  }
-  ctx.save();
-  ctx.filter=`brightness(${filters.b}) contrast(${filters.c}) saturate(${filters.s}) hue-rotate(${filters.h}deg) blur(${filters.bl}px)`;
-  ctx.translate(canvas.width/2,canvas.height/2);
-  ctx.rotate(rotation*Math.PI/180);
-  ctx.scale(flipH?-1:1,flipV?-1:1);
-  ctx.drawImage(img,-img.width/2,-img.height/2);
-  ctx.restore();
-  annotations.forEach(o=>{
-    if(o.type==='line'){
-      ctx.strokeStyle=o.color;ctx.lineWidth=o.size;
-      ctx.beginPath();o.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-      ctx.stroke();
-    } else {
-      ctx.fillStyle=o.color;ctx.font=`${o.size}px sans-serif`;ctx.fillText(o.text,o.x,o.y);
+  });
+
+  rotateBtn.addEventListener("click", () => {
+    rotation = (rotation + 90) % 360;
+    drawAll();
+  });
+
+  flipHBtn.addEventListener("click", () => {
+    flipH = !flipH;
+    drawAll();
+  });
+
+  flipVBtn.addEventListener("click", () => {
+    flipV = !flipV;
+    drawAll();
+  });
+
+  // Crop handlers
+  startCropBtn.addEventListener("click", () => {
+    cropping = true;
+    cropRect.style.display = "block";
+  });
+
+  applyCropBtn.addEventListener("click", () => {
+    if (!cropArea) return;
+    const tmpCanvas = document.createElement("canvas");
+    const tmpCtx = tmpCanvas.getContext("2d");
+    tmpCanvas.width = cropArea.w;
+    tmpCanvas.height = cropArea.h;
+    tmpCtx.drawImage(
+      canvas,
+      cropArea.x,
+      cropArea.y,
+      cropArea.w,
+      cropArea.h,
+      0,
+      0,
+      cropArea.w,
+      cropArea.h
+    );
+    canvas.width = tmpCanvas.width;
+    canvas.height = tmpCanvas.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(tmpCanvas, 0, 0);
+    cropping = false;
+    cropStart = null;
+    cropArea = null;
+    cropRect.style.display = "none";
+    drawAll();
+  });
+
+  cancelCropBtn.addEventListener("click", () => {
+    cropping = false;
+    cropStart = null;
+    cropArea = null;
+    cropRect.style.display = "none";
+  });
+
+  canvas.addEventListener("mousedown", e => {
+    if (cropping) {
+      cropStart = getMousePos(e);
+    }
+    if (drawMode) {
+      isDrawing = true;
+      annotations.push({
+        type: "line",
+        points: [getMousePos(e)],
+        color: "#ff0",
+        size: 2,
+      });
     }
   });
-}
-function mouse(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
-function resetAll(){rotation=0;flipH=flipV=false;annotations=[];replaceMode=false;resetFilters();drawAll();}
-function downloadImage(){const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="edited.png";a.click();}
-async function removeBGviaAPI(){
-  if(!img.src){alert("Load image first");return;}
-  const key=apiKeyInput.value.trim(); if(!key){alert("Enter API key");return;}
-  const blob=await fetch(canvas.toDataURL()).then(r=>r.blob());
-  const fd=new FormData(); fd.append("image_file",blob); fd.append("size","auto");
-  try{
-    const res=await fetch("https://api.remove.bg/v1.0/removebg",{
-      method:"POST", headers:{"X-Api-Key":key}, body:fd
+
+  canvas.addEventListener("mousemove", e => {
+    const pos = getMousePos(e);
+    if (cropping && cropStart) {
+      cropArea = {
+        x: Math.min(cropStart.x, pos.x),
+        y: Math.min(cropStart.y, pos.y),
+        w: Math.abs(pos.x - cropStart.x),
+        h: Math.abs(pos.y - cropStart.y),
+      };
+      cropRect.style.left = cropArea.x + "px";
+      cropRect.style.top = cropArea.y + "px";
+      cropRect.style.width = cropArea.w + "px";
+      cropRect.style.height = cropArea.h + "px";
+    }
+    if (drawMode && isDrawing) {
+      let current = annotations[annotations.length - 1];
+      current.points.push(pos);
+      drawAll();
+    }
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (cropping) cropStart = null;
+    isDrawing = false;
+  });
+
+  drawToggleBtn.addEventListener("click", () => {
+    drawMode = !drawMode;
+    canvas.style.cursor = drawMode ? "crosshair" : "default";
+  });
+
+  addTextBtn.addEventListener("click", () => {
+    const text = prompt("Enter text:");
+    if (!text) return;
+    const posStr = prompt("Enter position x,y (default 50,50):") || "50,50";
+    const [x, y] = posStr.split(",").map(Number);
+    annotations.push({
+      type: "text",
+      x: x || 50,
+      y: y || 50,
+      text: text,
+      color: "#0f0",
+      size: 20,
     });
-    if(!res.ok) throw new Error(await res.text());
-    const blob2=await res.blob(), url=URL.createObjectURL(blob2);
-    img.onload=resetAll; img.src=url;
-  } catch(err) { alert("BG Removal Error: "+err.message); }
-}
+    drawAll();
+  });
+
+  clearDrawBtn.addEventListener("click", () => {
+    annotations = [];
+    drawAll();
+  });
+
+  replaceBgBtn.addEventListener("click", () => {
+    replaceMode = !replaceMode;
+    drawAll();
+  });
+
+  removeBgBtn.addEventListener("click", removeBG);
+
+  function getMousePos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: Math.round(evt.clientX - rect.left),
+      y: Math.round(evt.clientY - rect.top),
+    };
+  }
+
+  function resetAll() {
+    rotation = 0;
+    flipH = false;
+    flipV = false;
+    annotations = [];
+    replaceMode = false;
+    brightness.value = 1;
+    contrast.value = 1;
+    saturation.value = 1;
+    hue.value = 0;
+    blur.value = 0;
+    filters = { b: 1, c: 1, s: 1, h: 0, bl: 0 };
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    drawAll();
+  }
+
+  function drawAll() {
+    if (!img.src) return;
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    // Draw background (color or image) if in replace mode
+    if (replaceMode) {
+      if (bgImg) {
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = bgColor.value;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = bgColor.value;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Apply filters, rotation, flips
+    ctx.save();
+    ctx.filter = `brightness(${filters.b}) contrast(${filters.c}) saturate(${filters.s}) hue-rotate(${filters.h}deg) blur(${filters.bl}px)`;
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+    ctx.restore();
+
+    // Draw annotations (lines & text)
+    annotations.forEach(a => {
+      if (a.type === "line") {
+        ctx.strokeStyle = a.color;
+        ctx.lineWidth = a.size;
+        ctx.beginPath();
+        a.points.forEach((p, i) => {
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+      } else if (a.type === "text") {
+        ctx.fillStyle = a.color;
+        ctx.font = `${a.size}px sans-serif`;
+        ctx.fillText(a.text, a.x, a.y);
+      }
+    });
+  }
+
+  async function removeBG() {
+    if (!img.src) {
+      alert("Upload an image first.");
+      return;
+    }
+    const key = apiKeyInput.value.trim();
+    if (!key) {
+      alert("Please enter your remove.bg API key.");
+      return;
+    }
+
+    try {
+      // Convert canvas image to blob
+      const dataURL = canvas.toDataURL("image/png");
+      const blob = await (await fetch(dataURL)).blob();
+
+      const formData = new FormData();
+      formData.append("image_file", blob, "image.png");
+      formData.append("size", "auto");
+
+      removeBgBtn.disabled = true;
+      removeBgBtn.textContent = "Removing...";
+
+      const response = await fetch("https://api.remove.bg/v1.0/removebg", {
+        method: "POST",
+        headers: {
+          "X-Api-Key": key,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to remove background");
+      }
+
+      const resultBlob = await response.blob();
+      const objectUrl = URL.createObjectURL(resultBlob);
+      img.onload = () => {
+        resetAll();
+        removeBgBtn.disabled = false;
+        removeBgBtn.textContent = "Remove Background";
+      };
+      img.src = objectUrl;
+    } catch (e) {
+      alert("Error removing background: " + e.message);
+      removeBgBtn.disabled = false;
+      removeBgBtn.textContent = "Remove Background";
+    }
+  }
+
+  document.getElementById("downloadBtn").addEventListener("click", () => {
+    if (!img.src) return alert("Load an image first");
+    const link = document.createElement("a");
+    link.download = "edited-image.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
 </script>
 </body>
 </html>
+
