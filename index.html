@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>45 Mini Landscape Photos on A4 Portrait</title>
   <style>
     :root {
-      --photo-width: 32mm;
+      --photo-width: 32mm;   /* Landscape: width > height */
       --photo-height: 24mm;
       --columns: 5;
       --rows: 9;
-      --gap: 3mm;
+      --gap: 2mm;
     }
 
     body {
       margin: 0;
       padding: 10mm;
-      background: #f0f0f0;
-      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      font-family: sans-serif;
     }
 
     .controls {
@@ -25,8 +25,8 @@
 
     .controls input,
     .controls button {
-      font-size: 14px;
       padding: 6px 12px;
+      font-size: 14px;
       margin-right: 6px;
     }
 
@@ -34,30 +34,30 @@
       background: white;
       width: 210mm;
       height: 297mm;
-      box-sizing: border-box;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(var(--columns), var(--photo-width));
       grid-template-rows: repeat(var(--rows), var(--photo-height));
       gap: var(--gap);
       padding: 5mm;
-      margin: auto;
-      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+      box-sizing: border-box;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
     }
 
     .photo-box {
       border: 1px solid black;
-      width: var(--photo-width);
-      height: var(--photo-height);
+      background: white;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      background: #fff;
+      width: var(--photo-width);
+      height: var(--photo-height);
     }
 
     .photo-box img {
-      max-height: 100%;
       max-width: 100%;
+      max-height: 100%;
       object-fit: cover;
     }
 
@@ -82,31 +82,31 @@
 <body>
 
   <div class="controls">
-    <input type="file" id="fileInput" multiple accept="image/*">
+    <input type="file" id="photoUpload" multiple accept="image/*">
     <button onclick="window.print()">Print</button>
   </div>
 
   <div class="print-area" id="printArea"></div>
 
   <script>
-    const input = document.getElementById('fileInput');
-    const printArea = document.getElementById('printArea');
+    const photoUpload = document.getElementById("photoUpload");
+    const printArea = document.getElementById("printArea");
 
-    input.addEventListener('change', () => {
-      const files = Array.from(input.files).slice(0, 45); // Limit to 45
-      printArea.innerHTML = ''; // Clear existing
+    photoUpload.addEventListener("change", () => {
+      const files = Array.from(photoUpload.files).slice(0, 45); // Max 45 photos
+      printArea.innerHTML = ""; // Clear previous
 
       files.forEach(file => {
         const reader = new FileReader();
-        reader.onload = e => {
-          const photoBox = document.createElement('div');
-          photoBox.className = 'photo-box';
+        reader.onload = (e) => {
+          const box = document.createElement("div");
+          box.className = "photo-box";
 
-          const img = document.createElement('img');
+          const img = document.createElement("img");
           img.src = e.target.result;
 
-          photoBox.appendChild(img);
-          printArea.appendChild(photoBox);
+          box.appendChild(img);
+          printArea.appendChild(box);
         };
         reader.readAsDataURL(file);
       });
