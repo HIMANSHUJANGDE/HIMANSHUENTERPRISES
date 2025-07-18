@@ -2,49 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>45 Photo Print Layout</title>
+  <title>45 Photo Layout - Print Ready</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
+      margin: 0;
+      padding: 0;
       font-family: sans-serif;
-      margin: 20px;
-      text-align: center;
     }
-
-    input[type="file"] {
-      margin-bottom: 10px;
-    }
-
-    .print-page {
+    .container {
       width: 210mm;
       height: 297mm;
-      margin: auto;
+      padding: 10mm;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-content: flex-start;
       background: white;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(9, 1fr);
-      gap: 2mm;
-      padding: 5mm;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
     }
-
-    .photo-slot {
-      width: 100%;
-      height: 100%;
-      border: 1px solid #333;
-      overflow: hidden;
+    .photo {
+      width: 3cm;
+      height: 2cm;
+      margin: 1mm;
+      border: 1px solid #000;
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
-
-    .photo-slot img {
-      max-width: 100%;
-      max-height: 100%;
+    .photo img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      transform-origin: center center;
+      transform: rotate(0deg);
     }
-
     @media print {
       body {
         margin: 0;
@@ -52,58 +45,62 @@
       .no-print {
         display: none;
       }
-      .print-page {
-        border: none;
+      .container {
+        page-break-after: always;
       }
+    }
+    .controls {
+      margin: 10px;
     }
   </style>
 </head>
 <body>
 
-  <h2 class="no-print">Upload up to 45 Photos</h2>
-  <input class="no-print" type="file" id="photoUpload" multiple accept="image/*">
-  <div class="print-page" id="photoGrid"></div>
+<div class="controls no-print">
+  <input type="file" id="upload" accept="image/*" multiple>
+  <button onclick="window.print()">🖨️ Print</button>
+</div>
 
-  <script>
-    const photoUpload = document.getElementById('photoUpload');
-    const photoGrid = document.getElementById('photoGrid');
+<div id="pages"></div>
 
-    photoUpload.addEventListener('change', function () {
-      const files = Array.from(this.files).slice(0, 45); // max 45
-      photoGrid.innerHTML = ''; // clear previous
+<script>
+  const uploadInput = document.getElementById('upload');
+  const pagesContainer = document.getElementById('pages');
 
-      files.forEach(file => {
+  uploadInput.addEventListener('change', function (e) {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const totalPhotosPerPage = 45;
+    const pages = Math.ceil(files.length / totalPhotosPerPage);
+
+    pagesContainer.innerHTML = '';
+
+    for (let i = 0; i < pages; i++) {
+      const pageDiv = document.createElement('div');
+      pageDiv.classList.add('container');
+
+      const currentFiles = files.slice(i * totalPhotosPerPage, (i + 1) * totalPhotosPerPage);
+
+      currentFiles.forEach(file => {
         const reader = new FileReader();
-        reader.onload = function (e) {
-          const img = new Image();
-          img.onload = () => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'photo-slot';
+        reader.onload = function (event) {
+          const photoDiv = document.createElement('div');
+          photoDiv.classList.add('photo');
 
-            // Rotate landscape images
-            if (img.width > img.height) {
-              img.style.transform = 'rotate(90deg)';
-            }
+          const img = document.createElement('img');
+          img.src = event.target.result;
 
-            wrapper.appendChild(img);
-            photoGrid.appendChild(wrapper);
-            fillRemaining(); // ensure 45 slots
-          };
-          img.src = e.target.result;
+          photoDiv.appendChild(img);
+          pageDiv.appendChild(photoDiv);
         };
         reader.readAsDataURL(file);
       });
 
-      function fillRemaining() {
-        const count = photoGrid.children.length;
-        for (let i = count; i < 45; i++) {
-          const empty = document.createElement('div');
-          empty.className = 'photo-slot';
-          photoGrid.appendChild(empty);
-        }
-      }
-    });
-  </script>
+      pagesContainer.appendChild(pageDiv);
+    }
+  });
+</script>
 
 </body>
 </html>
