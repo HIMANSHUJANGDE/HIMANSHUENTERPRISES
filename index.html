@@ -1,38 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mini Photo Print Layout</title>
+  <meta charset="UTF-8">
+  <title>Mini Photo Print Sheet (45 per A4)</title>
   <style>
+    :root {
+      --photo-width-mm: 24mm;
+      --photo-height-mm: 32mm;
+      --columns: 5;
+      --rows: 9;
+      --gap-mm: 3mm;
+    }
+
     body {
-      font-family: sans-serif;
       margin: 0;
-      padding: 1rem;
+      padding: 10mm;
+      background: #ccc;
+      font-family: sans-serif;
     }
 
     .controls {
-      margin-bottom: 1rem;
+      margin-bottom: 10px;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr); /* 5 columns */
-      gap: 5mm;
+    .controls input,
+    .controls button {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    .print-area {
+      background: #fff;
       width: 210mm;
       height: 297mm;
-      padding: 10mm;
       box-sizing: border-box;
-      background: white;
+      display: grid;
+      grid-template-columns: repeat(var(--columns), var(--photo-width-mm));
+      grid-template-rows: repeat(var(--rows), var(--photo-height-mm));
+      gap: var(--gap-mm);
+      padding: 5mm;
+      overflow: hidden;
     }
 
     .photo-box {
-      border: 1px solid black;
-      width: 32mm;
-      height: 24mm;
+      width: var(--photo-width-mm);
+      height: var(--photo-height-mm);
+      border: 1px solid #000;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
       background: #fff;
     }
 
@@ -44,47 +61,52 @@
     @media print {
       body {
         padding: 0;
+        background: #fff;
       }
       .controls {
         display: none;
       }
-      .grid {
+      .print-area {
+        margin: 0;
+        box-shadow: none;
         page-break-after: always;
       }
     }
   </style>
 </head>
 <body>
+
   <div class="controls">
-    <input type="file" id="fileInput" multiple accept="image/*" />
+    <input type="file" id="photoUpload" multiple accept="image/*">
     <button onclick="window.print()">Print</button>
   </div>
 
-  <div class="grid" id="photoGrid"></div>
+  <div class="print-area" id="printArea"></div>
 
   <script>
-    const fileInput = document.getElementById("fileInput");
-    const grid = document.getElementById("photoGrid");
+    const photoInput = document.getElementById('photoUpload');
+    const printArea = document.getElementById('printArea');
 
-    fileInput.addEventListener("change", (event) => {
-      const files = Array.from(event.target.files).slice(0, 45); // Limit to 45
-      grid.innerHTML = ""; // Clear existing
+    photoInput.addEventListener('change', () => {
+      const files = Array.from(photoInput.files).slice(0, 45); // Limit to 45
+      printArea.innerHTML = ''; // Clear previous content
 
       files.forEach(file => {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          const box = document.createElement("div");
-          box.className = "photo-box";
+        reader.onload = (e) => {
+          const box = document.createElement('div');
+          box.className = 'photo-box';
 
-          const img = document.createElement("img");
+          const img = document.createElement('img');
           img.src = e.target.result;
 
           box.appendChild(img);
-          grid.appendChild(box);
+          printArea.appendChild(box);
         };
         reader.readAsDataURL(file);
       });
     });
   </script>
+
 </body>
 </html>
