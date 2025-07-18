@@ -10,8 +10,9 @@
   #cropBox{position:absolute;border:2px dashed lime;display:none;pointer-events:none}
   .controls{margin:10px 0}
   input[type=range]{width:120px;margin:0 4px;vertical-align:middle}
-  button,input[type=color]{margin:4px;padding:6px 12px;background:#444;border:none;color:#fff;cursor:pointer}
-  button:hover,input[type=color]:hover{background:#555}
+  button,input[type=color],input[type=text]{margin:4px;padding:6px 12px;background:#444;border:none;color:#fff;cursor:pointer}
+  button:hover,input[type=color]:hover,input[type=text]:hover{background:#555}
+  input[type=text]{width:200px}
 </style>
 </head>
 <body>
@@ -21,13 +22,12 @@
     <input type="file" id="upload" accept="image/*">
     <input type="file" id="bgUpload" accept="image/*">
     <input type="color" id="bgColor" value="#222" title="Background Color">
-    <input type="text" id="apiKey" placeholder="Remove.bg API Key">
-    <button onclick="removeBGviaAPI()">Remove BG via API</button>
+    <input type="text" id="apiKey" placeholder="remove.bg API Key">
+    <button onclick="removeBGviaAPI()">Remove BG (API)</button>
   </div>
 
   <div class="canvas-wrap">
-    <canvas id="canvas"></canvas>
-    <div id="cropBox"></div>
+    <canvas id="canvas"></canvas><div id="cropBox"></div>
   </div>
 
   <div class="controls">
@@ -36,7 +36,7 @@
     S<input type="range" id="saturation" min="0" max="2" step="0.1" value="1">
     H<input type="range" id="hue" min="0" max="360" step="1" value="0">
     Blur<input type="range" id="blur" min="0" max="10" step="0.5" value="0">
-    <button onclick="resetFilters()">Reset</button>
+    <button onclick="resetFilters()">Reset Filters</button>
   </div>
 
   <div class="controls">
@@ -60,7 +60,7 @@
   <div class="controls">
     <button onclick="toggleDraw()">Draw</button>
     <button onclick="addText()">Add Text</button>
-    <button onclick="clearAnnotations()">Clear Draw/Text</button>
+    <button onclick="clearAnnotations()">Clear Drawing/Text</button>
   </div>
 
   <div class="controls">
@@ -84,58 +84,38 @@ let drawMode=false, isDrawing=false, annotations=[], replaceMode=false;
 
 // Load main image
 upload.onchange=e=>{
-  const f=e.target.files[0]; if(!f)return;
-  const fr=new FileReader();
-  fr.onload=()=>{img.onload=resetAll;img.src=fr.result;};
-  fr.readAsDataURL(f);
+  const f=e.target.files[0]; if(!f) return;
+  const fr=new FileReader(); fr.onload=()=>{ img.onload=resetAll; img.src=fr.result; }; fr.readAsDataURL(f);
 };
-
-// Load replacement background image
+// Load background image
 bgUpload.onchange=e=>{
   const f=e.target.files[0]; if(!f)return;
-  const fr=new FileReader();
-  fr.onload=()=>{
-    const tmp=new Image();
-    tmp.onload=()=>{bgImg=tmp;drawAll();};
-    tmp.src=fr.result;
-  };
-  fr.readAsDataURL(f);
+  const fr=new FileReader(); fr.onload=()=>{
+    const tmp=new Image(); tmp.onload=()=>{ bgImg=tmp; drawAll(); }; tmp.src=fr.result;
+  }; fr.readAsDataURL(f);
 };
-
 // Filter controls
 ["brightness","contrast","saturation","hue","blur"].forEach(id=>{
   document.getElementById(id).oninput=()=>{
-    filters.b=+brightness.value;
-    filters.c=+contrast.value;
-    filters.s=+saturation.value;
-    filters.h=+hue.value;
-    filters.bl=+blur.value;
+    filters.b=+brightness.value; filters.c=+contrast.value;
+    filters.s=+saturation.value; filters.h=+hue.value; filters.bl=+blur.value;
     drawAll();
   };
 });
-function resetFilters(){
-  brightness.value=contrast.value=saturation.value=1;
-  hue.value=0; blur.value=0;
-  filters={b:1,c:1,s:1,h:0,bl:0};
-  drawAll();
-}
+function resetFilters(){brightness.value=contrast.value=saturation.value=1; hue.value=0; blur.value=0; filters={b:1,c:1,s:1,h:0,bl:0}; drawAll();}
 function applyPreset(type){
-  if(type==="grayscale")filters={b:1,c:1,s:0,h:0,bl:0};
-  if(type==="sepia")filters={b:1,c:1,s:1,h:30,bl:0};
-  if(type==="invert")filters={b:1,c:1,s:1,h:180,bl:0};
+  if(type==="grayscale") filters={b:1,c:1,s:0,h:0,bl:0};
+  if(type==="sepia") filters={b:1,c:1,s:1,h:30,bl:0};
+  if(type==="invert") filters={b:1,c:1,s:1,h:180,bl:0};
   drawAll();
 }
-
-// Transform
-function rotateImage(){ rotation=(rotation+90)%360; drawAll();}
-function flipImage(d){ d==="h"?flipH=!flipH:flipV=!flipV; drawAll(); }
-
-// Crop
-function startCrop(){cropping=true; cropBox.style.display="block";}
+function rotateImage(){ rotation=(rotation+90)%360; drawAll(); }
+function flipImage(d){ if(d==="h") flipH=!flipH; else flipV=!flipV; drawAll(); }
+function startCrop(){ cropping=true; cropBox.style.display="block"; }
 canvas.onmousedown=e=>{
   const p=mouse(e);
-  if(drawMode){isDrawing=true; annotations.push({type:'line',points:[p],color:'#ff0',size:2});}
-  else if(cropping){cropStart=p;}
+  if(drawMode){ isDrawing=true; annotations.push({type:'line',points:[p],color:'#ff0',size:2}); }
+  else if(cropping){ cropStart=p; }
 };
 canvas.onmousemove=e=>{
   const p=mouse(e);
@@ -143,45 +123,36 @@ canvas.onmousemove=e=>{
     cropRect={x:Math.min(cropStart.x,p.x),y:Math.min(cropStart.y,p.y),w:Math.abs(p.x-cropStart.x),h:Math.abs(p.y-cropStart.y)};
     Object.assign(cropBox.style,{left:cropRect.x+'px',top:cropRect.y+'px',width:cropRect.w+'px',height:cropRect.h+'px'});
   } else if(drawMode && isDrawing){
-    let cur=annotations[annotations.length-1];
-    cur.points.push(p);
-    drawAll();
+    let cur=annotations[annotations.length-1]; cur.points.push(p); drawAll();
   }
 };
 window.onmouseup=()=>{cropping=false; isDrawing=false;};
 function applyCrop(){
-  if(!cropRect)return;
+  if(!cropRect) return;
   const tmp=document.createElement("canvas"), t=tmp.getContext("2d");
   tmp.width=cropRect.w; tmp.height=cropRect.h;
   t.drawImage(canvas,cropRect.x,cropRect.y,cropRect.w,cropRect.h,0,0,cropRect.w,cropRect.h);
   canvas.width=tmp.width;canvas.height=tmp.height;ctx.drawImage(tmp,0,0);
-  cropBox.style.display="none"; cropRect=cropStart=null; drawAll();
+  cropBox.style.display="none"; cropRect=cropStart=null;
+  drawAll();
 }
 function cancelCrop(){cropping=false; cropBox.style.display="none"; cropRect=cropStart=null;}
-
-// Drawing/Text
-function toggleDraw(){drawMode=!drawMode; canvas.style.cursor=drawMode?'crosshair':'default';}
+function toggleDraw(){ drawMode=!drawMode; canvas.style.cursor=drawMode?'crosshair':'default'; }
 function addText(){
   const txt=prompt("Enter text"); if(!txt)return;
   const pos=prompt("Enter x,y")?.split(",").map(Number)||[50,50];
-  annotations.push({type:'text',x:pos[0],y:pos[1],text:txt,color:'#0f0',size:20});drawAll();
+  annotations.push({type:'text',x:pos[0],y:pos[1],text:txt,color:'#0f0',size:20}); drawAll();
 }
-function clearAnnotations(){annotations=[];drawAll();}
-
-// Replace BG toggle
-function toggleReplaceMode(){replaceMode=!replaceMode; drawAll();}
-
-// Main draw routine
+function clearAnnotations(){ annotations=[]; drawAll(); }
+function toggleReplaceMode(){ replaceMode=!replaceMode; drawAll(); }
 function drawAll(){
   if(!img.src) return;
   canvas.width=img.width; canvas.height=img.height;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   if(replaceMode){
     if(bgImg) ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
-    else{ctx.fillStyle=bgColor.value; ctx.fillRect(0,0,canvas.width,canvas.height);}
+    else{ ctx.fillStyle=bgColor.value; ctx.fillRect(0,0,canvas.width,canvas.height); }
   }
-
   ctx.save();
   ctx.filter=`brightness(${filters.b}) contrast(${filters.c}) saturate(${filters.s}) hue-rotate(${filters.h}deg) blur(${filters.bl}px)`;
   ctx.translate(canvas.width/2,canvas.height/2);
@@ -189,50 +160,32 @@ function drawAll(){
   ctx.scale(flipH?-1:1,flipV?-1:1);
   ctx.drawImage(img,-img.width/2,-img.height/2);
   ctx.restore();
-
   annotations.forEach(o=>{
     if(o.type==='line'){
       ctx.strokeStyle=o.color;ctx.lineWidth=o.size;
       ctx.beginPath();o.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
       ctx.stroke();
     } else {
-      ctx.fillStyle=o.color;ctx.font=`${o.size}px sans-serif`; ctx.fillText(o.text,o.x,o.y);
+      ctx.fillStyle=o.color;ctx.font=`${o.size}px sans-serif`;ctx.fillText(o.text,o.x,o.y);
     }
   });
 }
-
-// Mouse coords
 function mouse(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
-
-// Reset all
 function resetAll(){rotation=0;flipH=flipV=false;annotations=[];replaceMode=false;resetFilters();drawAll();}
-
-// Download
 function downloadImage(){const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="edited.png";a.click();}
-
-// Call Remove.bg API
 async function removeBGviaAPI(){
-  if(!img.src){alert("Load image!");return;}
-  const key=apiKeyInput.value.trim();
-  if(!key){alert("kmWvwT2X2hcAnTdQEwhdWwGo");return;}
+  if(!img.src){alert("Load image first");return;}
+  const key=apiKeyInput.value.trim(); if(!key){alert("Enter API key");return;}
   const blob=await fetch(canvas.toDataURL()).then(r=>r.blob());
   const fd=new FormData(); fd.append("image_file",blob); fd.append("size","auto");
-
   try{
     const res=await fetch("https://api.remove.bg/v1.0/removebg",{
-      method:"POST",
-      headers:{"X-Api-Key":key},
-      body:fd
+      method:"POST", headers:{"X-Api-Key":key}, body:fd
     });
-    if(!res.ok)throw new Error(await res.text());
-    const blob2=await res.blob();
-    const url=URL.createObjectURL(blob2);
-    img.onload = ()=>{
-      img.src = url; // update canvas
-    };
-  }catch(err){
-    alert("BG removal error: "+err.message);
-  }
+    if(!res.ok) throw new Error(await res.text());
+    const blob2=await res.blob(), url=URL.createObjectURL(blob2);
+    img.onload=resetAll; img.src=url;
+  } catch(err) { alert("BG Removal Error: "+err.message); }
 }
 </script>
 </body>
