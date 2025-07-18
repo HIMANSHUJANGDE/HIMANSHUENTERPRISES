@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Advanced Photo Editor</title>
+<style>
+  body { background:#222; color:#fff; font-family:sans-serif; text-align:center; padding:20px; }
+  .editor { max-width:900px; margin:auto; }
+  .canvas-container { position:relative; display:inline-block; margin:20px; }
+  canvas { border:1px solid #555; cursor:crosshair; max-width:100%; }
+  #crop-overlay { position:absolute; border:2px dashed #0f0; display:none; pointer-events:none; }
+  .tools { text-align:left; max-width:900px; margin:auto; }
+  .section { margin:15px 0; }
+  button { margin:4px; padding:8px 12px; background:#444; color:#fff; border:none; cursor:pointer; }
+  button:hover { background:#555; }
+  .sliders label { margin-right:10px; display:inline-block; }
+  .sliders input { width:120px; vertical-align:middle; }
+</style>
+</head>
+<body>
+  <div class="editor">
+    <h1>Advanced Photo Editor</h1>
+    <input type="file" id="upload" accept="image/*" />
+
+    <div class="canvas-container">
+      <canvas id="canvas"></canvas>
+      <div id="crop-overlay"></div>
+    </div>
+
+    <div class="tools">
+      <div class="section">
+        <h3>Filters & Adjustments</h3>
+        <button onclick="applyPreset('grayscale')">Grayscale</button>
+        <button onclick="applyPreset('sepia')">Sepia</button>
+        <button onclick="applyPreset('invert')">Invert</button>
+        <button onclick="resetFilters()">Reset</button>
+        <div class="sliders">
+          <label>B <input type="range" id="brightness" min="0" max="2" step="0.1" value="1"></label>
+          <label>C <input type="range" id="contrast" min="0" max="2" step="0.1" value="1"></label>
+          <label>S <input type="range" id="saturation" min="0" max="2" step="0.1" value="1"></label>
+          <label>H <input type="range" id="hue" min="0" max="360" step="1" value="0"></label>
+          <label>Blur <input type="range" id="blur" min="0" max="10" step="0.5" value="0"></label>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Transform</h3>
+        <button onclick="transformImage(90)">Rotate 90°</button>
+        <button onclick="flipImage('h')">Flip H</button>
+        <button onclick="flipImage('v')">Flip V</button>
+      </div>
+
+      <div class="section">
+        <h3>Crop Tool</h3>
+        <button onclick="startCrop()">Start Crop</button>
+        <button onclick="applyCrop()">Apply Crop</button>
+        <button onclick="cancelCrop()">Cancel</button>
+      </div>
+
+      <div class="section">
+        <h3>Draw & Text</h3>
+        <button onclick="toggleDraw()">Draw</button>
+        <button onclick="toggleText()">Add Text</button>
+        <button onclick="clearAnnotations()">Clear All</button>
+      </div>
+
+      <div class="section">
+        <button onclick="downloadResult()">Download</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
+const overlay = document.getElementById("crop-overlay");
+let img = new Image(), original = null, filters = {b:1,c:1,s:1,h:0,bl:0}, 
+    trans = {rot:0,fh:false,fv:false}, cropping=false, cs={}, cr={}, drawing=false, 
+    drawMode=false, textMode=false, annotations=[];
+
+document.getElementById("upload").onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    img.onload = () => reset(), img.src = ev.target.result;
+  }; r.readAsDataURL(f);
+};
+
+["brightness","contrast","saturation","hue","blur"].forEach(id=>{
+  document.getElementById(id).oninput = () => {
+    filters = {
+      b:+brightness.value, c:+contrast.value, s:+saturation.value,
+      h:+hue.value, bl:+blur.value
+    };
+    drawAll();
+  };
+});
+
+function applyPreset(type){
+  const map={grayscale:'grayscale(1)',sepia:'sepia(1)',invert:'invert(1)'};
+  ctx.filter = map[type]; drawAll();
+}
+function resetFilters(){
+  ["brightness","contrast","saturation"].forEach(i=>document.getElementById(i).value=1);
+  hue.value=0; blur.value=0; ctx.filter="none"; filters={b:1,c:1,s:1,h:0,bl:0}; drawAll();
+}
+
+function transformImage(d){ trans.rot=(trans.rot+d)%360; drawAll(); }
+function flipImage(d){ if(d=='h') trans.fh=!trans.fh; else trans.fv=!trans.fv; drawAll(); }
+
+function startCrop(){ cropping=true; overlay.style.display="block"; }
+canvas.onmousedown = e => {
+  const m=mousePos(e);
+  if(cropping){ cs=m; }
+  else if(drawMode){ drawing=true; annotations.push({type:'line',pts:[m],col:'#ff0',w:2}); }
+  else if(textMode){ const t = prompt("Text?"); if(t) annotations.push({type:'text',x:m.x,y:m.y,text:t,col:'#0f0',size:20}); redraw(); }
+};
+canvas.onmousemove = e => {
+  const m = mousePos(e);
+  if(cropping && cs.x!=null){ cr = {x:Math.min(cs.x,m.x),y:Math.min(cs.y,m.y),w:Math.abs(m.x-cs.x),h:Math.abs(m.y-cs.y)};
+    Object.assign(overlay.style,{left:cr.x+'px',top:cr.y+'px',width:cr.w+'px',height:cr.h+'px'});
+  } else if(drawing && annotations.length){
+    annotations.slice(-1)[0].pts.push(m); redraw();
+  }
+};
+canvas.onmouseup = _ => { if(cropping){} drawing=false; };
+
+function applyCrop(){
+  if(!cr.w||!cr.h)return;
+  const t=document.createElement("canvas"); t.width=cr.w; t.height=cr.h;
+  t.getContext("2d").drawImage(canvas,cr.x,cr.y,cr.w,cr.h,0,0,cr.w,cr.h);
+  canvas.width=t.width; canvas.height=t.height;
+  ctx.drawImage(t,0,0); overlay.style.display="none"; cropping=false;
+}
+function cancelCrop(){ cropping=false; overlay.style.display="none"; }
+function mousePos(e){ const r = canvas.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+
+function toggleDraw(){ drawMode=!drawMode; textMode=false; canvas.style.cursor = drawMode?'crosshair':'default'; }
+function toggleText(){ textMode=!textMode; drawMode=false; canvas.style.cursor = textMode?'text':'default'; }
+function clearAnnotations(){ annotations=[]; redraw(); }
+
+function reset(){
+  filters={b:1,c:1,s:1,h:0,bl:0};
+  trans={rot:0,fh:false,fv:false}; annotations=[]; canvas.width=img.width; canvas.height=img.height;
+  drawAll();
+}
+
+function drawAll(){
+  const w=img.width, h=img.height;
+  canvas.width=w; canvas.height=h;
+  ctx.save();
+  ctx.clearRect(0,0,w,h);
+  ctx.translate(w/2,h/2);
+  ctx.rotate(trans.rot*Math.PI/180);
+  ctx.scale(trans.fh?-1:1, trans.fv?-1:1);
+  ctx.filter = `brightness(${filters.b}) contrast(${filters.c}) saturate(${filters.s}) hue-rotate(${filters.h}deg) blur(${filters.bl}px)`;
+  ctx.drawImage(img, -w/2,-h/2);
+  ctx.restore();
+  original = ctx.getImageData(0,0,canvas.width,canvas.height);
+  redraw();
+}
+
+function redraw(){
+  if(!original) return;
+  ctx.putImageData(original,0,0);
+  annotations.forEach(a=>{
+    if(a.type=='line'){
+      ctx.strokeStyle=a.col; ctx.lineWidth=a.w;
+      ctx.beginPath(); a.pts.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+      ctx.stroke();
+    } else {
+      ctx.fillStyle=a.col; ctx.font=`${a.size}px sans-serif`; ctx.fillText(a.text,a.x,a.y);
+    }
+  });
+}
+
+function downloadResult(){
+  const a=document.createElement("a");
+  a.download="edited.png"; a.href=canvas.toDataURL("image/png"); a.click();
+}
+</script>
+</body>
+</html>
