@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Passport Photo Printing System</title>
+  <title>Smaller Photo Printing System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,7 +21,7 @@
       text-align: center;
     }
 
-    input[type="file"] {
+    input[type="file"], input[type="number"] {
       margin: 10px 0;
     }
 
@@ -33,31 +33,30 @@
     }
 
     .photo-upload img {
-      width: 45mm;
-      height: 60mm;
+      width: 30mm;
+      height: 40mm;
       border: 2px solid black;
       object-fit: cover;
     }
 
     .bordered-container {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(5, 1fr);
-      gap: 5mm;
+      grid-template-columns: repeat(5, 1fr);  /* 5 photos per row */
+      grid-template-rows: repeat(9, 1fr);    /* 9 rows to fit 45 photos */
+      gap: 0;
       width: 210mm;
       height: 297mm;
-      padding: 10mm;
       margin-top: 20px;
       background-color: white;
+      padding: 0;
     }
 
     .photo-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      border: 1px solid #000;
-      height: 60mm;
-      width: 45mm;
+      height: 40mm;
+      width: 30mm;
       margin: 0;
     }
 
@@ -82,29 +81,29 @@
 <body>
 
 <div class="container">
-  <h1>Passport Photo Printing System</h1>
+  <h1>Smaller Photo Printing System</h1>
 
   <div class="form-container">
-    <label for="upload">Upload Passport Photos:</label>
+    <label for="upload">Upload Photos:</label>
     <input type="file" id="upload" accept="image/*" multiple>
     <br>
     <label for="pcs">Enter number of photos to upload:</label>
-    <input type="number" id="pcs" value="1" min="1" max="45">
+    <input type="number" id="pcs" value="45" min="1" max="45">
     <button onclick="generateLayout()">Generate Layout</button>
   </div>
 
   <div class="photo-upload" id="photo-upload-container"></div>
 
-  <div id="passport-layout" class="bordered-container"></div>
+  <div id="photo-layout" class="bordered-container"></div>
 </div>
 
 <script>
   function generateLayout() {
-    const pcs = document.getElementById('pcs').value;
+    const pcs = parseInt(document.getElementById('pcs').value);
     const uploadInput = document.getElementById('upload');
     const files = uploadInput.files;
-    const photoContainer = document.getElementById('passport-layout');
-    photoContainer.innerHTML = '';
+    const layoutContainer = document.getElementById('photo-layout');
+    layoutContainer.innerHTML = '';
 
     if (files.length < pcs) {
       alert('Please upload at least ' + pcs + ' photos.');
@@ -114,22 +113,20 @@
     const selectedFiles = Array.from(files).slice(0, pcs);
 
     // Create grid with the photos
-    selectedFiles.forEach(file => {
+    selectedFiles.forEach((file, index) => {
       const reader = new FileReader();
       reader.onload = function(event) {
         const photoURL = event.target.result;
 
-        for (let i = 0; i < pcs; i++) {
-          const photoDiv = document.createElement('div');
-          photoDiv.classList.add('photo-container');
-          
-          const img = document.createElement('img');
-          img.src = photoURL;
-          photoDiv.appendChild(img);
+        const photoDiv = document.createElement('div');
+        photoDiv.classList.add('photo-container');
 
-          // Add to the layout grid
-          photoContainer.appendChild(photoDiv);
-        }
+        const img = document.createElement('img');
+        img.src = photoURL;
+        photoDiv.appendChild(img);
+
+        // Add to the layout grid
+        layoutContainer.appendChild(photoDiv);
       };
       reader.readAsDataURL(file);
     });
