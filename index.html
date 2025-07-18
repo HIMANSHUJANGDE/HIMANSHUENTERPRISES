@@ -1,136 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>All-in-One Photo Editor</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: #f0f0f0;
       text-align: center;
       padding: 20px;
     }
     canvas {
-      border: 2px solid #ccc;
-      margin: 20px auto;
-      display: block;
-      max-width: 90%;
-    }
-    input, button {
-      margin: 10px;
-      padding: 10px;
-    }
-    #tools {
+      border: 1px solid #ccc;
       margin-top: 20px;
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .controls input[type="range"] {
+      width: 100px;
+    }
+    .controls label {
+      display: block;
+    }
+    .btns {
+      margin-top: 20px;
+    }
+    .btns button {
+      margin: 5px;
+      padding: 10px 15px;
     }
   </style>
 </head>
 <body>
-
   <h1>🖼️ All-in-One Photo Editor</h1>
 
-  <input type="file" id="upload" accept="image/*" />
-  <canvas id="canvas"></canvas>
+  <input type="file" id="upload" accept="image/*"><br><br>
+  <canvas id="canvas" width="500" height="500"></canvas>
 
-  <div id="tools">
-    <button id="remove-bg" disabled>🪄 Remove Background</button><br>
-
-    <label>Change Background Color:
-      <input type="color" id="bg-color" disabled />
-    </label><br>
-
-    <label>Change Background Image:
-      <input type="file" id="bg-image" accept="image/*" disabled />
-    </label><br>
-
-    <button id="download" disabled>⬇️ Download Image</button>
+  <div class="controls">
+    <div>
+      <label>Brightness</label>
+      <input type="range" id="brightness" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div>
+      <label>Contrast</label>
+      <input type="range" id="contrast" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div>
+      <label>Saturation</label>
+      <input type="range" id="saturation" min="0" max="2" step="0.1" value="1">
+    </div>
   </div>
 
-  <!-- Background removal library (in-browser ONNX) -->
-  <script type="module">
-    import removeBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm';
+  <div class="btns">
+    <button onclick="removeBackground()">Remove Background</button>
+    <input type="color" id="bgColor">
+    <button onclick="changeBackgroundColor()">Set Background Color</button>
+    <input type="file" id="bgImage" accept="image/*">
+    <button onclick="changeBackgroundImage()">Set Background Image</button>
+    <button onclick="downloadImage()">Download</button>
+  </div>
 
-    const upload = document.getElementById("upload");
-    const removeBtn = document.getElementById("remove-bg");
-    const bgColorInput = document.getElementById("bg-color");
-    const bgImageInput = document.getElementById("bg-image");
-    const downloadBtn = document.getElementById("download");
+  <script>
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-
     let originalImage = new Image();
-    let subjectImage = null;
+    let uploadedImage;
 
-    upload.onchange = e => {
+    document.getElementById("upload").addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        originalImage = new Image();
-        originalImage.onload = () => {
-          canvas.width = originalImage.width;
-          canvas.height = originalImage.height;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(originalImage, 0, 0);
-          removeBtn.disabled = false;
+      reader.onload = function (event) {
+        uploadedImage = new Image();
+        uploadedImage.onload = function () {
+          canvas.width = uploadedImage.width;
+          canvas.height = uploadedImage.height;
+          ctx.drawImage(uploadedImage, 0, 0);
+          originalImage.src = canvas.toDataURL();
         };
-        originalImage.src = evt.target.result;
+        uploadedImage.src = event.target.result;
       };
       reader.readAsDataURL(file);
+    });
+
+    const applyFilters = () => {
+      const brightness = document.getElementById("brightness").value;
+      const contrast = document.getElementById("contrast").value;
+      const saturation = document.getElementById("saturation").value;
+      ctx.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`;
+      ctx.drawImage(uploadedImage, 0, 0);
     };
 
-    removeBtn.onclick = async () => {
-      removeBtn.textContent = "Removing...";
-      const resultBlob = await removeBackground(originalImage.src);
-      const resultImg = new Image();
-      resultImg.onload = () => {
-        canvas.width = resultImg.width;
-        canvas.height = resultImg.height;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(resultImg, 0, 0);
-        subjectImage = resultImg;
-        enableTools();
-        removeBtn.textContent = "✅ Background Removed";
-      };
-      resultImg.src = URL.createObjectURL(resultBlob);
-    };
+    document.querySelectorAll("input[type='range']").forEach((input) => {
+      input.addEventListener("input", applyFilters);
+    });
 
-    function enableTools() {
-      bgColorInput.disabled = false;
-      bgImageInput.disabled = false;
-      downloadBtn.disabled = false;
+    function removeBackground() {
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < imgData.data.length; i += 4) {
+        let r = imgData.data[i];
+        let g = imgData.data[i + 1];
+        let b = imgData.data[i + 2];
+        if (r > 200 && g > 200 && b > 200) {
+          imgData.data[i + 3] = 0; // transparent
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
     }
 
-    bgColorInput.oninput = () => {
-      if (!subjectImage) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = bgColorInput.value;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(subjectImage, 0, 0);
-    };
+    function changeBackgroundColor() {
+      const bgColor = document.getElementById("bgColor").value;
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
 
-    bgImageInput.onchange = e => {
-      const file = e.target.files[0];
+      tempCtx.fillStyle = bgColor;
+      tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      tempCtx.drawImage(canvas, 0, 0);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(tempCanvas, 0, 0);
+    }
+
+    function changeBackgroundImage() {
+      const file = document.getElementById("bgImage").files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        const bgImg = new Image();
-        bgImg.onload = () => {
+      reader.onload = function (event) {
+        const bg = new Image();
+        bg.onload = function () {
+          const tempCanvas = document.createElement("canvas");
+          const tempCtx = tempCanvas.getContext("2d");
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+
+          tempCtx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+          tempCtx.drawImage(canvas, 0, 0);
+
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-          ctx.drawImage(subjectImage, 0, 0);
+          ctx.drawImage(tempCanvas, 0, 0);
         };
-        bgImg.src = evt.target.result;
+        bg.src = event.target.result;
       };
       reader.readAsDataURL(file);
-    };
+    }
 
-    downloadBtn.onclick = () => {
-      const link = document.createElement('a');
-      link.download = 'edited-photo.png';
+    function downloadImage() {
+      const link = document.createElement("a");
+      link.download = "edited-image.png";
       link.href = canvas.toDataURL();
       link.click();
-    };
+    }
   </script>
 </body>
 </html>
