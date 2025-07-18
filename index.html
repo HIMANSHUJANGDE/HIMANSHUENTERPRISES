@@ -2,142 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>45 Landscape Photos Per A4 Portrait Page</title>
+  <title>Photo Print Layout</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: sans-serif;
-      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
     }
 
-    .controls {
-      text-align: center;
-      padding: 10px;
-      background: #fff;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+    #controls {
+      margin-bottom: 20px;
     }
 
-    .controls input,
-    .controls button {
-      padding: 8px 12px;
-      margin: 5px;
-      font-size: 14px;
+    input[type="number"] {
+      width: 60px;
     }
 
-    .page {
+    #photoArea {
       width: 210mm;
       height: 297mm;
-      background: #fff;
-      margin: 10px auto;
-      display: grid;
-      grid-template-columns: repeat(5, 3.5cm);
-      grid-template-rows: repeat(9, 2.5cm);
+      border: 1px solid #ccc;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
       gap: 0;
-      page-break-after: always;
-      align-content: start;
+      background: white;
     }
 
     .photo {
-      width: 3.5cm;
-      height: 2.5cm;
+      width: calc(210mm / 9); /* 9 columns */
+      height: calc(297mm / 5); /* 5 rows */
+      box-sizing: border-box;
       border: 1px solid #000;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .photo img {
-      width: 100%;
-      height: 100%;
       object-fit: cover;
-      transform: rotate(0deg); /* Landscape */
     }
 
     @media print {
       body {
-        background: none;
+        margin: 0;
+        padding: 0;
       }
-
-      .controls {
+      #controls {
         display: none;
       }
-
-      .page {
-        margin: 0;
-        box-shadow: none;
+      #photoArea {
+        width: 210mm;
+        height: 297mm;
+        border: none;
+        page-break-after: always;
       }
     }
   </style>
 </head>
 <body>
+  <div id="controls">
+    <input type="file" id="fileInput" multiple accept="image/*">
+    <label>Copies per image:</label>
+    <input type="number" id="copies" min="1" value="1">
+    <button onclick="generateLayout()">Generate Layout</button>
+    <button onclick="window.print()">Print</button>
+  </div>
 
-<div class="controls">
-  <input type="file" id="fileInput" multiple accept="image/*">
-  <input type="number" id="pcsInput" min="1" value="1" placeholder="PCS (Copies)">
-  <button onclick="generatePages()">🧩 Generate</button>
-  <button onclick="window.print()">🖨️ Print</button>
-</div>
+  <div id="photoArea"></div>
 
-<div id="output"></div>
+  <script>
+    let images = [];
 
-<script>
-  const PHOTOS_PER_PAGE = 45;
-  const fileInput = document.getElementById('fileInput');
-  const pcsInput = document.getElementById('pcsInput');
-  const output = document.getElementById('output');
-
-  function generatePages() {
-    const files = Array.from(fileInput.files);
-    const pcs = parseInt(pcsInput.value) || 1;
-
-    if (!files.length) {
-      alert("Please upload image files.");
-      return;
-    }
-
-    const allImages = [];
-
-    files.forEach(file => {
-      for (let i = 0; i < pcs; i++) {
-        allImages.push(file);
-      }
+    document.getElementById('fileInput').addEventListener('change', (event) => {
+      images = Array.from(event.target.files);
     });
 
-    output.innerHTML = ''; // Clear existing layout
-    const totalPages = Math.ceil(allImages.length / PHOTOS_PER_PAGE);
+    function generateLayout() {
+      const container = document.getElementById('photoArea');
+      container.innerHTML = ''; // Clear previous layout
+      const copies = parseInt(document.getElementById('copies').value);
 
-    for (let i = 0; i < totalPages; i++) {
-      const page = document.createElement('div');
-      page.className = 'page';
+      let photoCount = 0;
+      const maxPhotos = 45; // A4: 9 x 5 = 45
 
-      const imagesForPage = allImages.slice(
-        i * PHOTOS_PER_PAGE,
-        (i + 1) * PHOTOS_PER_PAGE
-      );
-
-      imagesForPage.forEach(file => {
+      for (const file of images) {
+        if (photoCount >= maxPhotos) break;
         const reader = new FileReader();
-        reader.onload = function (e) {
-          const photoDiv = document.createElement('div');
-          photoDiv.className = 'photo';
 
-          const img = document.createElement('img');
-          img.src = e.target.result;
-
-          photoDiv.appendChild(img);
-          page.appendChild(photoDiv);
+        reader.onload = function(e) {
+          for (let i = 0; i < copies && photoCount < maxPhotos; i++) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'photo';
+            container.appendChild(img);
+            photoCount++;
+          }
         };
+
         reader.readAsDataURL(file);
-      });
-
-      output.appendChild(page);
+      }
     }
-  }
-</script>
-
+  </script>
 </body>
 </html>
