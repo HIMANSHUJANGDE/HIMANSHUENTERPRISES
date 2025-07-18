@@ -1,102 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Photo Print Layout</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini Photo Print Layout</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
+      font-family: sans-serif;
       padding: 20px;
-      font-family: Arial, sans-serif;
+      background: #f0f0f0;
     }
 
-    #controls {
+    .controls {
       margin-bottom: 20px;
     }
 
-    input[type="number"] {
-      width: 60px;
-    }
-
-    #photoArea {
+    .photo-grid {
       width: 210mm;
       height: 297mm;
-      border: 1px solid #ccc;
-      position: relative;
-      overflow: hidden;
       display: flex;
       flex-wrap: wrap;
-      align-content: flex-start;
-      gap: 0;
       background: white;
+      position: relative;
+      page-break-after: always;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
 
     .photo {
-      width: calc(210mm / 9); /* 9 columns */
-      height: calc(297mm / 5); /* 5 rows */
-      box-sizing: border-box;
+      width: calc(100% / 9);   /* 9 columns */
+      height: calc((297mm - 10mm) / 5);  /* 5 rows, minus top padding */
       border: 1px solid #000;
+      padding: 1mm;
+    }
+
+    .photo img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
+      transform: rotate(90deg); /* Landscape */
     }
 
     @media print {
       body {
-        margin: 0;
+        background: none;
         padding: 0;
       }
-      #controls {
+      .controls {
         display: none;
       }
-      #photoArea {
-        width: 210mm;
-        height: 297mm;
-        border: none;
-        page-break-after: always;
+      .photo-grid {
+        box-shadow: none;
       }
     }
   </style>
 </head>
 <body>
-  <div id="controls">
-    <input type="file" id="fileInput" multiple accept="image/*">
-    <label>Copies per image:</label>
-    <input type="number" id="copies" min="1" value="1">
+  <div class="controls">
+    <input type="file" id="photoUpload" accept="image/*" multiple />
+    <label>
+      Copies per photo:
+      <input type="number" id="copies" value="1" min="1" max="45" style="width: 60px;" />
+    </label>
     <button onclick="generateLayout()">Generate Layout</button>
     <button onclick="window.print()">Print</button>
   </div>
 
-  <div id="photoArea"></div>
+  <div id="pagesContainer"></div>
 
   <script>
-    let images = [];
-
-    document.getElementById('fileInput').addEventListener('change', (event) => {
-      images = Array.from(event.target.files);
-    });
-
     function generateLayout() {
-      const container = document.getElementById('photoArea');
-      container.innerHTML = ''; // Clear previous layout
+      const files = document.getElementById('photoUpload').files;
       const copies = parseInt(document.getElementById('copies').value);
+      const container = document.getElementById('pagesContainer');
+      container.innerHTML = '';
 
-      let photoCount = 0;
-      const maxPhotos = 45; // A4: 9 x 5 = 45
+      if (!files.length) {
+        alert("Please upload at least one photo.");
+        return;
+      }
 
-      for (const file of images) {
-        if (photoCount >= maxPhotos) break;
-        const reader = new FileReader();
+      const images = [];
 
-        reader.onload = function(e) {
-          for (let i = 0; i < copies && photoCount < maxPhotos; i++) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = 'photo';
-            container.appendChild(img);
-            photoCount++;
-          }
-        };
+      for (const file of files) {
+        for (let i = 0; i < copies; i++) {
+          images.push(URL.createObjectURL(file));
+        }
+      }
 
-        reader.readAsDataURL(file);
+      const photosPerPage = 45;
+      let page, photoDiv;
+
+      for (let i = 0; i < images.length; i++) {
+        if (i % photosPerPage === 0) {
+          page = document.createElement('div');
+          page.className = 'photo-grid';
+          container.appendChild(page);
+        }
+
+        photoDiv = document.createElement('div');
+        photoDiv.className = 'photo';
+
+        const img = document.createElement('img');
+        img.src = images[i];
+
+        photoDiv.appendChild(img);
+        page.appendChild(photoDiv);
       }
     }
   </script>
