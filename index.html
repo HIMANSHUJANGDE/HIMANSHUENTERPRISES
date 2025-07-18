@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>45 Landscape Photos - A4 Full Portrait</title>
   <style>
     :root {
-      --photo-width: 32mm;   /* Landscape width */
-      --photo-height: 24mm;  /* Landscape height */
-      --columns: 5;
-      --rows: 9;
-      --gap: 2mm;            /* Gap between photos */
+      --photo-width: 32mm;   /* Each photo width (smaller than passport) */
+      --photo-height: 24mm;  /* Each photo height */
+      --columns: 5;          /* Number of columns in A4 page */
+      --rows: 9;             /* Number of rows in A4 page */
+      --gap: 3mm;            /* Gap between photos */
     }
 
     body {
@@ -102,7 +103,7 @@
     const printArea = document.getElementById("printArea");
 
     photoInput.addEventListener("change", () => {
-      const total = Math.min(Number(pcsInput.value), 45); // Limit to 45
+      const total = Math.min(Number(pcsInput.value), 45); // Limit to 45 photos
       const files = Array.from(photoInput.files);
 
       if (files.length === 0) {
@@ -110,7 +111,7 @@
         return;
       }
 
-      printArea.innerHTML = '';
+      printArea.innerHTML = ''; // Clear previous photos
 
       let index = 0;
       for (let i = 0; i < total; i++) {
