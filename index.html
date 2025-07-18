@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Mini Photo Print Sheet (45 per A4)</title>
+  <meta charset="UTF-8" />
+  <title>Mini Photo Print (Landscape A4 - 45 Photos)</title>
   <style>
     :root {
       --photo-width-mm: 24mm;
       --photo-height-mm: 32mm;
-      --columns: 5;
-      --rows: 9;
+      --columns: 9;
+      --rows: 5;
       --gap-mm: 3mm;
     }
 
     body {
       margin: 0;
       padding: 10mm;
-      background: #ccc;
+      background: #e0e0e0;
       font-family: sans-serif;
     }
 
@@ -25,37 +25,38 @@
 
     .controls input,
     .controls button {
-      padding: 6px 10px;
+      padding: 6px 12px;
       font-size: 14px;
     }
 
     .print-area {
       background: #fff;
-      width: 210mm;
-      height: 297mm;
+      width: 297mm;
+      height: 210mm;
       box-sizing: border-box;
       display: grid;
       grid-template-columns: repeat(var(--columns), var(--photo-width-mm));
       grid-template-rows: repeat(var(--rows), var(--photo-height-mm));
       gap: var(--gap-mm);
       padding: 5mm;
-      overflow: hidden;
+      margin: 0 auto;
     }
 
     .photo-box {
       width: var(--photo-width-mm);
       height: var(--photo-height-mm);
       border: 1px solid #000;
-      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #fff;
+      overflow: hidden;
     }
 
     .photo-box img {
       max-width: 100%;
       max-height: 100%;
+      object-fit: cover;
     }
 
     @media print {
@@ -89,7 +90,7 @@
 
     photoInput.addEventListener('change', () => {
       const files = Array.from(photoInput.files).slice(0, 45); // Limit to 45
-      printArea.innerHTML = ''; // Clear previous content
+      printArea.innerHTML = ''; // Clear previous
 
       files.forEach(file => {
         const reader = new FileReader();
