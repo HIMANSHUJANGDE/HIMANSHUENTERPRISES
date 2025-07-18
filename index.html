@@ -3,94 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Advanced Photo Editor + BG Remove/Replace</title>
+  <title>Advanced Photo Editor + BG Tools</title>
   <style>
-    body { font-family:sans-serif; background:#222; color:#fff; text-align:center; padding:20px; margin:0; }
-    h1 { margin-bottom:20px; }
-    .editor { max-width:1000px; margin:auto; }
-    .canvas-wrap { position:relative; display:inline-block; }
-    canvas { border:1px solid #555; max-width:100%; cursor:crosshair; }
-    #cropBox { position:absolute; border:2px dashed lime; display:none; pointer-events:none; }
-    .controls { margin-top:20px; text-align:center; }
-    .controls > div { margin:10px 0; }
-    input[type=range] { width:120px; margin:0 8px; vertical-align:middle; }
-    button, input[type=color] { margin:4px; padding:6px 12px; background:#444; border:none; color:white; cursor:pointer; }
-    button:hover, input[type=color]:hover { background:#555; }
+    body { font-family:sans-serif; background:#222; color:#fff; text-align:center; padding:20px; margin:0 }
+    .editor { max-width:1000px; margin:auto }
+    canvas { border:1px solid #555; max-width:100%; cursor:crosshair }
+    #cropBox { position:absolute; border:2px dashed lime; display:none; pointer-events:none }
+    .controls { margin:10px 0; }
+    input[type=range] { width:120px; margin:0 4px; vertical-align:middle }
+    button, input[type=color] { margin:4px; padding:6px 12px; background:#444; border:none; color:#fff; cursor:pointer }
+    button:hover, input[type=color]:hover { background:#555 }
+    .canvas-wrap { position:relative; display:inline-block }
   </style>
 </head>
 <body>
   <div class="editor">
-    <h1>Advanced Photo Editor + BG Remove/Replace</h1>
-    <!-- Upload main image and optional background -->
+    <h1>Photo Editor + BG Remove/Replace</h1>
     <div class="controls">
       <input type="file" id="upload" accept="image/*">
       <input type="file" id="bgUpload" accept="image/*">
       <input type="color" id="bgColor" value="#222" title="Background Color">
     </div>
 
-    <!-- Canvas + Crop Selector -->
     <div class="canvas-wrap">
       <canvas id="canvas"></canvas>
       <div id="cropBox"></div>
     </div>
 
-    <!-- Tool Controls -->
     <div class="controls">
-      <div>
-        <!-- Filters -->
-        B<input type="range" id="brightness" min="0" max="2" step="0.1" value="1">
-        C<input type="range" id="contrast" min="0" max="2" step="0.1" value="1">
-        S<input type="range" id="saturation" min="0" max="2" step="0.1" value="1">
-        H<input type="range" id="hue" min="0" max="360" step="1" value="0">
-        Blur<input type="range" id="blur" min="0" max="10" step="0.5" value="0">
-        <button onclick="resetFilters()">Reset Filters</button>
-      </div>
+      <!-- Filters -->
+      B<input type="range" id="brightness" min="0" max="2" step="0.1" value="1">
+      C<input type="range" id="contrast" min="0" max="2" step="0.1" value="1">
+      S<input type="range" id="saturation" min="0" max="2" step="0.1" value="1">
+      H<input type="range" id="hue" min="0" max="360" step="1" value="0">
+      Blur<input type="range" id="blur" min="0" max="10" step="0.5" value="0">
+      <button onclick="resetFilters()">Reset</button>
+    </div>
 
-      <div>
-        <!-- Presets -->
-        <button onclick="applyPreset('grayscale')">Grayscale</button>
-        <button onclick="applyPreset('sepia')">Sepia</button>
-        <button onclick="applyPreset('invert')">Invert</button>
-      </div>
+    <div class="controls">
+      <button onclick="applyPreset('grayscale')">Grayscale</button>
+      <button onclick="applyPreset('sepia')">Sepia</button>
+      <button onclick="applyPreset('invert')">Invert</button>
+    </div>
 
-      <div>
-        <!-- Transform -->
-        <button onclick="rotateImage()">Rotate 90°</button>
-        <button onclick="flipImage('h')">Flip H</button>
-        <button onclick="flipImage('v')">Flip V</button>
-      </div>
+    <div class="controls">
+      <button onclick="rotateImage()">Rotate 90°</button>
+      <button onclick="flipImage('h')">Flip H</button>
+      <button onclick="flipImage('v')">Flip V</button>
+    </div>
 
-      <div>
-        <!-- Crop -->
-        <button onclick="startCrop()">Start Crop</button>
-        <button onclick="applyCrop()">Apply Crop</button>
-        <button onclick="cancelCrop()">Cancel Crop</button>
-      </div>
+    <div class="controls">
+      <button onclick="startCrop()">Start Crop</button>
+      <button onclick="applyCrop()">Apply Crop</button>
+      <button onclick="cancelCrop()">Cancel Crop</button>
+    </div>
 
-      <div>
-        <!-- Draw & Text -->
-        <button onclick="toggleDraw()">Draw</button>
-        <button onclick="addText()">Add Text</button>
-        <button onclick="clearAnnotations()">Clear Drawing/Text</button>
-      </div>
+    <div class="controls">
+      <button onclick="toggleDraw()">Draw</button>
+      <button onclick="addText()">Add Text</button>
+      <button onclick="clearAnnotations()">Clear Draw/Text</button>
+    </div>
 
-      <div>
-        <!-- Background -->
-        <button onclick="removeBackground()">Remove BG</button>
-        <button onclick="toggleReplaceMode()">Replace BG</button>
-      </div>
+    <div class="controls">
+      <button onclick="removeBackground()">Remove BG</button>
+      <button onclick="toggleReplaceMode()">Replace BG</button>
+    </div>
 
-      <div>
-        <button onclick="downloadImage()">Download Final Image</button>
-      </div>
+    <div class="controls">
+      <button onclick="downloadImage()">Download PNG</button>
     </div>
   </div>
 
   <script>
-    // Core Elements
-    const canvas = document.getElementById("canvas"),
-          ctx = canvas.getContext("2d"),
-          upload = document.getElementById("upload"),
+    const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
+    const upload = document.getElementById("upload"),
           bgUpload = document.getElementById("bgUpload"),
           bgColor = document.getElementById("bgColor"),
           cropBox = document.getElementById("cropBox");
@@ -100,221 +86,195 @@
     let cropping=false, cropStart=null, cropRect=null;
     let drawMode=false, isDrawing=false, annotations=[], replaceMode=false;
 
-    // Upload main image
     upload.onchange = e => {
-      const f = e.target.files[0];
-      if (!f) return;
+      const f = e.target.files[0]; if(!f) return;
       const fr = new FileReader();
-      fr.onload = () => {
-        img.onload = resetAll;
-        img.src = fr.result;
-      };
+      fr.onload = () => { img.onload = resetAll; img.src = fr.result; };
       fr.readAsDataURL(f);
     };
 
-    // Upload background image
     bgUpload.onchange = e => {
-      const f = e.target.files[0];
-      if (!f) return;
+      const f = e.target.files[0]; if(!f) return;
       const fr = new FileReader();
       fr.onload = () => {
-        const tmp = new Image();
-        tmp.onload = () => { bgImg = tmp; drawAll(); };
-        tmp.src = fr.result;
+        const tmp=new Image();
+        tmp.onload = ()=>{ bgImg=tmp; drawAll(); };
+        tmp.src=fr.result;
       };
       fr.readAsDataURL(f);
     };
 
-    // Filter sliders
     ["brightness","contrast","saturation","hue","blur"].forEach(id => {
       document.getElementById(id).oninput = () => {
-        filters.b = +brightness.value;
-        filters.c = +contrast.value;
-        filters.s = +saturation.value;
-        filters.h = +hue.value;
-        filters.bl = +blur.value;
+        filters.b=+brightness.value; filters.c=+contrast.value;
+        filters.s=+saturation.value; filters.h=+hue.value; filters.bl=+blur.value;
         drawAll();
       };
     });
 
     function resetFilters(){
-      brightness.value = contrast.value = saturation.value = 1;
-      hue.value = 0;
-      blur.value = 0;
-      filters = {b:1,c:1,s:1,h:0,bl:0};
+      brightness.value=contrast.value=saturation.value=1;
+      hue.value=0; blur.value=0;
+      filters={b:1,c:1,s:1,h:0,bl:0};
       drawAll();
     }
 
     function applyPreset(type){
-      if(type==="grayscale") filters = {b:1,c:1,s:0,h:0,bl:0};
-      if(type==="sepia") filters = {b:1,c:1,s:1,h:30,bl:0};
-      if(type==="invert") filters = {b:1,c:1,s:1,h:180,bl:0};
+      if(type==="grayscale") filters={b:1,c:1,s:0,h:0,bl:0};
+      if(type==="sepia") filters={b:1,c:1,s:1,h:30,bl:0};
+      if(type==="invert") filters={b:1,c:1,s:1,h:180,bl:0};
       drawAll();
     }
 
-    // Transform: rotate & flip
     function rotateImage(){
-      rotation = (rotation + 90) % 360;
-      drawAll();
-    }
-    function flipImage(d){
-      if (d === "h") flipH = !flipH;
-      else flipV = !flipV;
+      rotation=(rotation+90)%360;
       drawAll();
     }
 
-    // Crop tools
-    function startCrop(){
-      cropping = true;
-      cropBox.style.display = "block";
+    function flipImage(d){
+      if(d==="h") flipH=!flipH;
+      else flipV=!flipV;
+      drawAll();
     }
+
+    function startCrop(){
+      cropping=true; cropBox.style.display="block";
+    }
+
     canvas.onmousedown = e => {
-      const pos = getMouse(e);
+      const p=mouse(e);
       if(drawMode){
-        isDrawing = true;
-        annotations.push({type:'line', points:[pos], color:'#ff0', size:2});
+        isDrawing=true;
+        annotations.push({type:'line',points:[p],color:'#ff0',size:2});
       } else if(cropping){
-        cropStart = pos;
+        cropStart=p;
       }
     };
+
     canvas.onmousemove = e => {
-      const pos = getMouse(e);
+      const p=mouse(e);
       if(cropping && cropStart){
-        cropRect = {
-          x: Math.min(cropStart.x, pos.x),
-          y: Math.min(cropStart.y, pos.y),
-          w: Math.abs(pos.x - cropStart.x),
-          h: Math.abs(pos.y - cropStart.y)
-        };
-        Object.assign(cropBox.style, {
-          left: cropRect.x + 'px', top: cropRect.y + 'px',
-          width: cropRect.w + 'px', height: cropRect.h + 'px'
-        });
+        cropRect={x:Math.min(cropStart.x,p.x), y:Math.min(cropStart.y,p.y), w:Math.abs(p.x-cropStart.x), h:Math.abs(p.y-cropStart.y)};
+        Object.assign(cropBox.style,{left:cropRect.x+'px', top:cropRect.y+'px', width:cropRect.w+'px', height:cropRect.h+'px'});
       } else if(drawMode && isDrawing){
-        const cur = annotations[annotations.length - 1];
-        cur.points.push(pos);
+        let cur = annotations[annotations.length-1];
+        cur.points.push(p);
         drawAll();
       }
     };
-    window.onmouseup = () => { cropping = false; isDrawing = false; };
+
+    window.onmouseup = () => { cropping=false; isDrawing=false; };
 
     function applyCrop(){
       if(!cropRect) return;
       const tmp = document.createElement("canvas"), tctx = tmp.getContext("2d");
-      tmp.width = cropRect.w; tmp.height = cropRect.h;
+      tmp.width=cropRect.w; tmp.height=cropRect.h;
       tctx.drawImage(canvas, cropRect.x, cropRect.y, cropRect.w, cropRect.h, 0,0, cropRect.w, cropRect.h);
-      canvas.width = tmp.width; canvas.height = tmp.height;
-      ctx.drawImage(tmp, 0, 0);
-      cropBox.style.display = "none";
-      cropRect = cropStart = null;
+      canvas.width=tmp.width; canvas.height=tmp.height;
+      ctx.drawImage(tmp,0,0);
+      cropBox.style.display="none";
+      cropRect=cropStart=null;
       drawAll();
     }
+
     function cancelCrop(){
-      cropping = false;
-      cropBox.style.display = "none";
-      cropRect = cropStart = null;
+      cropping=false;
+      cropBox.style.display="none";
+      cropRect=cropStart=null;
     }
 
-    // Drawing & Text
     function toggleDraw(){
-      drawMode = !drawMode;
-      canvas.style.cursor = drawMode ? 'crosshair' : 'default';
+      drawMode=!drawMode;
+      canvas.style.cursor=drawMode?'crosshair':'default';
     }
+
     function addText(){
-      const txt = prompt("Enter text:");
+      const txt=prompt("Enter text:");
       if(!txt) return;
-      const pos = prompt("Enter x,y (e.g. 50,50):");
-      const [x, y] = pos && pos.match(/\d+,\d+/) ? pos.split(',').map(Number) : [50,50];
-      annotations.push({type:'text', x, y, text: txt, color:'#0f0', size:20});
-      drawAll();
-    }
-    function clearAnnotations(){
-      annotations = [];
+      const pos=prompt("Enter x,y:");
+      let x=50,y=50;
+      if(pos && /^\d+,\d+$/.test(pos)){
+        [x,y]=pos.split(",").map(Number);
+      }
+      annotations.push({type:'text',x,y,text:txt,color:'#0f0',size:20});
       drawAll();
     }
 
-    // Background removal: threshold white
+    function clearAnnotations(){
+      annotations=[]; drawAll();
+    }
+
     function removeBackground(){
-      const data = ctx.getImageData(0,0,canvas.width,canvas.height);
-      for(let i=0; i<data.data.length; i+=4){
+      const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+      for(let i=0;i<data.data.length;i+=4){
         if(data.data[i]>200 && data.data[i+1]>200 && data.data[i+2]>200){
-          data.data[i+3] = 0;
+          data.data[i+3]=0;
         }
       }
-      ctx.putImageData(data, 0, 0);
+      ctx.putImageData(data,0,0);
     }
 
-    // Toggle background replacement
     function toggleReplaceMode(){
-      replaceMode = !replaceMode;
+      replaceMode=!replaceMode;
       drawAll();
     }
 
-    // Main draw routine
     function drawAll(){
       if(!img.src) return;
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width=img.width; canvas.height=img.height;
       ctx.clearRect(0,0,canvas.width,canvas.height);
 
-      // Draw replacement background
       if(replaceMode){
-        if(bgImg) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+        if(bgImg) ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
         else {
-          ctx.fillStyle = bgColor.value;
+          ctx.fillStyle=bgColor.value;
           ctx.fillRect(0,0,canvas.width,canvas.height);
         }
       }
 
-      // Draw main image with transforms & filters
       ctx.save();
-      ctx.filter = `brightness(${filters.b}) contrast(${filters.c}) saturate(${filters.s}) hue-rotate(${filters.h}deg) blur(${filters.bl}px)`;
-      ctx.translate(canvas.width/2, canvas.height/2);
-      ctx.rotate(rotation * Math.PI / 180);
-      ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
-      ctx.drawImage(img, -img.width/2, -img.height/2);
+      ctx.filter=`brightness(${filters.b}) contrast(${filters.c}) saturate(${filters.s}) hue-rotate(${filters.h}deg) blur(${filters.bl}px)`;
+      ctx.translate(canvas.width/2,canvas.height/2);
+      ctx.rotate(rotation*Math.PI/180);
+      ctx.scale(flipH?-1:1,flipV?-1:1);
+      ctx.drawImage(img,-img.width/2,-img.height/2);
       ctx.restore();
 
-      // Draw annotations
-      annotations.forEach(o => {
+      annotations.forEach(o=>{
         if(o.type==='line'){
-          ctx.strokeStyle = o.color;
-          ctx.lineWidth = o.size;
+          ctx.strokeStyle=o.color;
+          ctx.lineWidth=o.size;
           ctx.beginPath();
-          o.points.forEach((p,i)=> i? ctx.lineTo(p.x,p.y): ctx.moveTo(p.x,p.y));
+          o.points.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
           ctx.stroke();
         } else {
-          ctx.fillStyle = o.color;
-          ctx.font = `${o.size}px sans-serif`;
-          ctx.fillText(o.text, o.x, o.y);
+          ctx.fillStyle=o.color;
+          ctx.font=`${o.size}px sans-serif`;
+          ctx.fillText(o.text,o.x,o.y);
         }
       });
     }
 
-    // Get mouse position on canvas
-    function getMouse(e){
-      const r = canvas.getBoundingClientRect();
-      return {x:e.clientX - r.left, y:e.clientY - r.top};
+    function mouse(e){
+      const r=canvas.getBoundingClientRect();
+      return {x:e.clientX-r.left, y:e.clientY-r.top};
     }
 
-    // Reset everything except background
     function resetAll(){
-      rotation = 0;
-      flipH = flipV = false;
-      annotations = [];
-      replaceMode = false;
+      rotation=0; flipH=flipV=false;
+      annotations=[]; replaceMode=false;
       resetFilters();
       drawAll();
     }
 
-    // Download final result
     function downloadImage(){
-      const link = document.createElement("a");
-      link.download = "edited-image.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      const a=document.createElement("a");
+      a.href=canvas.toDataURL("image/png");
+      a.download="edited-image.png";
+      a.click();
     }
   </script>
 </body>
 </html>
+
 
