@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Print 45 Landscape Photos on A4 Portrait</title>
+  <title>Print Mini Landscape Photos on A4 Portrait</title>
   <style>
     :root {
-      --photo-width: 32mm;  /* Landscape width */
-      --photo-height: 24mm; /* Landscape height */
+      --photo-width: 32mm;   /* Landscape width */
+      --photo-height: 24mm;  /* Landscape height */
       --columns: 5;
       --rows: 9;
       --gap: 2mm;
@@ -15,44 +15,47 @@
     body {
       margin: 0;
       padding: 10mm;
-      background: #eee;
+      background: #f4f4f4;
       font-family: sans-serif;
     }
 
     .controls {
       margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .controls input,
     .controls button {
       font-size: 14px;
       padding: 6px 12px;
-      margin-right: 8px;
     }
 
     .print-area {
-      background: #fff;
       width: 210mm;
       height: 297mm;
+      background: white;
       display: grid;
       grid-template-columns: repeat(var(--columns), var(--photo-width));
       grid-template-rows: repeat(var(--rows), var(--photo-height));
       gap: var(--gap);
       padding: 5mm;
-      box-sizing: border-box;
       margin: auto;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+      box-sizing: border-box;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
     }
 
     .photo-box {
-      width: var(--photo-width);
-      height: var(--photo-height);
       border: 1px solid #000;
-      background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: white;
       overflow: hidden;
+      width: var(--photo-width);
+      height: var(--photo-height);
     }
 
     .photo-box img {
@@ -63,8 +66,8 @@
 
     @media print {
       body {
-        padding: 0;
         background: white;
+        padding: 0;
       }
 
       .controls {
@@ -82,34 +85,54 @@
 <body>
 
   <div class="controls">
-    <input type="file" id="photoInput" accept="image/*" multiple />
+    <label>Upload photos (landscape):</label>
+    <input type="file" id="photoInput" multiple accept="image/*" />
+    
+    <label>Set number of photos (max 45):</label>
+    <input type="number" id="pcsInput" min="1" max="45" value="45" />
+    
     <button onclick="window.print()">Print</button>
   </div>
 
   <div class="print-area" id="printArea"></div>
 
   <script>
-    const photoInput = document.getElementById('photoInput');
-    const printArea = document.getElementById('printArea');
+    const photoInput = document.getElementById("photoInput");
+    const pcsInput = document.getElementById("pcsInput");
+    const printArea = document.getElementById("printArea");
 
-    photoInput.addEventListener('change', () => {
-      const files = Array.from(photoInput.files).slice(0, 45); // Limit to 45
-      printArea.innerHTML = ''; // Clear previous photos
+    photoInput.addEventListener("change", () => {
+      const total = Math.min(Number(pcsInput.value), 45);
+      const files = Array.from(photoInput.files);
+      
+      if (files.length === 0) {
+        alert("Please select at least one image.");
+        return;
+      }
 
-      files.forEach(file => {
+      printArea.innerHTML = '';
+
+      let index = 0;
+      for (let i = 0; i < total; i++) {
+        const file = files[index];
         const reader = new FileReader();
-        reader.onload = e => {
-          const box = document.createElement('div');
-          box.className = 'photo-box';
 
-          const img = document.createElement('img');
+        reader.onload = (e) => {
+          const box = document.createElement("div");
+          box.className = "photo-box";
+
+          const img = document.createElement("img");
           img.src = e.target.result;
 
           box.appendChild(img);
           printArea.appendChild(box);
         };
+
         reader.readAsDataURL(file);
-      });
+        
+        // Cycle through photos if fewer than requested
+        index = (index + 1) % files.length;
+      }
     });
   </script>
 
