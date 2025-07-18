@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>50 Landscape Photos - A4 Portrait</title>
+  <title>50 Landscape Photos - A4 Full Portrait</title>
   <style>
     :root {
-      --photo-width: 32mm;
-      --photo-height: 22mm;
+      --photo-width: 32mm;   /* Landscape width */
+      --photo-height: 24mm;  /* Landscape height */
       --columns: 5;
       --rows: 10;
-      --gap: 2mm;
+      --gap: 2mm;            /* Gap between photos */
     }
 
     body {
@@ -34,16 +34,16 @@
     }
 
     .print-area {
-      width: 210mm;
-      height: 297mm;
+      width: 210mm;  /* A4 width */
+      height: 297mm; /* A4 height */
       background: white;
       margin: auto;
       padding: 5mm;
       display: grid;
-      box-sizing: border-box;
       grid-template-columns: repeat(var(--columns), var(--photo-width));
       grid-template-rows: repeat(var(--rows), var(--photo-height));
       gap: var(--gap);
+      box-sizing: border-box;
       box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
     }
 
@@ -85,10 +85,10 @@
 <body>
 
   <div class="controls">
-    <label><strong>Upload images (landscape):</strong></label>
+    <label><strong>Upload Photos (Landscape):</strong></label>
     <input type="file" id="photoInput" multiple accept="image/*" />
 
-    <label><strong>Number of photos (max 50):</strong></label>
+    <label><strong>Number of Photos (Max 50):</strong></label>
     <input type="number" id="pcsInput" min="1" max="50" value="50" />
 
     <button onclick="window.print()">Print</button>
@@ -102,9 +102,9 @@
     const printArea = document.getElementById("printArea");
 
     photoInput.addEventListener("change", () => {
-      const total = Math.min(Number(pcsInput.value), 50);
+      const total = Math.min(Number(pcsInput.value), 50); // Limit to 50
       const files = Array.from(photoInput.files);
-      
+
       if (files.length === 0) {
         alert("Please select at least one image.");
         return;
@@ -130,7 +130,7 @@
 
         reader.readAsDataURL(file);
 
-        index = (index + 1) % files.length; // Repeat photos if fewer than total
+        index = (index + 1) % files.length; // Cycle through photos if fewer than requested
       }
     });
   </script>
