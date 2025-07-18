@@ -1,140 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>45 Landscape Photos - A4 Full Page Portrait Layout</title>
-  <style>
-    :root {
-      --photo-width: 32mm;  /* Photo width, smaller than passport size */
-      --photo-height: 24mm; /* Photo height */
-      --columns: 5;         /* Number of columns in A4 page */
-      --rows: 9;            /* Number of rows in A4 page */
-      --gap: 3mm;           /* Gap between photos */
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Printing System - A4 Portrait Layout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
 
-    body {
-      margin: 0;
-      padding: 10mm;
-      background: #f4f4f4;
-      font-family: sans-serif;
-    }
+        .container {
+            max-width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-    .controls {
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+        h1 {
+            font-size: 24px;
+        }
 
-    .controls input,
-    .controls button {
-      font-size: 14px;
-      padding: 6px 12px;
-    }
+        #fileInput {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
 
-    .print-area {
-      width: 210mm;  /* A4 width */
-      height: 297mm; /* A4 height */
-      background: white;
-      margin: auto;
-      padding: 5mm;
-      display: grid;
-      grid-template-columns: repeat(var(--columns), var(--photo-width));
-      grid-template-rows: repeat(var(--rows), var(--photo-height));
-      gap: var(--gap);
-      box-sizing: border-box;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
-    }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5 columns per row */
+            grid-gap: 10px;
+            justify-items: center;
+            margin-top: 20px;
+        }
 
-    .photo-box {
-      width: var(--photo-width);
-      height: var(--photo-height);
-      border: 1px solid black;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      background: white;
-    }
+        .photo-item {
+            width: 90px;
+            height: 110px;
+            border: 2px solid #000;
+            position: relative;
+            overflow: hidden;
+        }
 
-    .photo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: rotate(0deg); /* Default rotation */
+        }
 
-    @media print {
-      body {
-        background: white;
-        padding: 0;
-      }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+        }
 
-      .controls {
-        display: none;
-      }
-
-      .print-area {
-        box-shadow: none;
-        margin: 0;
-        page-break-after: always;
-      }
-    }
-  </style>
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="controls">
-    <label><strong>Upload Photos (Landscape):</strong></label>
-    <input type="file" id="photoInput" multiple accept="image/*" />
+    <div class="container">
+        <h1>Upload Your Photos for Printing</h1>
+        <input type="file" id="fileInput" multiple accept="image/*">
+        <div id="photoGrid" class="photo-grid"></div>
+        <button id="downloadBtn">Download as PDF</button>
+    </div>
 
-    <label><strong>Number of Photos (Max 45):</strong></label>
-    <input type="number" id="pcsInput" min="1" max="45" value="45" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        document.getElementById('downloadBtn').addEventListener('click', downloadPDF);
 
-    <button onclick="window.print()">Print</button>
-  </div>
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const photoGrid = document.getElementById('photoGrid');
+            photoGrid.innerHTML = ''; // Clear existing grid
 
-  <div class="print-area" id="printArea"></div>
+            // Process each uploaded image
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = e.target.result;
+                    const photoItem = document.createElement('div');
+                    photoItem.classList.add('photo-item');
+                    photoItem.appendChild(imgElement);
 
-  <script>
-    const photoInput = document.getElementById("photoInput");
-    const pcsInput = document.getElementById("pcsInput");
-    const printArea = document.getElementById("printArea");
+                    // Append to grid
+                    photoGrid.appendChild(photoItem);
 
-    photoInput.addEventListener("change", () => {
-      const total = Math.min(Number(pcsInput.value), 45); // Limit to 45 photos
-      const files = Array.from(photoInput.files);
+                    // Resize and rotate images if necessary
+                    setTimeout(() => resizeImage(photoItem, imgElement), 100);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
-      if (files.length === 0) {
-        alert("Please select at least one image.");
-        return;
-      }
+        function resizeImage(photoItem, imgElement) {
+            // Ensure images fit within the passport size (90x110 px)
+            imgElement.style.width = '100%';
+            imgElement.style.height = '100%';
+            imgElement.style.objectFit = 'cover'; // Ensure the image covers the area
 
-      printArea.innerHTML = ''; // Clear previous photos
+            // Auto rotate if the image is landscape
+            const image = new Image();
+            image.onload = function() {
+                if (image.width > image.height) {
+                    imgElement.style.transform = 'rotate(90deg)'; // Rotate to portrait if landscape
+                }
+            };
+            image.src = imgElement.src;
+        }
 
-      let index = 0;
-      for (let i = 0; i < total; i++) {
-        const file = files[index];
-        const reader = new FileReader();
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
 
-        reader.onload = (e) => {
-          const box = document.createElement("div");
-          box.className = "photo-box";
+            // Select all photo items
+            const photos = document.querySelectorAll('.photo-item img');
+            let x = 10, y = 10, margin = 10;
 
-          const img = document.createElement("img");
-          img.src = e.target.result;
+            // Add images to the PDF
+            photos.forEach((photo, index) => {
+                doc.addImage(photo.src, 'JPEG', x, y, 45, 55); // Add photo at specified position
+                x += 50; // Move to the next column
+                if ((index + 1) % 5 === 0) { // After 5 photos, move to the next row
+                    x = 10;
+                    y += 60;
+                }
+            });
 
-          box.appendChild(img);
-          printArea.appendChild(box);
-        };
-
-        reader.readAsDataURL(file);
-
-        index = (index + 1) % files.length; // Cycle through photos if fewer than requested
-      }
-    });
-  </script>
+            // Save as PDF
+            doc.save('passport_photos.pdf');
+        }
+    </script>
 
 </body>
 </html>
