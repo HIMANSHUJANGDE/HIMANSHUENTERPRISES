@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Print Mini Landscape Photos on A4 Portrait</title>
+  <title>50 Landscape Photos - A4 Portrait</title>
   <style>
     :root {
-      --photo-width: 32mm;   /* Landscape width */
-      --photo-height: 24mm;  /* Landscape height */
+      --photo-width: 32mm;
+      --photo-height: 22mm;
       --columns: 5;
-      --rows: 9;
+      --rows: 10;
       --gap: 2mm;
     }
 
@@ -37,25 +37,25 @@
       width: 210mm;
       height: 297mm;
       background: white;
+      margin: auto;
+      padding: 5mm;
       display: grid;
+      box-sizing: border-box;
       grid-template-columns: repeat(var(--columns), var(--photo-width));
       grid-template-rows: repeat(var(--rows), var(--photo-height));
       gap: var(--gap);
-      padding: 5mm;
-      margin: auto;
-      box-sizing: border-box;
       box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
     }
 
     .photo-box {
-      border: 1px solid #000;
+      width: var(--photo-width);
+      height: var(--photo-height);
+      border: 1px solid black;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: white;
       overflow: hidden;
-      width: var(--photo-width);
-      height: var(--photo-height);
+      background: white;
     }
 
     .photo-box img {
@@ -85,12 +85,12 @@
 <body>
 
   <div class="controls">
-    <label>Upload photos (landscape):</label>
+    <label><strong>Upload images (landscape):</strong></label>
     <input type="file" id="photoInput" multiple accept="image/*" />
-    
-    <label>Set number of photos (max 45):</label>
-    <input type="number" id="pcsInput" min="1" max="45" value="45" />
-    
+
+    <label><strong>Number of photos (max 50):</strong></label>
+    <input type="number" id="pcsInput" min="1" max="50" value="50" />
+
     <button onclick="window.print()">Print</button>
   </div>
 
@@ -102,7 +102,7 @@
     const printArea = document.getElementById("printArea");
 
     photoInput.addEventListener("change", () => {
-      const total = Math.min(Number(pcsInput.value), 45);
+      const total = Math.min(Number(pcsInput.value), 50);
       const files = Array.from(photoInput.files);
       
       if (files.length === 0) {
@@ -129,9 +129,8 @@
         };
 
         reader.readAsDataURL(file);
-        
-        // Cycle through photos if fewer than requested
-        index = (index + 1) % files.length;
+
+        index = (index + 1) % files.length; // Repeat photos if fewer than total
       }
     });
   </script>
