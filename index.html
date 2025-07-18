@@ -2,22 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Compact Photo Print - 45 per A4</title>
+  <title>45 Landscape Photos Per A4 Portrait Page</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: sans-serif;
       background: #f0f0f0;
     }
+
     .controls {
-      padding: 12px;
       text-align: center;
+      padding: 10px;
       background: #fff;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .controls input, .controls button {
+
+    .controls input,
+    .controls button {
       padding: 8px 12px;
       margin: 5px;
       font-size: 14px;
@@ -26,14 +30,14 @@
     .page {
       width: 210mm;
       height: 297mm;
-      background: white;
+      background: #fff;
       margin: 10px auto;
       display: grid;
       grid-template-columns: repeat(5, 3.5cm);
       grid-template-rows: repeat(9, 2.5cm);
       gap: 0;
       page-break-after: always;
-      overflow: hidden;
+      align-content: start;
     }
 
     .photo {
@@ -50,16 +54,18 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: rotate(0deg); /* Landscape orientation */
+      transform: rotate(0deg); /* Landscape */
     }
 
     @media print {
       body {
         background: none;
       }
+
       .controls {
         display: none;
       }
+
       .page {
         margin: 0;
         box-shadow: none;
@@ -71,7 +77,7 @@
 
 <div class="controls">
   <input type="file" id="fileInput" multiple accept="image/*">
-  <input type="number" id="pcsInput" placeholder="PCS (Copies per image)" min="1" value="1">
+  <input type="number" id="pcsInput" min="1" value="1" placeholder="PCS (Copies)">
   <button onclick="generatePages()">🧩 Generate</button>
   <button onclick="window.print()">🖨️ Print</button>
 </div>
@@ -89,47 +95,46 @@
     const pcs = parseInt(pcsInput.value) || 1;
 
     if (!files.length) {
-      alert("Please upload images.");
+      alert("Please upload image files.");
       return;
     }
 
     const allImages = [];
 
-    // Multiply each image by PCS count
     files.forEach(file => {
       for (let i = 0; i < pcs; i++) {
         allImages.push(file);
       }
     });
 
-    output.innerHTML = ''; // Clear old content
+    output.innerHTML = ''; // Clear existing layout
     const totalPages = Math.ceil(allImages.length / PHOTOS_PER_PAGE);
 
-    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-      const pageDiv = document.createElement('div');
-      pageDiv.className = 'page';
+    for (let i = 0; i < totalPages; i++) {
+      const page = document.createElement('div');
+      page.className = 'page';
 
       const imagesForPage = allImages.slice(
-        pageIndex * PHOTOS_PER_PAGE,
-        (pageIndex + 1) * PHOTOS_PER_PAGE
+        i * PHOTOS_PER_PAGE,
+        (i + 1) * PHOTOS_PER_PAGE
       );
 
       imagesForPage.forEach(file => {
         const reader = new FileReader();
-        reader.onload = function (event) {
+        reader.onload = function (e) {
           const photoDiv = document.createElement('div');
           photoDiv.className = 'photo';
 
           const img = document.createElement('img');
-          img.src = event.target.result;
+          img.src = e.target.result;
 
           photoDiv.appendChild(img);
-          pageDiv.appendChild(photoDiv);
+          page.appendChild(photoDiv);
         };
         reader.readAsDataURL(file);
       });
 
-      output.appendChild(pageDiv);
+      output.appendChild(page);
     }
   }
 </script>
