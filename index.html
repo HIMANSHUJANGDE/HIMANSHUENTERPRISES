@@ -10,7 +10,7 @@
       --photo-height: 24mm; /* Each photo height */
       --columns: 5;         /* Number of columns in A4 page */
       --rows: 9;            /* Number of rows in A4 page */
-      --gap: 3mm;           /* Gap between photos */
+      --gap: 2mm;           /* Gap between photos */
     }
 
     body {
@@ -102,7 +102,6 @@
     const pcsInput = document.getElementById("pcsInput");
     const printArea = document.getElementById("printArea");
 
-    // Function to handle file upload and display photos
     photoInput.addEventListener("change", () => {
       const total = Math.min(Number(pcsInput.value), 45); // Limit to 45 photos
       const files = Array.from(photoInput.files);
