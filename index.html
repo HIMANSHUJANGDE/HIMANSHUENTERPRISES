@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>50 Landscape Photos - A4 Full Portrait</title>
+  <title>45 Landscape Photos - A4 Full Portrait</title>
   <style>
     :root {
       --photo-width: 32mm;   /* Landscape width */
       --photo-height: 24mm;  /* Landscape height */
       --columns: 5;
-      --rows: 10;
+      --rows: 9;
       --gap: 2mm;            /* Gap between photos */
     }
 
@@ -88,8 +88,8 @@
     <label><strong>Upload Photos (Landscape):</strong></label>
     <input type="file" id="photoInput" multiple accept="image/*" />
 
-    <label><strong>Number of Photos (Max 50):</strong></label>
-    <input type="number" id="pcsInput" min="1" max="50" value="50" />
+    <label><strong>Number of Photos (Max 45):</strong></label>
+    <input type="number" id="pcsInput" min="1" max="45" value="45" />
 
     <button onclick="window.print()">Print</button>
   </div>
@@ -102,7 +102,7 @@
     const printArea = document.getElementById("printArea");
 
     photoInput.addEventListener("change", () => {
-      const total = Math.min(Number(pcsInput.value), 50); // Limit to 50
+      const total = Math.min(Number(pcsInput.value), 45); // Limit to 45
       const files = Array.from(photoInput.files);
 
       if (files.length === 0) {
