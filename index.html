@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passport Photo Printing</title>
+    <title>Smaller-than-Passport Photo Printing System</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,16 +28,17 @@
 
         .photo-grid {
             display: grid;
-            grid-template-columns: repeat(9, 1fr); /* 9 columns per row */
-            grid-gap: 5px;
+            grid-template-columns: repeat(9, 1fr); /* 9 columns */
+            grid-template-rows: repeat(5, 1fr); /* 5 rows */
+            grid-gap: 0; /* No gap between images */
             justify-items: center;
-            margin-top: 20px;
+            margin-top: 0;
         }
 
         .photo-item {
             position: relative;
-            width: 40mm; /* Approx passport photo width */
-            height: 50mm; /* Approx passport photo height */
+            width: 35mm; /* Slightly smaller than passport size */
+            height: 45mm;
             border: 1px solid #000;
             overflow: hidden;
             background-color: #fff;
@@ -73,13 +74,14 @@
 
             .photo-grid {
                 grid-template-columns: repeat(9, 1fr);
-                grid-gap: 5px;
+                grid-template-rows: repeat(5, 1fr);
+                grid-gap: 0;
                 justify-items: center;
             }
 
             .photo-item {
-                width: 40mm;
-                height: 50mm;
+                width: 35mm;
+                height: 45mm;
                 border: 1px solid #000;
             }
 
@@ -93,7 +95,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Passport Photo Printing System</h1>
+        <h1>Smaller-than-Passport Photo Printing System</h1>
 
         <div class="upload-section">
             <input type="file" id="photoInput" accept="image/*" multiple>
