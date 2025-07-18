@@ -1,91 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AI Photo Editor</title>
+  <meta charset="UTF-8" />
+  <title>All-in-One Photo Editor</title>
   <style>
-    body { font-family: Arial; background: #f4f4f4; padding: 20px; text-align: center; }
-    canvas { border: 1px solid #999; display: block; margin: 10px auto; max-width: 100%; }
-    input, button { margin: 5px; padding: 8px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+    }
+    canvas {
+      border: 2px solid #ccc;
+      margin: 20px auto;
+      display: block;
+      max-width: 90%;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+    }
+    #tools {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <h1>🖼 AI Photo Editor</h1>
-  <input type="file" id="imgUpload" accept="image/*"><br>
-  <button id="removeBtn" disabled>🪄 Remove BG (AI)</button><br>
-  <input type="color" id="bgColor" value="#ffffff" disabled>
-  <input type="file" id="bgImage" accept="image/*" disabled><br>
-  <button id="downloadBtn" disabled>Download Result</button>
+
+  <h1>🖼️ All-in-One Photo Editor</h1>
+
+  <input type="file" id="upload" accept="image/*" />
   <canvas id="canvas"></canvas>
 
-  <script type="module">
-    import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal/dist/browser.esm.js';
+  <div id="tools">
+    <button id="remove-bg" disabled>🪄 Remove Background</button><br>
 
-    const upload = document.getElementById('imgUpload'),
-          removeBtn = document.getElementById('removeBtn'),
-          bgColor = document.getElementById('bgColor'),
-          bgImage = document.getElementById('bgImage'),
-          downloadBtn = document.getElementById('downloadBtn'),
-          canvas = document.getElementById('canvas'),
-          ctx = canvas.getContext('2d');
-    let origImg = new Image(), maskBlob = null;
+    <label>Change Background Color:
+      <input type="color" id="bg-color" disabled />
+    </label><br>
+
+    <label>Change Background Image:
+      <input type="file" id="bg-image" accept="image/*" disabled />
+    </label><br>
+
+    <button id="download" disabled>⬇️ Download Image</button>
+  </div>
+
+  <!-- Background removal library (in-browser ONNX) -->
+  <script type="module">
+    import removeBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm';
+
+    const upload = document.getElementById("upload");
+    const removeBtn = document.getElementById("remove-bg");
+    const bgColorInput = document.getElementById("bg-color");
+    const bgImageInput = document.getElementById("bg-image");
+    const downloadBtn = document.getElementById("download");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let originalImage = new Image();
+    let subjectImage = null;
 
     upload.onchange = e => {
       const file = e.target.files[0];
       if (!file) return;
-      const url = URL.createObjectURL(file);
-      origImg = new Image();
-      origImg.onload = () => {
-        canvas.width = origImg.width;
-        canvas.height = origImg.height;
-        ctx.drawImage(origImg, 0, 0);
-        removeBtn.disabled = false;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        originalImage = new Image();
+        originalImage.onload = () => {
+          canvas.width = originalImage.width;
+          canvas.height = originalImage.height;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(originalImage, 0, 0);
+          removeBtn.disabled = false;
+        };
+        originalImage.src = evt.target.result;
       };
-      origImg.src = url;
+      reader.readAsDataURL(file);
     };
 
     removeBtn.onclick = async () => {
-      removeBtn.textContent = 'Processing…';
-      maskBlob = await imglyRemoveBackground(origImg.src);
-      const maskImg = new Image();
-      maskImg.onload = () => {
-        canvas.width = maskImg.width;
-        canvas.height = maskImg.height;
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(maskImg, 0, 0);
-        ctx.globalCompositeOperation = 'source-in';
-        ctx.drawImage(origImg, 0, 0);
-        ctx.globalCompositeOperation = 'source-over';
-        bgColor.disabled = bgImage.disabled = downloadBtn.disabled = false;
-        removeBtn.textContent = '✅ Remove BG (AI)';
+      removeBtn.textContent = "Removing...";
+      const resultBlob = await removeBackground(originalImage.src);
+      const resultImg = new Image();
+      resultImg.onload = () => {
+        canvas.width = resultImg.width;
+        canvas.height = resultImg.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(resultImg, 0, 0);
+        subjectImage = resultImg;
+        enableTools();
+        removeBtn.textContent = "✅ Background Removed";
       };
-      maskImg.src = URL.createObjectURL(maskBlob);
+      resultImg.src = URL.createObjectURL(resultBlob);
     };
 
-    bgColor.oninput = () => {
-      const color = bgColor.value;
-      ctx.globalCompositeOperation = 'destination-over';
-      ctx.fillStyle = color;
+    function enableTools() {
+      bgColorInput.disabled = false;
+      bgImageInput.disabled = false;
+      downloadBtn.disabled = false;
+    }
+
+    bgColorInput.oninput = () => {
+      if (!subjectImage) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = bgColorInput.value;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(subjectImage, 0, 0);
     };
 
-    bgImage.onchange = e => {
+    bgImageInput.onchange = e => {
       const file = e.target.files[0];
       if (!file) return;
-      const url = URL.createObjectURL(file);
-      const bg = new Image();
-      bg.onload = () => {
-        ctx.globalCompositeOperation = 'destination-over';
-        ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-        ctx.globalCompositeOperation = 'source-over';
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const bgImg = new Image();
+        bgImg.onload = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(subjectImage, 0, 0);
+        };
+        bgImg.src = evt.target.result;
       };
-      bg.src = url;
+      reader.readAsDataURL(file);
     };
 
     downloadBtn.onclick = () => {
       const link = document.createElement('a');
-      link.download = 'edited.png';
+      link.download = 'edited-photo.png';
       link.href = canvas.toDataURL();
       link.click();
     };
