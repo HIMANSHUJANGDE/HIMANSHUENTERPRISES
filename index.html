@@ -38,7 +38,7 @@
 
         .photo-item {
             width: 90px;
-            height: 110px;
+            height: 120px;
             border: 2px solid #000;
             position: relative;
             overflow: hidden;
@@ -106,7 +106,7 @@
         }
 
         function resizeImage(photoItem, imgElement) {
-            // Ensure images fit within the passport size (90x110 px)
+            // Ensure images fit within the passport size (90x120 px)
             imgElement.style.width = '100%';
             imgElement.style.height = '100%';
             imgElement.style.objectFit = 'cover'; // Ensure the image covers the area
@@ -131,11 +131,11 @@
 
             // Add images to the PDF
             photos.forEach((photo, index) => {
-                doc.addImage(photo.src, 'JPEG', x, y, 45, 55); // Add photo at specified position
+                doc.addImage(photo.src, 'JPEG', x, y, 45, 60); // Add photo at specified position
                 x += 50; // Move to the next column
                 if ((index + 1) % 5 === 0) { // After 5 photos, move to the next row
                     x = 10;
-                    y += 60;
+                    y += 70;
                 }
             });
 
