@@ -3,44 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QR Code Generator & Downloader</title>
+  <title>Custom QR Code Generator</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e9ecef);
+      margin: 0;
       padding: 20px;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
     }
 
     .container {
-      background: white;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
       max-width: 500px;
-      margin: auto;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
     }
 
     h1 {
+      text-align: center;
       margin-bottom: 20px;
+      color: #343a40;
     }
 
     textarea {
       width: 100%;
       padding: 10px;
       font-size: 16px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
       resize: vertical;
     }
 
+    .color-picker {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .color-picker label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input[type="color"] {
+      margin-left: 5px;
+    }
+
     button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
+      width: 100%;
+      padding: 12px;
       background-color: #007bff;
       color: white;
-      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
@@ -49,16 +73,17 @@
     }
 
     canvas {
-      margin-top: 20px;
-      max-width: 100%;
+      display: block;
+      margin: 20px auto;
     }
 
     a#download-link {
       display: block;
-      margin-top: 15px;
-      text-decoration: none;
+      text-align: center;
+      margin-top: 10px;
       color: #007bff;
       font-weight: bold;
+      text-decoration: none;
     }
 
     a#download-link:hover {
@@ -69,16 +94,25 @@
 <body>
 
   <div class="container">
-    <h1>QR Code Generator</h1>
-    <textarea id="qr-input" rows="4" placeholder="Enter text or URL here..."></textarea>
+    <h1>🎨 Custom QR Code Generator</h1>
+    <textarea id="qr-text" rows="4" placeholder="Enter text or URL..."></textarea>
+
+    <div class="color-picker">
+      <label>Foreground: <input type="color" id="foreground" value="#000000"></label>
+      <label>Background: <input type="color" id="background" value="#ffffff"></label>
+    </div>
+
     <button onclick="generateQRCode()">Generate QR Code</button>
+
     <canvas id="qr-canvas"></canvas>
-    <a id="download-link" href="#" download="qr-code.png" style="display: none;">⬇️ Download QR Code</a>
+    <a id="download-link" href="#" download="custom-qr-code.png" style="display:none;">⬇️ Download QR Code</a>
   </div>
 
   <script>
     function generateQRCode() {
-      const text = document.getElementById("qr-input").value.trim();
+      const text = document.getElementById("qr-text").value.trim();
+      const fgColor = document.getElementById("foreground").value;
+      const bgColor = document.getElementById("background").value;
       const canvas = document.getElementById("qr-canvas");
       const downloadLink = document.getElementById("download-link");
 
@@ -87,16 +121,22 @@
         return;
       }
 
-      QRCode.toCanvas(canvas, text, { width: 250 }, function (error) {
+      QRCode.toCanvas(canvas, text, {
+        width: 250,
+        color: {
+          dark: fgColor,
+          light: bgColor
+        }
+      }, function (error) {
         if (error) {
           console.error(error);
-          alert("Error generating QR code.");
+          alert("Error generating QR Code.");
           return;
         }
 
-        // Prepare download link
-        const dataURL = canvas.toDataURL("image/png");
-        downloadLink.href = dataURL;
+        // Show and update download link
+        const imageUrl = canvas.toDataURL("image/png");
+        downloadLink.href = imageUrl;
         downloadLink.style.display = "block";
       });
     }
