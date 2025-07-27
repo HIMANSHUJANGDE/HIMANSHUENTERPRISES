@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Custom QR Code Generator</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <title>All-in-One QR Code Scanner</title>
+  <!-- QR code scanning libraries -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #f8f9fa, #e9ecef);
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
       margin: 0;
       padding: 20px;
       display: flex;
@@ -19,126 +21,122 @@
 
     .container {
       background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      max-width: 500px;
+      padding: 20px;
+      max-width: 600px;
       width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
     h1 {
-      text-align: center;
       margin-bottom: 20px;
-      color: #343a40;
+      color: #333;
     }
 
-    textarea {
+    #reader {
       width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      resize: vertical;
+      margin: 0 auto 20px;
     }
 
-    .color-picker {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
-    .color-picker label {
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    input[type="color"] {
-      margin-left: 5px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
+    input[type="file"] {
+      margin: 10px 0;
     }
 
     canvas {
-      display: block;
-      margin: 20px auto;
+      display: none;
     }
 
-    a#download-link {
-      display: block;
-      text-align: center;
-      margin-top: 10px;
-      color: #007bff;
+    .result {
       font-weight: bold;
-      text-decoration: none;
+      color: green;
+      margin-top: 10px;
     }
 
-    a#download-link:hover {
-      text-decoration: underline;
+    .error {
+      color: red;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>🎨 Custom QR Code Generator</h1>
-    <textarea id="qr-text" rows="4" placeholder="Enter text or URL..."></textarea>
+    <h1>📷 QR Code Scanner</h1>
 
-    <div class="color-picker">
-      <label>Foreground: <input type="color" id="foreground" value="#000000"></label>
-      <label>Background: <input type="color" id="background" value="#ffffff"></label>
-    </div>
+    <!-- Webcam QR Scanner -->
+    <div id="reader"></div>
+    <div class="result">Scanned Result: <span id="camera-result">None</span></div>
 
-    <button onclick="generateQRCode()">Generate QR Code</button>
+    <hr style="margin: 30px 0;">
 
-    <canvas id="qr-canvas"></canvas>
-    <a id="download-link" href="#" download="custom-qr-code.png" style="display:none;">⬇️ Download QR Code</a>
+    <!-- Upload Image Scanner -->
+    <h2>🖼️ Upload QR Code Image</h2>
+    <input type="file" accept="image/*" onchange="handleFile(event)">
+    <canvas id="canvas"></canvas>
+    <div class="result">Image Result: <span id="upload-result">None</span></div>
   </div>
 
   <script>
-    function generateQRCode() {
-      const text = document.getElementById("qr-text").value.trim();
-      const fgColor = document.getElementById("foreground").value;
-      const bgColor = document.getElementById("background").value;
-      const canvas = document.getElementById("qr-canvas");
-      const downloadLink = document.getElementById("download-link");
+    // Webcam QR Scanner
+    function onScanSuccess(decodedText) {
+      document.getElementById("camera-result").textContent = decodedText;
+    }
 
-      if (!text) {
-        alert("Please enter some text.");
+    function onScanFailure(error) {
+      // Optional: console.log("Scan error: ", error);
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    Html5Qrcode.getCameras().then(cameras => {
+      if (cameras.length) {
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          onScanSuccess,
+          onScanFailure
+        );
+      } else {
+        document.getElementById("camera-result").textContent = "No camera found.";
+      }
+    }).catch(err => {
+      document.getElementById("camera-result").textContent = "Camera error.";
+    });
+
+    // Upload Image QR Scanner
+    function handleFile(event) {
+      const file = event.target.files[0];
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const output = document.getElementById("upload-result");
+
+      if (!file) {
+        output.textContent = "No file selected.";
+        output.className = "error";
         return;
       }
 
-      QRCode.toCanvas(canvas, text, {
-        width: 250,
-        color: {
-          dark: fgColor,
-          light: bgColor
-        }
-      }, function (error) {
-        if (error) {
-          console.error(error);
-          alert("Error generating QR Code.");
-          return;
-        }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0, img.width, img.height);
 
-        // Show and update download link
-        const imageUrl = canvas.toDataURL("image/png");
-        downloadLink.href = imageUrl;
-        downloadLink.style.display = "block";
-      });
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          const code = jsQR(imageData.data, img.width, img.height);
+
+          if (code) {
+            output.textContent = code.data;
+            output.className = "result";
+          } else {
+            output.textContent = "No QR code found.";
+            output.className = "error";
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   </script>
 
