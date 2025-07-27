@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR Code Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    canvas {
+      display: block;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>QR Code Generator</h1>
+    <textarea id="text-input" placeholder="Enter text or URL..."></textarea>
+    <button onclick="generateQR()">Generate QR Code</button>
+    <canvas id="qr-code"></canvas>
+  </div>
+
+  <script>
+    function generateQR() {
+      const text = document.getElementById('text-input').value.trim();
+      const canvas = document.getElementById('qr-code');
+
+      if (!text) {
+        alert("Please enter text to generate QR code.");
+        return;
+      }
+
+      QRCode.toCanvas(canvas, text, { width: 200 }, function (error) {
+        if (error) {
+          console.error(error);
+          alert("Failed to generate QR Code.");
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
