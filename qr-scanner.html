@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>All-in-One QR Code Scanner</title>
-  <!-- QR code scanning libraries -->
+  <title>QR Code Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
       margin: 0;
       padding: 20px;
       display: flex;
@@ -21,11 +20,11 @@
 
     .container {
       background: #fff;
-      padding: 20px;
+      padding: 25px;
+      border-radius: 10px;
       max-width: 600px;
       width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
       text-align: center;
     }
 
@@ -36,7 +35,7 @@
 
     #reader {
       width: 100%;
-      margin: 0 auto 20px;
+      margin-bottom: 20px;
     }
 
     input[type="file"] {
@@ -47,14 +46,42 @@
       display: none;
     }
 
-    .result {
-      font-weight: bold;
+    .result-box {
+      margin-top: 15px;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 16px;
       color: green;
+      word-break: break-word;
+    }
+
+    .buttons {
       margin-top: 10px;
+    }
+
+    .buttons button {
+      padding: 8px 16px;
+      font-size: 14px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .buttons button:hover {
+      background-color: #0056b3;
     }
 
     .error {
       color: red;
+      font-weight: bold;
+    }
+
+    hr {
+      margin: 30px 0;
     }
   </style>
 </head>
@@ -63,27 +90,33 @@
   <div class="container">
     <h1>📷 QR Code Scanner</h1>
 
-    <!-- Webcam QR Scanner -->
+    <!-- Webcam Scanner -->
     <div id="reader"></div>
-    <div class="result">Scanned Result: <span id="camera-result">None</span></div>
+    <div class="result-box" id="camera-result">Scanned Result: <span id="camera-output">None</span></div>
+    <div class="buttons">
+      <button onclick="copyText('camera-output')">📋 Copy Camera Result</button>
+    </div>
 
-    <hr style="margin: 30px 0;">
+    <hr>
 
-    <!-- Upload Image Scanner -->
+    <!-- Image Upload Scanner -->
     <h2>🖼️ Upload QR Code Image</h2>
     <input type="file" accept="image/*" onchange="handleFile(event)">
     <canvas id="canvas"></canvas>
-    <div class="result">Image Result: <span id="upload-result">None</span></div>
+    <div class="result-box" id="upload-result">Image Result: <span id="upload-output">None</span></div>
+    <div class="buttons">
+      <button onclick="copyText('upload-output')">📋 Copy Image Result</button>
+    </div>
   </div>
 
   <script>
-    // Webcam QR Scanner
+    // Start camera QR scanner
     function onScanSuccess(decodedText) {
-      document.getElementById("camera-result").textContent = decodedText;
+      document.getElementById("camera-output").textContent = decodedText;
     }
 
     function onScanFailure(error) {
-      // Optional: console.log("Scan error: ", error);
+      // Optional logging
     }
 
     const html5QrCode = new Html5Qrcode("reader");
@@ -96,18 +129,18 @@
           onScanFailure
         );
       } else {
-        document.getElementById("camera-result").textContent = "No camera found.";
+        document.getElementById("camera-output").textContent = "No camera found.";
       }
     }).catch(err => {
-      document.getElementById("camera-result").textContent = "Camera error.";
+      document.getElementById("camera-output").textContent = "Camera error.";
     });
 
-    // Upload Image QR Scanner
+    // Handle image upload scanning
     function handleFile(event) {
       const file = event.target.files[0];
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
-      const output = document.getElementById("upload-result");
+      const output = document.getElementById("upload-output");
 
       if (!file) {
         output.textContent = "No file selected.";
@@ -128,15 +161,29 @@
 
           if (code) {
             output.textContent = code.data;
-            output.className = "result";
+            output.className = "";
           } else {
-            output.textContent = "No QR code found.";
+            output.textContent = "No QR code found in image.";
             output.className = "error";
           }
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    }
+
+    // Copy to clipboard
+    function copyText(spanId) {
+      const text = document.getElementById(spanId).textContent;
+      if (!text || text === "None" || text.includes("No QR")) {
+        alert("Nothing to copy!");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied to clipboard!");
+      }, err => {
+        alert("Failed to copy text.");
+      });
     }
   </script>
 
