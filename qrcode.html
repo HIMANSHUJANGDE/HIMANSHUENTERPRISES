@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All-in-One QR Code Generator & Scanner</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    textarea, input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      resize: none;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px 0;
+      cursor: pointer;
+      border: none;
+      background: #28a745;
+      color: #fff;
+      border-radius: 5px;
+    }
+    canvas {
+      margin-top: 10px;
+      display: block;
+    }
+    #reader {
+      width: 100%;
+    }
+    .output {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>QR Code Generator & Scanner</h1>
+  <div class="container">
+    
+    <!-- Generator Section -->
+    <div class="section">
+      <h2>QR Code Generator</h2>
+      <textarea id="qr-text" rows="4" placeholder="Enter text or URL to generate QR code"></textarea>
+      <button onclick="generateQRCode()">Generate QR Code</button>
+      <canvas id="qr-canvas"></canvas>
+    </div>
+
+    <!-- Scanner Section -->
+    <div class="section">
+      <h2>QR Code Scanner</h2>
+      <div id="reader"></div>
+      <div class="output" id="scan-result">Scanned result: <span id="result-text">None</span></div>
+    </div>
+
+  </div>
+
+  <script>
+    // QR Code Generator
+    function generateQRCode() {
+      const text = document.getElementById('qr-text').value;
+      const canvas = document.getElementById('qr-canvas');
+      if (!text.trim()) {
+        alert("Please enter text to generate QR Code.");
+        return;
+      }
+      QRCode.toCanvas(canvas, text, function (error) {
+        if (error) console.error(error);
+        else console.log("QR code generated!");
+      });
+    }
+
+    // QR Code Scanner
+    function onScanSuccess(decodedText) {
+      document.getElementById('result-text').textContent = decodedText;
+    }
+
+    function onScanError(error) {
+      // Optional: handle scan errors
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    Html5Qrcode.getCameras().then(cameras => {
+      if (cameras && cameras.length) {
+        html5QrCode.start(
+          { facingMode: "environment" }, // Rear camera
+          config,
+          onScanSuccess,
+          onScanError
+        );
+      } else {
+        alert("No cameras found.");
+      }
+    }).catch(err => {
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
