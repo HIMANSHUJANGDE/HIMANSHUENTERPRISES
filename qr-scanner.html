@@ -3,40 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QR Code Scanner</title>
+  <title>All-in-One QR Code Scanner</title>
+  <!-- QR code scanning libraries -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: #f8f9fa;
       margin: 0;
       padding: 20px;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
     }
 
     .container {
       background: #fff;
       padding: 20px;
-      max-width: 500px;
-      margin: auto;
+      max-width: 600px;
+      width: 100%;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
     h1 {
+      margin-bottom: 20px;
       color: #333;
     }
 
     #reader {
       width: 100%;
-      margin-top: 20px;
+      margin: 0 auto 20px;
+    }
+
+    input[type="file"] {
+      margin: 10px 0;
+    }
+
+    canvas {
+      display: none;
     }
 
     .result {
-      margin-top: 20px;
-      font-size: 18px;
       font-weight: bold;
       color: green;
+      margin-top: 10px;
     }
 
     .error {
@@ -47,40 +61,83 @@
 <body>
 
   <div class="container">
-    <h1>QR Code Scanner</h1>
+    <h1>📷 QR Code Scanner</h1>
+
+    <!-- Webcam QR Scanner -->
     <div id="reader"></div>
-    <div class="result" id="scan-result">Scanned Result: <span id="result-text">None</span></div>
+    <div class="result">Scanned Result: <span id="camera-result">None</span></div>
+
+    <hr style="margin: 30px 0;">
+
+    <!-- Upload Image Scanner -->
+    <h2>🖼️ Upload QR Code Image</h2>
+    <input type="file" accept="image/*" onchange="handleFile(event)">
+    <canvas id="canvas"></canvas>
+    <div class="result">Image Result: <span id="upload-result">None</span></div>
   </div>
 
   <script>
-    function onScanSuccess(decodedText, decodedResult) {
-      document.getElementById("result-text").textContent = decodedText;
+    // Webcam QR Scanner
+    function onScanSuccess(decodedText) {
+      document.getElementById("camera-result").textContent = decodedText;
     }
 
     function onScanFailure(error) {
-      // Optional: console.warn(`Scan error: ${error}`);
+      // Optional: console.log("Scan error: ", error);
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-
     Html5Qrcode.getCameras().then(cameras => {
-      if (cameras && cameras.length) {
+      if (cameras.length) {
         html5QrCode.start(
-          { facingMode: "environment" }, // rear camera
-          {
-            fps: 10,
-            qrbox: 250
-          },
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
           onScanSuccess,
           onScanFailure
         );
       } else {
-        document.getElementById("result-text").textContent = "No cameras found.";
+        document.getElementById("camera-result").textContent = "No camera found.";
       }
     }).catch(err => {
-      document.getElementById("result-text").textContent = "Camera error.";
-      console.error(err);
+      document.getElementById("camera-result").textContent = "Camera error.";
     });
+
+    // Upload Image QR Scanner
+    function handleFile(event) {
+      const file = event.target.files[0];
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const output = document.getElementById("upload-result");
+
+      if (!file) {
+        output.textContent = "No file selected.";
+        output.className = "error";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          const code = jsQR(imageData.data, img.width, img.height);
+
+          if (code) {
+            output.textContent = code.data;
+            output.className = "result";
+          } else {
+            output.textContent = "No QR code found.";
+            output.className = "error";
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
   </script>
 
 </body>
