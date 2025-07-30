@@ -2,178 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>BC Point - Passbook Front Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bank of Baroda Passbook Front Page</title>
   <style>
-    @page {
-      size: A5 portrait;
-      margin: 15mm;
-    }
-
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
       padding: 20px;
       background: #f2f2f2;
     }
-
-    .container {
-      max-width: 450px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      border-radius: 4px;
-    }
-
-    h2 {
+    h1 {
       text-align: center;
-      color: #e65100;
+      color: #ef6c00;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+    }
+    form, .preview {
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      width: 340px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #ccc;
+    }
+    .preview {
+      font-size: 14px;
+    }
+    .preview-header {
+      text-align: center;
       margin-bottom: 15px;
     }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-      font-size: 14px;
+    .bob-logo {
+      width: 60px;
     }
-
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      font-size: 14px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    .passbook-info {
+      border-top: 2px solid #ef6c00;
+      padding-top: 10px;
     }
-
-    button {
-      margin-top: 15px;
-      background-color: #e65100;
+    .info-line {
+      margin: 4px 0;
+    }
+    .print-btn {
+      margin-top: 20px;
+      background: #ef6c00;
       color: white;
-      border: none;
       padding: 10px;
+      border: none;
       width: 100%;
-      font-size: 16px;
       cursor: pointer;
+      font-size: 16px;
     }
-
-    .passbook {
-      display: none;
-    }
-
     @media print {
-      body {
-        background: none;
-        padding: 0;
+      body * {
+        visibility: hidden;
       }
-
-      .container {
-        display: none;
+      .preview, .preview * {
+        visibility: visible;
       }
-
-      .passbook {
-        display: block;
-        padding: 20px;
+      .preview {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
-        box-sizing: border-box;
-      }
-
-      .logo {
-        height: 50px;
-      }
-
-      .bank-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .bank-title {
-        color: #e65100;
-        font-size: 18px;
-        font-weight: bold;
-        text-align: right;
-      }
-
-      .info {
-        margin-top: 20px;
-        font-size: 14px;
-        line-height: 1.6;
+        box-shadow: none;
+        border: none;
       }
     }
   </style>
 </head>
 <body>
 
+  <h1>Bank of Baroda Passbook (Portrait)</h1>
   <div class="container">
-    <h2>BC Point - Passbook Front Page</h2>
+    <form id="passbookForm">
+      <label>Account Holder Name</label>
+      <input type="text" id="accName" required>
 
-    <label>Account Holder Name</label>
-    <input id="holder" required />
+      <label>Account Number</label>
+      <input type="text" id="accNumber" required>
 
-    <label>Father's Name</label>
-    <input id="father" />
+      <label>Customer ID</label>
+      <input type="text" id="custId" required>
 
-    <label>Account Number</label>
-    <input id="account" />
+      <label>Branch Name</label>
+      <input type="text" id="branch" required>
 
-    <label>Customer ID</label>
-    <input id="custid" />
+      <label>IFSC Code</label>
+      <input type="text" id="ifsc" required>
 
-    <label>Branch Name</label>
-    <input id="branch" />
+      <label>MICR Code</label>
+      <input type="text" id="micr" required>
 
-    <label>IFSC Code</label>
-    <input id="ifsc" />
+      <button type="button" class="print-btn" onclick="printPassbook()">Print Passbook</button>
+    </form>
 
-    <label>Mobile Number</label>
-    <input id="mobile" />
-
-    <label>Address</label>
-    <textarea id="address" rows="3"></textarea>
-
-    <button onclick="generatePassbook()">Generate & Print Passbook</button>
-  </div>
-
-  <div class="passbook" id="printArea">
-    <div class="bank-header">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Bank_of_Baroda_logo.svg/512px-Bank_of_Baroda_logo.svg.png" class="logo" alt="Bank Logo" />
-      <div class="bank-title">
-        Bank of Baroda<br />
-        <span style="font-size: 12px;">BC Point / Bank Mitra</span>
+    <div class="preview" id="preview">
+      <div class="preview-header">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ed/Bank_of_Baroda_logo.svg/1200px-Bank_of_Baroda_logo.svg.png" class="bob-logo" alt="Bank of Baroda Logo">
+        <h2>Bank of Baroda</h2>
       </div>
-    </div>
-
-    <div class="info">
-      <strong>Account Holder:</strong> <span id="pholder"></span><br />
-      <strong>Father's Name:</strong> <span id="pfather"></span><br />
-      <strong>Account Number:</strong> <span id="paccount"></span><br />
-      <strong>Customer ID:</strong> <span id="pcustid"></span><br />
-      <strong>Branch Name:</strong> <span id="pbranch"></span><br />
-      <strong>IFSC Code:</strong> <span id="pifsc"></span><br />
-      <strong>Mobile Number:</strong> <span id="pmobile"></span><br />
-      <strong>Address:</strong> <span id="paddress"></span><br />
-      <strong>Date of Print:</strong> <span id="pdate"></span>
+      <div class="passbook-info">
+        <div class="info-line"><strong>Account Holder:</strong> <span id="outName"></span></div>
+        <div class="info-line"><strong>Account No:</strong> <span id="outAcc"></span></div>
+        <div class="info-line"><strong>Customer ID:</strong> <span id="outCust"></span></div>
+        <div class="info-line"><strong>Branch:</strong> <span id="outBranch"></span></div>
+        <div class="info-line"><strong>IFSC:</strong> <span id="outIFSC"></span></div>
+        <div class="info-line"><strong>MICR:</strong> <span id="outMICR"></span></div>
+      </div>
     </div>
   </div>
 
   <script>
-    function generatePassbook() {
-      // Fill values
-      document.getElementById("pholder").textContent = document.getElementById("holder").value;
-      document.getElementById("pfather").textContent = document.getElementById("father").value;
-      document.getElementById("paccount").textContent = document.getElementById("account").value;
-      document.getElementById("pcustid").textContent = document.getElementById("custid").value;
-      document.getElementById("pbranch").textContent = document.getElementById("branch").value;
-      document.getElementById("pifsc").textContent = document.getElementById("ifsc").value;
-      document.getElementById("pmobile").textContent = document.getElementById("mobile").value;
-      document.getElementById("paddress").textContent = document.getElementById("address").value;
-      document.getElementById("pdate").textContent = new Date().toLocaleDateString();
+    const form = document.getElementById('passbookForm');
 
-      // Trigger print
+    function updatePreview() {
+      document.getElementById('outName').innerText = document.getElementById('accName').value;
+      document.getElementById('outAcc').innerText = document.getElementById('accNumber').value;
+      document.getElementById('outCust').innerText = document.getElementById('custId').value;
+      document.getElementById('outBranch').innerText = document.getElementById('branch').value;
+      document.getElementById('outIFSC').innerText = document.getElementById('ifsc').value;
+      document.getElementById('outMICR').innerText = document.getElementById('micr').value;
+    }
+
+    form.addEventListener('input', updatePreview);
+
+    function printPassbook() {
+      updatePreview();
       window.print();
     }
+
+    // Initial preview setup
+    updatePreview();
   </script>
 
 </body>
