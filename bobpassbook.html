@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bank of Baroda Passbook - Portrait</title>
+  <style>
+    @page {
+      size: A5 portrait;
+      margin: 15mm;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      background: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+    }
+
+    .passbook {
+      width: 100%;
+      max-width: 420px; /* A5 width */
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      border: 1px solid #ccc;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      height: 50px;
+    }
+
+    .bank-title {
+      text-align: right;
+      color: #f26522;
+      font-weight: bold;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .subheading {
+      font-size: 12px;
+      color: #444;
+    }
+
+    hr {
+      margin: 10px 0;
+    }
+
+    .account-info {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    .transaction-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 12px;
+    }
+
+    .transaction-table th,
+    .transaction-table td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: center;
+    }
+
+    .transaction-table th {
+      background: #f26522;
+      color: white;
+    }
+
+    .print-btn {
+      margin-top: 15px;
+      padding: 8px 16px;
+      background: #f26522;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      display: block;
+      width: 100%;
+    }
+
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+
+      .print-btn {
+        display: none;
+      }
+
+      .passbook {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="passbook" id="passbook">
+    <div class="header">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Bank_of_Baroda_logo.svg/2560px-Bank_of_Baroda_logo.svg.png"
+        alt="Bank of Baroda Logo"
+        class="logo"
+      />
+      <div class="bank-title">
+        Bank of Baroda<br />
+        <span class="subheading">India’s International Bank</span>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="account-info">
+      <strong>Account Holder:</strong> Priya Sharma<br />
+      <strong>Account Number:</strong> 987654321000<br />
+      <strong>Branch:</strong> Connaught Place, New Delhi<br />
+      <strong>IFSC Code:</strong> BARB0DELHI<br />
+      <strong>Date:</strong> <span id="date"></span>
+    </div>
+
+    <table class="transaction-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Particulars</th>
+          <th>Debit (₹)</th>
+          <th>Credit (₹)</th>
+          <th>Balance (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="txn-body">
+        <!-- JS fills this -->
+      </tbody>
+    </table>
+
+    <button class="print-btn" onclick="window.print()">Print Passbook</button>
+  </div>
+
+  <script>
+    // Set current date
+    document.getElementById("date").textContent = new Date().toLocaleDateString();
+
+    // Transaction sample data
+    const transactions = [
+      { date: "01/07/2025", particulars: "Opening Balance", debit: "", credit: "12,000.00", balance: "12,000.00" },
+      { date: "03/07/2025", particulars: "ATM Withdrawal", debit: "2,000.00", credit: "", balance: "10,000.00" },
+      { date: "10/07/2025", particulars: "NEFT Credit", debit: "", credit: "7,500.00", balance: "17,500.00" },
+      { date: "18/07/2025", particulars: "Utility Bill", debit: "1,200.00", credit: "", balance: "16,300.00" },
+      { date: "28/07/2025", particulars: "Online Purchase", debit: "2,800.00", credit: "", balance: "13,500.00" }
+    ];
+
+    const tbody = document.getElementById("txn-body");
+
+    transactions.forEach(tx => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${tx.date}</td>
+        <td>${tx.particulars}</td>
+        <td>${tx.debit}</td>
+        <td>${tx.credit}</td>
+        <td>${tx.balance}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  </script>
+</body>
+</html>
