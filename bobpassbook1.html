@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bank of Baroda Passbook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f6f6f6;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #d14100;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .form-box, .preview-box {
+      background: white;
+      padding: 20px;
+      width: 340px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .form-box input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .form-box button {
+      background-color: #d14100;
+      color: white;
+      padding: 10px;
+      border: none;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .preview-box {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .bob-header {
+      text-align: center;
+      border-bottom: 2px solid #d14100;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bob-logo {
+      width: 60px;
+      margin-bottom: 5px;
+    }
+
+    .info-row {
+      margin: 6px 0;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      .preview-box, .preview-box * {
+        visibility: visible;
+      }
+
+      .preview-box {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        border: none;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Bank of Baroda Passbook</h1>
+
+  <div class="container">
+    <div class="form-box">
+      <label>Account Holder Name</label>
+      <input type="text" id="name" placeholder="Enter full name" required>
+
+      <label>Account Number</label>
+      <input type="text" id="account" placeholder="Enter account number" required>
+
+      <label>Customer ID</label>
+      <input type="text" id="custId" placeholder="Enter customer ID" required>
+
+      <label>Branch</label>
+      <input type="text" id="branch" placeholder="Enter branch name" required>
+
+      <label>IFSC Code</label>
+      <input type="text" id="ifsc" placeholder="Enter IFSC code" required>
+
+      <label>MICR Code</label>
+      <input type="text" id="micr" placeholder="Enter MICR code" required>
+
+      <button onclick="printPassbook()">Print Front Page</button>
+    </div>
+
+    <div class="preview-box" id="preview">
+      <div class="bob-header">
+        <img class="bob-logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ed/Bank_of_Baroda_logo.svg/1200px-Bank_of_Baroda_logo.svg.png" alt="BOB Logo">
+        <h2 style="margin: 0; color: #d14100;">Bank of Baroda</h2>
+        <small>(India’s International Bank)</small>
+      </div>
+      <div class="info-row"><strong>Account Holder:</strong> <span id="outName">__________</span></div>
+      <div class="info-row"><strong>Account Number:</strong> <span id="outAccount">__________</span></div>
+      <div class="info-row"><strong>Customer ID:</strong> <span id="outCustId">__________</span></div>
+      <div class="info-row"><strong>Branch:</strong> <span id="outBranch">__________</span></div>
+      <div class="info-row"><strong>IFSC Code:</strong> <span id="outIFSC">__________</span></div>
+      <div class="info-row"><strong>MICR Code:</strong> <span id="outMICR">__________</span></div>
+    </div>
+  </div>
+
+  <script>
+    const inputs = {
+      name: document.getElementById("name"),
+      account: document.getElementById("account"),
+      custId: document.getElementById("custId"),
+      branch: document.getElementById("branch"),
+      ifsc: document.getElementById("ifsc"),
+      micr: document.getElementById("micr")
+    };
+
+    const outputs = {
+      name: document.getElementById("outName"),
+      account: document.getElementById("outAccount"),
+      custId: document.getElementById("outCustId"),
+      branch: document.getElementById("outBranch"),
+      ifsc: document.getElementById("outIFSC"),
+      micr: document.getElementById("outMICR")
+    };
+
+    for (let key in inputs) {
+      inputs[key].addEventListener("input", () => {
+        outputs[key].textContent = inputs[key].value || "__________";
+      });
+    }
+
+    function printPassbook() {
+      window.print();
+    }
+  </script>
+
+</body>
+</html>
