@@ -159,7 +159,7 @@
       <p><strong>Mobile Number:</strong> <span id="pb-mobile"></span></p>
       <p><strong>Aadhar Number:</strong> <span id="pb-aadhar"></span></p>
       <p><strong>Branch:</strong> <span id="pb-branch"></span></p>
-      <p><strong>IFSC Code:</strong> <span id="pb-ifsc"></span></p>
+      <p><strong>IFSC Code:</strong> <span id="pb-ifsc">AIRP0000001</span></p>
       <p><strong>Date of Issue:</strong> <span id="pb-date"></span></p>
       <button id="print-btn" onclick="window.print()">🖨️ Print Passbook</button>
     </div>
@@ -172,37 +172,24 @@
       const get = id => document.getElementById(id).value.trim();
       const set = (id, value) => document.getElementById(id).innerText = value;
 
-      const name = get("name");
-      const father = get("father");
-      const dob = get("dob");
-      const gender = get("gender");
-      const address = get("address");
-      const account = get("account");
-      const mobile = get("mobile");
-      const aadhar = get("aadhar");
-      const branch = get("branch");
+      set("pb-name", get("name"));
+      set("pb-father", get("father"));
+      set("pb-dob", get("dob"));
+      set("pb-gender", get("gender"));
+      set("pb-address", get("address"));
+      set("pb-account", get("account"));
+      set("pb-mobile", get("mobile"));
+      set("pb-aadhar", get("aadhar"));
+      set("pb-branch", get("branch"));
 
-      // IFSC generation logic
-      const branchCode = branch.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
-      const ifsc = "AIRP000" + branchCode.padEnd(4, "X");
+      // IFSC is fixed
+      set("pb-ifsc", "AIRP0000001");
 
-      // Date formatting
+      // Format today's date
       const today = new Date();
       const formattedDate = today.toLocaleDateString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric'
       });
-
-      // Set values
-      set("pb-name", name);
-      set("pb-father", father);
-      set("pb-dob", dob);
-      set("pb-gender", gender);
-      set("pb-address", address);
-      set("pb-account", account);
-      set("pb-mobile", mobile);
-      set("pb-aadhar", aadhar);
-      set("pb-branch", branch);
-      set("pb-ifsc", ifsc);
       set("pb-date", formattedDate);
 
       // Show passbook
@@ -212,4 +199,3 @@
   </script>
 </body>
 </html>
-
