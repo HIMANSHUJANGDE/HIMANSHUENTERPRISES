@@ -12,7 +12,7 @@
     }
 
     .container {
-      max-width: 700px;
+      max-width: 800px;
       margin: auto;
       background: #fff;
       padding: 30px;
@@ -43,9 +43,10 @@
     form label {
       display: block;
       margin: 10px 0 5px;
+      font-weight: bold;
     }
 
-    form input {
+    form input, form textarea, form select {
       width: 100%;
       padding: 8px;
       margin-bottom: 15px;
@@ -82,15 +83,18 @@
 
     .passbook p {
       margin: 8px 0;
+      line-height: 1.4;
     }
 
     @media print {
       body {
         background: white;
       }
+
       form, button#print-btn {
         display: none !important;
       }
+
       .passbook {
         display: block !important;
         border: none;
@@ -105,12 +109,29 @@
     <header>
       <img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Airtel_Logo.png" alt="Airtel Logo" class="logo">
       <h1>Airtel Payments Bank</h1>
-      <h2>Passbook - Front Page</h2>
+      <h2>Passbook - Customer Front Page</h2>
     </header>
 
     <form id="customer-form">
-      <label for="name">Customer Name:</label>
+      <label for="name">Full Name:</label>
       <input type="text" id="name" required>
+
+      <label for="father">Father's Name:</label>
+      <input type="text" id="father" required>
+
+      <label for="dob">Date of Birth:</label>
+      <input type="date" id="dob" required>
+
+      <label for="gender">Gender:</label>
+      <select id="gender" required>
+        <option value="">Select</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+
+      <label for="address">Address:</label>
+      <textarea id="address" rows="3" required></textarea>
 
       <label for="account">Account Number:</label>
       <input type="text" id="account" required>
@@ -118,11 +139,11 @@
       <label for="mobile">Mobile Number:</label>
       <input type="text" id="mobile" required>
 
-      <label for="branch">Branch Name:</label>
-      <input type="text" id="branch" required>
+      <label for="aadhar">Aadhar Number:</label>
+      <input type="text" id="aadhar" required>
 
-      <label for="ifsc">IFSC Code:</label>
-      <input type="text" id="ifsc" required>
+      <label for="branch">Branch:</label>
+      <input type="text" id="branch" required>
 
       <button type="submit">Generate Passbook</button>
     </form>
@@ -130,8 +151,13 @@
     <div class="passbook" id="passbook">
       <h3>Customer Details</h3>
       <p><strong>Name:</strong> <span id="pb-name"></span></p>
+      <p><strong>Father's Name:</strong> <span id="pb-father"></span></p>
+      <p><strong>Date of Birth:</strong> <span id="pb-dob"></span></p>
+      <p><strong>Gender:</strong> <span id="pb-gender"></span></p>
+      <p><strong>Address:</strong> <span id="pb-address"></span></p>
       <p><strong>Account Number:</strong> <span id="pb-account"></span></p>
       <p><strong>Mobile Number:</strong> <span id="pb-mobile"></span></p>
+      <p><strong>Aadhar Number:</strong> <span id="pb-aadhar"></span></p>
       <p><strong>Branch:</strong> <span id="pb-branch"></span></p>
       <p><strong>IFSC Code:</strong> <span id="pb-ifsc"></span></p>
       <p><strong>Date of Issue:</strong> <span id="pb-date"></span></p>
@@ -140,32 +166,50 @@
   </div>
 
   <script>
-    const form = document.getElementById("customer-form");
-    const passbook = document.getElementById("passbook");
-
-    form.addEventListener("submit", function(e) {
+    document.getElementById("customer-form").addEventListener("submit", function(e) {
       e.preventDefault();
 
-      // Get input values
-      document.getElementById("pb-name").innerText = document.getElementById("name").value;
-      document.getElementById("pb-account").innerText = document.getElementById("account").value;
-      document.getElementById("pb-mobile").innerText = document.getElementById("mobile").value;
-      document.getElementById("pb-branch").innerText = document.getElementById("branch").value;
-      document.getElementById("pb-ifsc").innerText = document.getElementById("ifsc").value;
+      const get = id => document.getElementById(id).value.trim();
+      const set = (id, value) => document.getElementById(id).innerText = value;
 
-      // Add current date
+      const name = get("name");
+      const father = get("father");
+      const dob = get("dob");
+      const gender = get("gender");
+      const address = get("address");
+      const account = get("account");
+      const mobile = get("mobile");
+      const aadhar = get("aadhar");
+      const branch = get("branch");
+
+      // IFSC generation logic
+      const branchCode = branch.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
+      const ifsc = "AIRP000" + branchCode.padEnd(4, "X");
+
+      // Date formatting
       const today = new Date();
-      const formatted = today.toLocaleDateString('en-IN', {
+      const formattedDate = today.toLocaleDateString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric'
       });
-      document.getElementById("pb-date").innerText = formatted;
 
-      // Show passbook section
-      passbook.style.display = "block";
+      // Set values
+      set("pb-name", name);
+      set("pb-father", father);
+      set("pb-dob", dob);
+      set("pb-gender", gender);
+      set("pb-address", address);
+      set("pb-account", account);
+      set("pb-mobile", mobile);
+      set("pb-aadhar", aadhar);
+      set("pb-branch", branch);
+      set("pb-ifsc", ifsc);
+      set("pb-date", formattedDate);
 
-      // Scroll to it
-      passbook.scrollIntoView({ behavior: "smooth" });
+      // Show passbook
+      document.getElementById("passbook").style.display = "block";
+      document.getElementById("passbook").scrollIntoView({ behavior: "smooth" });
     });
   </script>
 </body>
 </html>
+
