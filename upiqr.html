@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>UPI QR Code Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f3f3f3;
+      background: #eef2f3;
       margin: 0;
       padding: 20px;
       display: flex;
@@ -23,9 +23,9 @@
       background: white;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 400px;
       width: 100%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     input, button {
@@ -33,6 +33,19 @@
       margin: 10px 0;
       width: 100%;
       font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background: #2b8a3e;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #246d32;
     }
 
     #qrcode {
@@ -42,6 +55,7 @@
     #status {
       margin-top: 15px;
       font-weight: bold;
+      color: #444;
     }
   </style>
 </head>
@@ -50,57 +64,71 @@
   <h2>UPI QR Code Generator</h2>
 
   <form id="upiForm">
-    <input type="text" id="payeeVPA" placeholder="Payee UPI ID (e.g. name@bank)" required />
-    <input type="text" id="payeeName" placeholder="Payee Name" required />
+    <input type="text" id="upiID" placeholder="UPI ID (e.g. user@bank)" required />
     <input type="number" id="amount" placeholder="Amount (INR)" required />
-    <input type="text" id="note" placeholder="Payment Note" />
+    <input type="text" id="name" placeholder="(Optional) Payee Name" />
+    <input type="text" id="note" placeholder="(Optional) Payment Note" />
+    <input type="text" id="accountNumber" placeholder="(Optional) Account Number" />
+    <input type="text" id="ifsc" placeholder="(Optional) IFSC Code" />
     <button type="submit">Generate QR Code</button>
   </form>
 
   <div id="qrcode"></div>
   <div id="status"></div>
 
-  <!-- QR Code Generator Library -->
+  <!-- QR Code library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     const form = document.getElementById('upiForm');
     const qrCodeDiv = document.getElementById('qrcode');
     const statusDiv = document.getElementById('status');
-    let qr;
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', function (e) {
       e.preventDefault();
 
-      const vpa = document.getElementById('payeeVPA').value.trim();
-      const name = document.getElementById('payeeName').value.trim();
+      const upiID = document.getElementById('upiID').value.trim();
       const amount = document.getElementById('amount').value.trim();
+      const name = document.getElementById('name').value.trim();
       const note = document.getElementById('note').value.trim();
 
-      if (!vpa || !name || !amount) {
-        alert("Please fill all required fields.");
+      if (!upiID || !amount) {
+        alert("UPI ID and Amount are required!");
         return;
       }
 
-      // UPI Payment URI format
-      const upiLink = `upi://pay?pa=${vpa}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+      // Build UPI URI
+      let upiUri = `upi://pay?pa=${upiID}&am=${amount}&cu=INR`;
 
-      // Clear previous QR code
+      if (name) upiUri += `&pn=${encodeURIComponent(name)}`;
+      if (note) upiUri += `&tn=${encodeURIComponent(note)}`;
+
+      // Optional bank/account info (not used in UPI URI directly, just display)
+      const accountNumber = document.getElementById('accountNumber').value.trim();
+      const ifsc = document.getElementById('ifsc').value.trim();
+
+      // Clear old QR/status
       qrCodeDiv.innerHTML = '';
       statusDiv.innerText = '';
 
-      // Generate QR code
-      qr = new QRCode(qrCodeDiv, {
-        text: upiLink,
+      // Generate QR Code
+      new QRCode(qrCodeDiv, {
+        text: upiUri,
         width: 256,
         height: 256,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
       });
 
-      // Simulated payment status after scan
+      // Simulated Payment Status Message
       setTimeout(() => {
-        statusDiv.innerText = "⚠️ This is a static QR. Real payment confirmation not available.";
+        statusDiv.innerHTML = `⚠️ This is a static QR code. Please confirm payment manually.<br><br>
+          <strong>UPI ID:</strong> ${upiID}<br>
+          <strong>Amount:</strong> ₹${amount}<br>` +
+          (name ? `<strong>Name:</strong> ${name}<br>` : '') +
+          (note ? `<strong>Note:</strong> ${note}<br>` : '') +
+          (accountNumber ? `<strong>Account No:</strong> ${accountNumber}<br>` : '') +
+          (ifsc ? `<strong>IFSC:</strong> ${ifsc}` : '');
       }, 2000);
     });
   </script>
