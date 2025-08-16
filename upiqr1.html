@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>PhonePe UPI QR Code Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PhonePe UPI QR Generator</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #e5f4f9;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f2f2f2;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -17,11 +17,17 @@
 
     .container {
       background: #fff;
-      padding: 30px 20px;
+      padding: 30px 25px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
       text-align: center;
-      width: 320px;
+      max-width: 360px;
+      width: 100%;
+    }
+
+    h2 {
+      color: #4a4a4a;
+      margin-bottom: 20px;
     }
 
     input {
@@ -29,20 +35,20 @@
       padding: 10px;
       margin: 10px 0;
       font-size: 16px;
-      border: 1px solid #ccc;
       border-radius: 6px;
+      border: 1px solid #ccc;
     }
 
     button {
       width: 94%;
       padding: 12px;
-      margin-top: 10px;
       background-color: #4CAF50;
       color: white;
       border: none;
-      font-size: 16px;
       border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
+      margin-top: 10px;
     }
 
     button:hover {
@@ -56,6 +62,7 @@
     .status {
       margin-top: 15px;
       font-weight: bold;
+      display: none;
     }
 
     .status.waiting {
@@ -69,58 +76,81 @@
     .status.failed {
       color: red;
     }
+
+    #markPaidBtn {
+      background-color: #007bff;
+    }
+
+    #markPaidBtn:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>PhonePe UPI QR</h2>
+    <h2>PhonePe UPI QR Generator</h2>
     <input type="text" id="upiId" placeholder="Enter UPI ID (e.g. name@upi)" />
     <input type="number" id="amount" placeholder="Enter Amount (₹)" />
     <button onclick="generateQRCode()">Generate QR Code</button>
+    
     <div id="qrcode"></div>
-    <div class="status waiting" id="statusMsg" style="display: none;">Awaiting payment...</div>
-    <button id="markPaidBtn" style="display:none;" onclick="markAsPaid()">Mark as Paid</button>
+    
+    <div id="statusMsg" class="status waiting">Awaiting payment...</div>
+    <button id="markPaidBtn" onclick="markAsPaid()" style="display:none;">Mark as Paid ✅</button>
   </div>
 
-  <!-- QRCode.js CDN -->
+  <!-- QRCode.js -->
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-
   <script>
     function generateQRCode() {
-      const upiId = document.getElementById("upiId").value.trim();
-      const amount = document.getElementById("amount").value.trim();
-      const statusMsg = document.getElementById("statusMsg");
-      const markPaidBtn = document.getElementById("markPaidBtn");
+      const upiId = document.getElementById('upiId').value.trim();
+      const amount = document.getElementById('amount').value.trim();
+      const statusMsg = document.getElementById('statusMsg');
+      const markPaidBtn = document.getElementById('markPaidBtn');
+      const qrDiv = document.getElementById('qrcode');
 
       if (!upiId || !upiId.includes('@')) {
-        alert("Please enter a valid UPI ID (e.g. name@upi)");
+        alert('Please enter a valid UPI ID (e.g. name@upi)');
         return;
       }
 
-      // Build UPI payment URL
-      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=UPI%20User&am=${amount}&cu=INR`;
+      // Create UPI payment URI
+      const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=PhonePe%20User&am=${amount}&cu=INR`;
 
-      // Clear existing QR code
-      document.getElementById("qrcode").innerHTML = "";
+      // Clear existing QR
+      qrDiv.innerHTML = '';
 
-      // Generate QR Code
-      new QRCode(document.getElementById("qrcode"), {
-        text: upiUrl,
+      // Generate QR
+      new QRCode(qrDiv, {
+        text: upiLink,
         width: 256,
-        height: 256,
+        height: 256
       });
 
-      // Show status
-      statusMsg.innerText = "Awaiting payment...";
-      statusMsg.className = "status waiting";
-      statusMsg.style.display = "block";
-      markPaidBtn.style.display = "inline-block";
+      // Show simulated status UI
+      statusMsg.innerText = 'Awaiting payment...';
+      statusMsg.className = 'status waiting';
+      statusMsg.style.display = 'block';
+      markPaidBtn.style.display = 'inline-block';
+
+      // Optional: Simulate auto timeout (remove this if not needed)
+      /*
+      setTimeout(() => {
+        const isPaid = Math.random() < 0.5; // 50% chance
+        if (isPaid) {
+          markAsPaid();
+        } else {
+          statusMsg.innerText = '❌ Payment failed or cancelled.';
+          statusMsg.className = 'status failed';
+        }
+      }, 15000); // 15 seconds
+      */
     }
 
     function markAsPaid() {
-      const statusMsg = document.getElementById("statusMsg");
-      statusMsg.innerText = "✅ Payment received!";
-      statusMsg.className = "status paid";
+      const statusMsg = document.getElementById('statusMsg');
+      statusMsg.innerText = '✅ Payment received!';
+      statusMsg.className = 'status paid';
     }
   </script>
 </body>
