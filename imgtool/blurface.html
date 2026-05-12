@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blur Face Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        canvas {
+            margin-top: 20px;
+            max-width: 100%;
+            border-radius: 8px;
+            display: none;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Blur Face Tool</h2>
+    <input type="file" id="imageUpload" accept="image/*"><br>
+    <button id="processImageButton">Blur Face</button>
+
+    <canvas id="canvas"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+<script>
+    let imageElement;
+    let canvasElement;
+
+    // Load face-api.js models
+    Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+    ]).then(() => {
+        console.log('Models Loaded');
+    });
+
+    // Handle image upload
+    document.getElementById('imageUpload').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imageElement = new Image();
+                imageElement.onload = () => {
+                    canvasElement = document.getElementById('canvas');
+                    canvasElement.width = imageElement.width;
+                    canvasElement.height = imageElement.height;
+                    const ctx = canvasElement.getContext('2d');
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);  // Clear any previous drawings
+                    ctx.drawImage(imageElement, 0, 0);
+                };
+                imageElement.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Handle image processing (blurring faces)
+    document.getElementById('processImageButton').addEventListener('click', async function() {
+        if (!imageElement) {
+            alert('Please upload an image first!');
+            return;
+        }
+
+        // Detect faces in the image
+        const detections = await faceapi.detectAllFaces(imageElement).withFaceLandmarks().withFaceDescriptors();
+        
+        // Create a canvas to draw the detected faces
+        const canvas = faceapi.createCanvasFromMedia(imageElement);
+        document.body.append(canvas);
+        faceapi.matchDimensions(canvas, imageElement);
+        
+        // Draw the image and faces
+        canvas.drawDetections(detections);
+
+        // Blur each detected face
+        const ctx = canvas.getContext('2d');
+        detections.forEach(detection => {
+            const { x, y, width, height } = detection.detection.box;
+            // Blur the face area on the canvas
+            ctx.filter = 'blur(10px)';
+            ctx.drawImage(imageElement, x, y, width, height, x, y, width, height);
+        });
+
+        // Display the result on the canvas
+        canvasElement.style.display = 'block';
+    });
+</script>
+
+
+</body>
+</html>

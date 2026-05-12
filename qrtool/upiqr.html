@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UPI QR Code Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      padding: 12px;
+      margin: 10px 0;
+      width: 100%;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>UPI QR Code Generator</h2>
+
+  <form id="upiForm">
+    <input type="text" id="upiID" placeholder="Enter UPI ID (e.g. user@upi)" required />
+    <input type="number" id="amount" placeholder="Enter Amount (INR)" required />
+    <button type="submit">Generate QR Code</button>
+  </form>
+
+  <div id="qrcode"></div>
+  <div id="status"></div>
+
+  <!-- QRCode.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    const form = document.getElementById('upiForm');
+    const qrDiv = document.getElementById('qrcode');
+    const statusDiv = document.getElementById('status');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const upiID = document.getElementById('upiID').value.trim();
+      const amount = document.getElementById('amount').value.trim();
+
+      if (!upiID || !amount || isNaN(amount)) {
+        alert("Please enter a valid UPI ID and amount.");
+        return;
+      }
+
+      // Create UPI URI
+      const upiURI = `upi://pay?pa=${encodeURIComponent(upiID)}&am=${encodeURIComponent(amount)}&cu=INR`;
+
+      // Clear previous QR/status
+      qrDiv.innerHTML = '';
+      statusDiv.innerText = '';
+
+      // Generate QR code
+      new QRCode(qrDiv, {
+        text: upiURI,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      // Simulate payment notification
+      setTimeout(() => {
+        statusDiv.innerHTML = `
+          ✅ QR Code generated successfully.<br>
+          📌 Please scan the code in your UPI app.<br>
+          💰 Amount: ₹${amount}<br>
+          🔗 UPI ID: ${upiID}<br>
+          ⚠️ Note: No real-time payment status tracking.
+        `;
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Page Numbers to PDF</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="file"],
+    select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Add Page Numbers</h2>
+    <form id="pageNumberForm" enctype="multipart/form-data">
+      <input type="file" name="pdfFile" id="pdfFile" accept="application/pdf" required>
+
+      <select name="position" id="position" required>
+        <option value="">Select Page Number Position</option>
+        <option value="bottom-right">Bottom Right</option>
+        <option value="bottom-center">Bottom Center</option>
+        <option value="top-right">Top Right</option>
+        <option value="top-center">Top Center</option>
+      </select>
+
+      <button type="submit">Add Page Numbers</button>
+    </form>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('pageNumberForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      statusMsg.textContent = 'Processing...';
+
+      try {
+        const response = await fetch('/add-page-numbers', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'numbered.pdf';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          statusMsg.textContent = 'Page numbers added successfully!';
+        } else {
+          statusMsg.textContent = 'Failed to add page numbers.';
+        }
+      } catch (error) {
+        statusMsg.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+
+</body>
+</html>

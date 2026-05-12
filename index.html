@@ -1,236 +1,667 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Himanshu Enterprises</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Himanshu Enteprises - Tool List</title>
 
-<!-- Favicon / Logo -->  
-<link rel="icon" href="logo.png" type="image/png">
-  
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" href="logo.png" type="image/png">
 
-<style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
-}
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a2e0a5a36a.js" crossorigin="anonymous"></script>
 
-body{
-background:linear-gradient(135deg,#0f172a,#1e293b,#111827);
-color:#fff;
-overflow-x:hidden;
-}
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: all 0.3s ease;
+    }
+    :root {
+      --bg: #f9f9f9;
+      --text: #333;
+      --accent: #0077ff;
+      --card-bg: #fff;
+    }
+    .dark {
+      --bg: #121212;
+      --text: #f1f1f1;
+      --card-bg: #1e1e1e;
+    }
 
-nav{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:20px 8%;
-position:fixed;
-width:100%;
-top:0;
-z-index:1000;
-background:rgba(255,255,255,0.05);
-backdrop-filter:blur(12px);
-}
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: var(--card-bg);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo img {
+      width: 35px;
+      height: 35px;
+    }
+    .logo span { color: var(--accent); }
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 1.5rem;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--text);
+      transition: color 0.3s;
+      font-weight: 500;
+    }
+    nav a:hover { color: var(--accent); }
+    .theme-toggle {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--text);
+    }
 
-  .logo{
-font-size:28px;
-font-weight:700;
-color:#38bdf8;
-}
-  
-nav ul{
-display:flex;
-list-style:none;
-gap:25px;
-}
+    /* Page Header */
+    .page-header {
+      background: linear-gradient(to right, #0077ff, #00c6ff);
+      color: white;
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .page-header h1 {
+      font-size: 2.5rem;
+    }
 
-nav ul li a{
-color:#fff;
-text-decoration:none;
-transition:.3s;
-}
+    /* Search Bar */
+    .search-bar {
+      margin: 2rem auto;
+      max-width: 500px;
+      display: flex;
+      justify-content: center;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid var(--accent);
+      border-radius: 30px;
+      outline: none;
+      font-size: 1rem;
+    }
 
-nav ul li a:hover{
-color:#38bdf8;
-}
+    /* Tool List */
+    .tool-list {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .tool-item {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .tool-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .tool-item img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 0.8rem;
+    }
+    .tool-item h3 {
+      margin-bottom: 0.4rem;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    .tool-item p {
+      font-size: 0.9rem;
+      color: #666;
+    }
 
-.hero{
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-text-align:center;
-padding:120px 20px 50px;
-}
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      margin-top: 2rem;
+    }
 
-.hero h1{
-font-size:55px;
-margin-bottom:20px;
-}
-
-.hero h1 span{
-color:#38bdf8;
-}
-
-.hero p{
-max-width:700px;
-font-size:18px;
-color:#cbd5e1;
-margin-bottom:30px;
-}
-
-.btn{
-padding:14px 30px;
-border:none;
-border-radius:40px;
-background:#38bdf8;
-color:#fff;
-font-size:16px;
-cursor:pointer;
-transition:.3s;
-}
-
-.btn:hover{
-background:#0ea5e9;
-transform:translateY(-3px);
-}
-
-.features{
-padding:70px 8%;
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:25px;
-}
-
-.card{
-padding:30px;
-border-radius:20px;
-background:rgba(255,255,255,0.05);
-transition:.3s;
-}
-
-.card:hover{
-transform:translateY(-8px);
-background:rgba(255,255,255,0.08);
-}
-
-.card h3{
-margin-bottom:15px;
-color:#38bdf8;
-}
-
-.card p{
-color:#cbd5e1;
-}
-
-/* Contact Section */
-.contact{
-padding:70px 8%;
-text-align:center;
-}
-
-.contact-box{
-max-width:700px;
-margin:auto;
-padding:35px;
-border-radius:20px;
-background:rgba(255,255,255,0.05);
-}
-
-.contact h2{
-font-size:40px;
-margin-bottom:20px;
-color:#38bdf8;
-}
-
-.contact p{
-font-size:18px;
-margin:12px 0;
-color:#cbd5e1;
-}
-
-footer{
-text-align:center;
-padding:25px;
-color:#94a3b8;
-}
-
-@media(max-width:768px){
-.hero h1{
-font-size:38px;
-}
-nav ul{
-display:none;
-}
-}
-</style>
+    @media (max-width: 768px) {
+      nav ul { display: none; }
+    }
+  </style>
 </head>
+
 <body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <a href="aio.html" class="logo">
+      <img src="logo.png" alt="AIO Tools Logo">
+     Himanshu Enterprises AIO<span>Tools</span>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="tools.html">Tool List</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+  </header>
 
-<nav>
-<div class="logo">UIUXSite</div>
-<ul>
-<li><a href="index.html">Home</a></li>
-  <li><a href="tools.html">Tools</a></li>
-  <li><a href="softwares.html">Softwares</a></li>
-<li><a href="#">Features</a></li>
-<li><a href="#contact">Contact</a></li>
-</ul>
-</nav>
+  <!-- Page Header -->
+  <section class="page-header">
+    <h1>All Tools</h1>
+    <p>Browse and use your favorite online tools</p>
+  </section>
 
-<section class="hero">
-<h1>Himanshu Enterprises</h1>
-<p>Create modern premium responsive websites with smooth animations and professional user experience.</p>
-<button class="btn" onclick="welcome()">Get Started</button>
-</section>
+  <!-- Search -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search tools...">
+  </div>
 
-<section class="features">
-<div class="card">
-<h3>Modern Design</h3>
-<p>Premium stylish layout with best user experience.</p>
-</div>
+  <!-- Tool Grid -->
+  <section class="tool-list" id="toolList">
+    
 
-<div class="card">
-<h3>Responsive</h3>
-<p>Perfect design for mobile, tablet and desktop.</p>
-</div>
+    <a href="printingtool/passportsizephoto.html" class="tool-item" data-name="Passport Size Photo Printing Tool">
+      <img src="https://img.icons8.com/fluency/96/print.png" alt="Passport Size Photo Printing Tool">
+      <h3>Passport Size Photo Printing Tool</h3>
+      <p>Print Passport Size Photo in seconds.</p>
+    </a>
+ 
+    <a href="printingtool/a4photoprint.html" class="tool-item" data-name="A4 Photo Printing Tool">
+      <img src="https://img.icons8.com/fluency/96/image.png" alt="A4 Photo Printing Tool">
+      <h3>A4 Photo Printing Tool</h3>
+      <p>Print A4 Photo in seconds.</p>
+    </a>
 
-<div class="card">
-<h3>Fast Performance</h3>
-<p>Optimized clean code for fast loading website.</p>
-</div>
-</section>
+    <a href="printingtool/smallphotoprint.html" class="tool-item" data-name="Small Photo Printing Tool">
+      <img src="https://img.icons8.com/fluency/96/image.png" alt="Small Photo Printing Tool">
+      <h3>Small Photo Printing Tool</h3>
+      <p>Print Small Photo in seconds.</p>
+    </a>
 
-<section class="contact" id="contact">
-<div class="contact-box">
-<h2>Contact Us</h2>
-<p>📍 Address: Himanshu Enterprises Deoda<br>
-      Bastar, Chhattisgarh, India - 494224</p>
-<p>📞 Phone: +91 9993566478</p>
-<p>📧 Email: admin@himanshuenterprises.online</p>
-<p>🌐 Website: himanshuenterprises.org.in</p>
-<p>⏰ Business Hours: 9:00 AM – 6:00 PM</p>
-</div>
-</section>
+    <a href="printingtool/4_6photoprint.html" class="tool-item" data-name="4*6 Photo Printing Tool">
+      <img src="https://img.icons8.com/fluency/96/image.png" alt="4*6 Photo Printing Tool">
+      <h3>4*6 Photo Printing Tool</h3>
+      <p>Print 4*6 Photo in seconds.</p>
+    </a>
 
-<footer>
-© 2026 Himanshu Enterprises. All Rights Reserved.
-</footer>
+    <a href="printingtool/5cardprint.html" class="tool-item" data-name="5 Card Print Printing Tool">
+      <img src="https://img.icons8.com/fluency/96/image.png" alt="5 Card Print Printing Tool">
+      <h3>5 Card Print Printing Tool</h3>
+      <p>Print 5 Card Print in seconds.</p>
+    </a>
 
-<script>
-function welcome(){
-alert("Welcome to Himanshu Enterprises!");
-}
-</script>
+    <a href="texttool/textedit.html" class="tool-item" data-name="Text Editor Tools">
+      <img src="https://img.icons8.com/fluency/96/text.png" alt="Text Editor Tools">
+      <h3>Text Editor Tools</h3>
+      <p>Format, count words, and analyze text easily.</p>
+    </a>
 
+     <a href="unitconverter/unitconv.html" class="tool-item" data-name="Unit Converter">
+      <img src="https://img.icons8.com/fluency/96/scale.png" alt="Unit Converter">
+      <h3>Unit Converter</h3>
+      <p>Convert between measurement units quickly.</p>
+    </a>
+  
+    <a href="unitconverter/agecalculator.html" class="tool-item" data-name="Age Calculator">
+      <img src="https://th.bing.com/th/id/OIP.sdjtSelHVgyoXI3kcZ0KqAHaHa?w=149&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Age Calculator">
+      <h3>Age Calculator</h3>
+      <p>Calculate Your Age instantly.</p>
+    </a>
+
+    <a href="qrtool/qr-generator.html" class="tool-item" data-name="QR Code Generator">
+      <img src="https://img.icons8.com/fluency/96/qr-code.png" alt="QR Code Generator">
+      <h3>QR Code Generator</h3>
+      <p>Create custom QR codes for links or text.</p>
+    </a>
+
+    <a href="qrtool/qr-scanner.html" class="tool-item" data-name="QR Code Scanner">
+      <img src="https://img.icons8.com/fluency/96/qr-code.png" alt="QR Code Scanner">
+      <h3>QR Code Scanner</h3>
+      <p>Scan QR codes for links or text.</p>
+    </a>
+
+    <a href="passwordtool/passwordgenerator.html" class="tool-item" data-name="Password Generator">
+      <img src="https://img.icons8.com/fluency/96/lock-2.png" alt="Password Generator">
+      <h3>Password Generator</h3>
+      <p>Generate strong, secure passwords instantly.</p>
+    </a>
+
+<a href="webtool/gdrivelinkgen.html" class="tool-item" data-name="Google Drive Link Generator">
+      <img src="https://th.bing.com/th/id/OIP.UhtqFd6KJGupKbHlNO8CywHaD5?w=302&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Generate I Frame">
+      <h3>Google Drive Link Generator</h3>
+      <p>Generate Google Drive Link instantly.</p>
+    </a>
+
+    <a href="webtool/iframe.html" class="tool-item" data-name="Generate I Frame">
+      <img src="https://th.bing.com/th/id/OIP.UhtqFd6KJGupKbHlNO8CywHaD5?w=302&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Generate I Frame">
+      <h3>I Frame Generator</h3>
+      <p>Generate I Frame instantly.</p>
+    </a>
+
+    <a href="webtool/privacygen.html" class="tool-item" data-name="Privacy Page Generator">
+      <img src="https://th.bing.com/th/id/OIP.UhtqFd6KJGupKbHlNO8CywHaD5?w=302&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Generate I Frame">
+      <h3>Privacy Page Generator</h3>
+      <p>Privacy Page Generate instantly.</p>
+    </a>
+
+<a href="webtool/metataggen.html" class="tool-item" data-name="Meta Tag Generator">
+      <img src="https://th.bing.com/th/id/OIP.UhtqFd6KJGupKbHlNO8CywHaD5?w=302&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Generate I Frame">
+      <h3>Meta Tag Generator</h3>
+      <p>Meta Tag Generate instantly.</p>
+    </a>
+    
+<a href="webtool/htagen.html" class="tool-item" data-name=".htaccess Generator">
+      <img src="https://th.bing.com/th/id/OIP.UhtqFd6KJGupKbHlNO8CywHaD5?w=302&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Generate I Frame">
+      <h3>.htaccess Generator</h3>
+      <p>.htaccess Generate instantly.</p>
+    </a>
+
+    <a href="webtool/dicsgen.html" class="tool-item" data-name="Disclaimer Generator Tool">
+      <img src="https://th.bing.com/th/id/OIP.UhtqFd6KJGupKbHlNO8CywHaD5?w=302&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Generate I Frame">
+      <h3>Disclaimer Generator Tool</h3>
+      <p>Disclaimer Generate instantly.</p>
+    </a>
+
+    <a href="pdftool/mergepdf.html" class="tool-item" data-name="PDF Merge">
+      <img src="https://img.icons8.com/fluency/96/pdf.png" alt="PDF Merge">
+      <h3>PDF Merge</h3>
+      <p>Combine multiple PDF files into one.</p>
+    </a>
+
+    <a href="pdftool/spliftpdf.html" class="tool-item" data-name="PDF Split">
+      <img src="https://img.icons8.com/fluency/96/split.png" alt="PDF Split">
+      <h3>PDF Split</h3>
+      <p>Extract specific pages or split PDF documents.</p>
+    </a>
+
+    <a href="pdftool/organizepdf.html" class="tool-item" data-name="Organize PDF">
+      <img src="https://th.bing.com/th/id/OIP.9k6GIek5RmsuFk0k4-8xtQHaEK?w=315&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Organize PDF">
+      <h3>Organize PDF</h3>
+      <p>Organize PDF in one click.</p>
+    </a>
+
+    <a href="pdftool/scantopdf.html" class="tool-item" data-name="Scan to PDF">
+      <img src="https://th.bing.com/th/id/OIP.uJTaXJVYEMUSOWX9Zwh8swAAAA?w=143&h=158&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Scan to PDF">
+      <h3>Scan to PDF</h3>
+      <p>Scan to PDF documents files.</p>
+    </a>
+
+    <a href="pdftool/compresspdf.html" class="tool-item" data-name="PDF Compress">
+      <img src="https://img.icons8.com/fluency/96/compress.png" alt="PDF Compress">
+      <h3>PDF Compress</h3>
+      <p>Reduce PDF file size without losing quality.</p>
+    </a>
+
+    <a href="pdftool/repairpdf.html" class="tool-item" data-name="Repair PDF">
+      <img src="https://th.bing.com/th/id/OIP.eahlUeLWg3gghfciVuLIWAAAAA?w=169&h=176&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="PDF Compress">
+      <h3>Repair PDF</h3>
+      <p>Repair PDF file size without losing quality.</p>
+    </a>
+
+    <a href="pdftool/ocrpdf.html" class="tool-item" data-name="OCR PDF">
+      <img src="https://th.bing.com/th/id/OIP.knZo2UAvcdUlukow-2qTiQHaHa?w=192&h=192&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Color Picker">
+      <h3>OCR PDF</h3>
+      <p> Optical character recognition with one click.</p>
+    </a>
+
+    <a href="pdftool/imgtopdf.html" class="tool-item" data-name="Image to PDF Converter">
+      <img src="https://img.icons8.com/fluency/96/image.png" alt="Image to PDF">
+      <h3>Image to PDF</h3>
+      <p>Combine and convert images into a single PDF file.</p>
+    </a>
+
+    <a href="pdftool/jpgtopdf.html" class="tool-item" data-name="JPG to PDF Converter">
+      <img src="https://img.icons8.com/fluency/96/image.png" alt="JPG to PDF">
+      <h3>JPG to PDF</h3>
+      <p>Combine and convert JPG into a single PDF file.</p>
+    </a>
+
+    <a href="pdftool/wordtopdf.html" class="tool-item" data-name="Word to PDF Converter">
+      <img src="https://img.icons8.com/color/96/ms-word.png" alt="Word to PDF">
+      <h3>Word to PDF</h3>
+      <p>Convert Word documents to PDF format.</p>
+    </a>
+
+    <a href="pdftool/powerpointtopdf.html" class="tool-item" data-name="PowerPoint to PDF Converter">
+      <img src="https://th.bing.com/th/id/OIP.FxwkJrfKbXB4gq_PbFc0bgHaHa?w=146&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="PowerPoint to PDF">
+      <h3>PowerPoint to PDF</h3>
+      <p>Convert PowerPoint files to PDF instantly.</p>
+    </a>
+
+    <a href="pdftool/exceltopdf.html" class="tool-item" data-name="Excel to PDF Converter">
+      <img src="https://th.bing.com/th/id/OIP.ufAl8jp7ubR3EWt9bgQczwHaHY?w=172&h=180&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Excel to PDF">
+      <h3>Excel to PDF</h3>
+      <p>Convert Excel files to PDF instantly.</p>
+    </a>
+
+    <a href="pdftool/htmltopdf.html" class="tool-item" data-name="HTML to PDF">
+      <img src="https://th.bing.com/th/id/OIP.NxwVsTsNhMPyuqIx7q8GcgAAAA?w=170&h=117&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="HTML to PDF">
+      <h3>HTML to PDF</h3>
+      <p>Convert HTML documents into PDF files.</p>
+    </a>
+
+    <a href="pdftool/pdftojpg.html" class="tool-item" data-name="PDF to JPG">
+      <img src="https://img.icons8.com/fluency/96/pdf.png" alt="PDF to JPG">
+      <h3>PDF to JPG</h3>
+      <p>Convert PDF pages to JPG images.</p>
+    </a>
+
+    <a href="pdftool/pdftoword.html" class="tool-item" data-name="PDF to Word Converter">
+      <img src="https://img.icons8.com/color/96/pdf.png" alt="PDF to Word">
+      <h3>PDF to Word</h3>
+      <p>Convert PDF files to editable Word documents.</p>
+    </a>
+
+    <a href="pdftool/pdftopowerpoint.html" class="tool-item" data-name="PDF to PowerPoint Converter">
+      <img src="https://th.bing.com/th/id/OIP.QbI03WAdZyg_ZxKgMJd-JgHaD5?w=310&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="PDF to PowerPoint">
+      <h3>PDF to PowerPoint</h3>
+      <p>Convert PDF documents into editable PowerPoint files.</p>
+    </a>
+
+    <a href="pdftool/pdftoexcel.html" class="tool-item" data-name="PDF to Excel Converter">
+      <img src="https://th.bing.com/th/id/OIP.Qxip-75qtvmI7kIDW19fQQAAAA?w=186&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="PDF to Excel">
+      <h3>PDF to Excel</h3>
+      <p>Convert PDF documents into editable Excel files.</p>
+    </a>
+
+    <a href="pdftool/pdftopdfa.html" class="tool-item" data-name="PDF to PDF/A Converter">
+      <img src="https://th.bing.com/th/id/OIP.iMpP4pyWVibEyYkPc9pcFgHaHa?w=164&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="PDF to PDF/A">
+      <h3>PDF to PDF/A</h3>
+      <p>Convert PDF documents into editable PDF/A files.</p>
+    </a>
+
+     <a href="pdftool/rotatepdf.html" class="tool-item" data-name="Rotate PDF">
+      <img src="https://th.bing.com/th/id/OIP.Hqxb5vJo8BCwVwk0n37RjQD6D6?w=148&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Rotate PDF">
+      <h3>Rotate PDF</h3>
+      <p>Rotate PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/pagenumberpdf.html" class="tool-item" data-name="Page numbers PDF">
+      <img src="https://th.bing.com/th/id/OIP.nEi8wPEDRqqeWpvN8PW2cgHaHa?w=152&h=183&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Page numbers PDF">
+      <h3>Page numbers PDF</h3>
+      <p>Page numbers PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/watermarkpdf.html" class="tool-item" data-name="Watermark PDF">
+      <img src="https://th.bing.com/th/id/OIP.mNBRpy5P4iqFVxqsGLiS6QHaHa?w=182&h=183&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Watermark PDF">
+      <h3>Watermark PDF</h3>
+      <p>Watermark PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/croppdf.html" class="tool-item" data-name="PDF Cropper">
+      <img src="https://img.icons8.com/fluency/96/crop.png" alt="PDF Cropper">
+      <h3>PDF Cropper</h3>
+      <p>Crop PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/editpdf.html" class="tool-item" data-name="PDF Editor">
+      <img src="https://img.icons8.com/fluency/96/edit.png" alt="PDF Editor">
+      <h3>PDF Editor</h3>
+      <p>Edit text, images, and pages of your PDFs online.</p>
+    </a>
+
+     <a href="pdftool/unlockpdf.html" class="tool-item" data-name="Unlock PDF">
+      <img src="https://img.icons8.com/fluency/96/unlock.png" alt="Unlock PDF">
+      <h3>Unlock PDF</h3>
+      <p>Unlock PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/protectpdf.html" class="tool-item" data-name="Protect PDF">
+      <img src="https://img.icons8.com/fluency/96/lock.png" alt="Protect PDF">
+      <h3>Protect PDF</h3>
+      <p>Protect PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/signpdf.html" class="tool-item" data-name="Sign PDF">
+      <img src="https://img.icons8.com/fluency/96/signature.png" alt="Sign PDF">
+      <h3>Sign PDF</h3>
+      <p>Sign PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/redactpdf.html" class="tool-item" data-name="Redact PDF">
+      <img src="https://th.bing.com/th/id/OIP.JFUEgmZcTMq0H3xixdxmwwHaHa?w=173&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Redact PDF">
+      <h3>Redact PDF</h3>
+      <p>Redact PDF documents files.</p>
+    </a>
+
+     <a href="pdftool/comparepdf.html" class="tool-item" data-name="Compare PDF">
+      <img src="https://img.icons8.com/fluency/96/compare.png" alt="Compare PDF">
+      <h3>Compare PDF</h3>
+      <p>Compare PDF documents files.</p>
+    </a>
+
+    <a href="imgtool/compressimg.html" class="tool-item" data-name="Image Compressor">
+      <img src="https://img.icons8.com/fluency/96/compress.png" alt="Image Compressor">
+      <h3>Image Compressor</h3>
+      <p>Reduce image size without losing quality.</p>
+    </a>
+
+     <a href="imgtool/upscaleimg.html" class="tool-item" data-name="Upscale Image">
+      <img src="https://th.bing.com/th/id/OIP.Ci9SPRKhc6Mm8t94zx-7FAHaEo?w=264&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Upscale Image">
+      <h3>Upscale Image</h3>
+      <p>Upscale Image instantly.</p>
+    </a>
+
+    <a href="imgtool/removebg.html" class="tool-item" data-name="Background Remover">
+      <img src="https://img.icons8.com/fluency/96/background-remover.png" alt="Background Remover">
+      <h3>Background Remover</h3>
+      <p>Remove the background from any photo instantly.</p>
+    </a>
+
+     <a href="imgtool/removeimgbg.html" class="tool-item" data-name="Remove background 2">
+      <img src="https://img.icons8.com/fluency/96/background-remover.png" alt="Remove background 2">
+      <h3>Remove background 2</h3>
+      <p>Remove Image background instantly.</p>
+    </a>
+
+     <a href="imgtool/memegen.html" class="tool-item" data-name="Meme generator">
+      <img src="https://th.bing.com/th/id/OIP.J1yMOPSbrNgO6Lcn3kvtAQHaE8?w=256&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Meme generator">
+      <h3>Meme generator</h3>
+      <p>Meme generator.</p>
+    </a>
+
+    <a href="imgtool/photoedit.html" class="tool-item" data-name="Online Image Editor">
+      <img src="https://img.icons8.com/fluency/96/edit-image.png" alt="Online Image Editor">
+      <h3>Online Image Editor</h3>
+      <p>Edit images with filters, brightness, and effects.</p>
+    </a>
+
+    <a href="imgtool/resizeimg.html" class="tool-item" data-name="Image Resizer">
+      <img src="https://th.bing.com/th/id/OIP.IQhfXZ_GD6p1w35cl5hBNgHaHa?w=200&h=200&c=7&r=0&o=7&cb=ucfimgc2&pid=1.7&rm=3" alt="Image Resizer">
+      <h3>Image Resizer</h3>
+      <p>Resize your images to any custom dimensions.</p>
+    </a>
+
+    <a href="imgtool/cropimg.html" class="tool-item" data-name="Image Cropper">
+      <img src="https://img.icons8.com/fluency/96/crop.png" alt="Image Cropper">
+      <h3>Image Cropper</h3>
+      <p>Crop images to the exact size or ratio you need.</p>
+    </a>
+
+     <a href="imgtool/rotateimg.html" class="tool-item" data-name="Rotate Image">
+      <img src="https://th.bing.com/th/id/OIP.Hqxb5vJo8BCwVwk0n37RjQD6D6?w=148&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Rotate Image">
+      <h3>Rotate Image</h3>
+      <p>Rotate Image instantly.</p>
+    </a>
+
+    <a href="imgtool/changebg.html" class="tool-item" data-name="Change Image Background">
+      <img src="https://img.icons8.com/fluency/96/paint-palette.png" alt="Change Image Background">
+      <h3>Change Image Background</h3>
+      <p>Change Image Background colors with one click.</p>
+    </a>
+
+    <a href="imgtool/aioimgconv.html" class="tool-item" data-name="AIO Image Format Converter">
+      <img src="https://img.icons8.com/fluency/96/image-file.png" alt="AIO Image Converter">
+      <h3>AIO Image Format Converter</h3>
+      <p>Convert images between JPG, PNG, GIF, and WEBP formats.</p>
+    </a>
+
+    <a href="imgtool/imgtojpg.html" class="tool-item" data-name="Image to JPG Converter">
+      <img src="https://img.icons8.com/fluency/96/image-file.png" alt="Image to JPG Converter">
+      <h3>Image to JPG Converter</h3>
+      <p>Convert JPEG, PNG, WEBP, and more to JPG.</p>
+    </a>
+
+    <a href="imgtool/imgfromjpg.html" class="tool-item" data-name="Convert from JPG">
+      <img src="https://img.icons8.com/fluency/96/image-file.png" alt="Convert from JPG">
+      <h3>Convert from JPG</h3>
+      <p>Convert JPEG, PNG, WEBP, and more to JPG.</p>
+    </a>
+
+    <a href="imgtool/htmltoimg.html" class="tool-item" data-name="HTML To Image">
+      <img src="https://img.icons8.com/fluency/96/image-file.png" alt="HTML To Image">
+      <h3>Convert HTML To Image</h3>
+      <p>Convert HTML To Image.</p>
+    </a>
+
+    <a href="imgtool/watermarkimg.html" class="tool-item" data-name="Watermark IMAGE">
+      <img src="https://img.icons8.com/fluency/96/image-file.png" alt="Watermark IMAGE">
+      <h3>Watermark IMAGE</h3>
+      <p>Watermark IMAGE.</p>
+    </a>
+
+    <a href="imgtool/blurface.html" class="tool-item" data-name="Blur face">
+      <img src="https://img.icons8.com/fluency/96/image-file.png" alt="Blur face">
+      <h3>Blur face Image</h3>
+      <p>Blur face Image.</p>
+    </a>
+
+ <a href="texttool/textedit.html" class="tool-item" data-name="Edit Text">
+      <img src="https://img.icons8.com/fluency/96/musical-notes.png" alt="Edit Text">
+      <h3>Edit Text Converter</h3>
+      <p>Edit Text.</p>
+    </a>
+
+    <a href="texttool/imgtotext.html" class="tool-item" data-name="Image To Text">
+      <img src="https://img.icons8.com/fluency/96/musical-notes.png" alt="Image To Text">
+      <h3>Image To Text Converter</h3>
+      <p>Convert Image To Text formats.</p>
+    </a>
+
+    <a href="texttool/unicodetokrutidev.html" class="tool-item" data-name="Unicode To Kruti Dev">
+      <img src="https://img.icons8.com/fluency/96/musical-notes.png" alt="Unicode To Kruti Dev">
+      <h3>Unicode To Kruti Dev Font Converter</h3>
+      <p>Convert Unicode To Kruti Dev Font formats.</p>
+    </a>
+
+    <a href="texttool/voicetyping.html" class="tool-item" data-name="Voice Typing Tool">
+      <img src="https://img.icons8.com/fluency/96/musical-notes.png" alt="Voice Typing Tool">
+      <h3>Voice Typing Tool</h3>
+      <p>Convert Voice To Text.</p>
+    </a>
+
+    <a href="audio-converter.html" class="tool-item" data-name="Audio Converter">
+      <img src="https://img.icons8.com/fluency/96/musical-notes.png" alt="Audio Converter">
+      <h3>Audio Converter</h3>
+      <p>Convert between MP3, WAV, M4A, and other audio formats.</p>
+    </a>
+
+    <a href="video-converter.html" class="tool-item" data-name="Video Converter">
+      <img src="https://img.icons8.com/fluency/96/video.png" alt="Video Converter">
+      <h3>Video Converter</h3>
+      <p>Convert between MP4, MOV, AVI, and other video formats.</p>
+    </a>
+
+    <a href="text-to-pdf.html" class="tool-item" data-name="Text to PDF Converter">
+      <img src="https://img.icons8.com/fluency/96/txt.png" alt="Text to PDF">
+      <h3>Text to PDF</h3>
+      <p>Convert plain text files into well-formatted PDFs.</p>
+    </a>
+
+    <a href="zip-converter.html" class="tool-item" data-name="ZIP Converter">
+      <img src="https://img.icons8.com/fluency/96/zip.png" alt="ZIP Converter">
+      <h3>ZIP Converter</h3>
+      <p>Compress or extract ZIP and RAR archives easily.</p>
+    </a>
+  
+    <a href="word-counter.html" class="tool-item" data-name="Word Counter">
+      <img src="https://img.icons8.com/fluency/96/counter.png" alt="Word Counter">
+      <h3>Word Counter</h3>
+      <p>Count words, characters, and paragraphs instantly.</p>
+    </a>
+
+    <a href="text-formatter.html" class="tool-item" data-name="Text Formatter">
+      <img src="https://img.icons8.com/fluency/96/edit-text-file.png" alt="Text Formatter">
+      <h3>Text Formatter</h3>
+      <p>Clean and format your text with advanced options.</p>
+    </a>
+
+    <a href="remove-duplicates.html" class="tool-item" data-name="Remove Duplicates">
+      <img src="https://th.bing.com/th/id/OIP.0zXg8YXdcir7H38lcE9QnwHaH_?w=154&h=180&c=7&r=0&o=7&cb=ucfimg2&pid=1.7&rm=3&ucfimg=1" alt="Remove Duplicates">
+      <h3>Remove Duplicates</h3>
+      <p>Remove duplicate lines or words in seconds.</p>
+    </a>
+
+    <a href="text-to-speech.html" class="tool-item" data-name="Text to Speech">
+      <img src="https://img.icons8.com/fluency/96/speaker.png" alt="Text to Speech">
+      <h3>Text to Speech</h3>
+      <p>Convert written text into spoken audio instantly.</p>
+    </a>
+
+    <a href="unitconverter/cashcounter.html" class="tool-item" data-name="Currency Counter">
+      <img src="https://img.icons8.com/fluency/96/money.png" alt="Currency Counter">
+      <h3>Currency Counter</h3>
+      <p>Check live rates and count currencies.</p>
+    </a>
+
+  </section>
+
+
+
+  
+
+  
+  <footer id="contact">
+    <p>Made with ❤️ by Himanshu Enterprises | © 2025</p>
+  </footer>
+
+  <script>
+    // Theme toggle
+    const toggleBtn = document.getElementById('themeToggle');
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      toggleBtn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    });
+
+    // Search Filter
+    const searchInput = document.getElementById('searchInput');
+    const tools = document.querySelectorAll('.tool-item');
+
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      tools.forEach(tool => {
+        const name = tool.getAttribute('data-name').toLowerCase();
+        tool.style.display = name.includes(term) ? 'block' : 'none';
+      });
+    });
+  </script>
 </body>
 </html>
-
-

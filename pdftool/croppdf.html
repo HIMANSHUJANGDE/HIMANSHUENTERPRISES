@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <title>Crop PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      max-width: 450px;
+      width: 100%;
+      padding: 30px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    input[type="file"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-align: left;
+      color: #555;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 14px 25px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #statusMsg {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #444;
+      min-height: 22px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Crop PDF Tool</h2>
+    <form id="cropForm" enctype="multipart/form-data">
+      <label for="pdfFile">Select PDF file:</label>
+      <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" required />
+
+      <label for="marginTop">Top Margin (mm):</label>
+      <input type="number" id="marginTop" name="marginTop" min="0" value="0" />
+
+      <label for="marginBottom">Bottom Margin (mm):</label>
+      <input type="number" id="marginBottom" name="marginBottom" min="0" value="0" />
+
+      <label for="marginLeft">Left Margin (mm):</label>
+      <input type="number" id="marginLeft" name="marginLeft" min="0" value="0" />
+
+      <label for="marginRight">Right Margin (mm):</label>
+      <input type="number" id="marginRight" name="marginRight" min="0" value="0" />
+
+      <button type="submit">Crop PDF</button>
+    </form>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('cropForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.textContent = 'Cropping PDF...';
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/crop-pdf', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'cropped.pdf';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          statusMsg.textContent = 'PDF cropped successfully! Download started.';
+        } else {
+          statusMsg.textContent = 'Failed to crop PDF.';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>

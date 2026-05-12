@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Resize Image Tool</title>
+  <style>
+
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+  margin: 0;
+}
+
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+input[type="file"],
+input[type="number"],
+button {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.inputs {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.inputs label {
+  flex: 1;
+}
+
+button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #1976d2;
+}
+
+.preview {
+  margin-top: 20px;
+}
+
+canvas {
+  max-width: 100%;
+  margin-top: 15px;
+  border: 1px solid #ccc;
+}
+
+#downloadLink {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+#downloadLink:hover {
+  background-color: #388e3c;
+}
+
+
+
+
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Resize Image Tool</h1>
+
+    <input type="file" id="imageInput" accept="image/*">
+    
+    <div class="inputs">
+      <label>Width (px): <input type="number" id="widthInput" /></label>
+      <label>Height (px): <input type="number" id="heightInput" /></label>
+    </div>
+
+    <button onclick="resizeImage()">Resize</button>
+
+    <div class="preview">
+      <h3>Preview:</h3>
+      <canvas id="canvas"></canvas>
+      <a id="downloadLink" download="resized-image.png">Download</a>
+    </div>
+  </div>
+
+  <script>
+
+
+
+const imageInput = document.getElementById('imageInput');
+const widthInput = document.getElementById('widthInput');
+const heightInput = document.getElementById('heightInput');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const downloadLink = document.getElementById('downloadLink');
+let originalImage = new Image();
+
+imageInput.addEventListener('change', function () {
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    originalImage.onload = function () {
+      widthInput.value = originalImage.width;
+      heightInput.value = originalImage.height;
+    };
+    originalImage.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function resizeImage() {
+  const width = parseInt(widthInput.value);
+  const height = parseInt(heightInput.value);
+
+  if (!width || !height || isNaN(width) || isNaN(height)) {
+    alert("Please enter valid width and height.");
+    return;
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.drawImage(originalImage, 0, 0, width, height);
+
+  downloadLink.href = canvas.toDataURL('image/png');
+  downloadLink.style.display = 'inline-block';
+}
+
+
+
+    
+  </script>
+
+
+</body>
+</html>

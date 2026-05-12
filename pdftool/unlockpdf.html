@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Unlock PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    input[type="file"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #0b7dda;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Unlock PDF</h2>
+    <form id="unlockForm" enctype="multipart/form-data">
+      <label for="pdfFile">Select Locked PDF:</label>
+      <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" required>
+
+      <label for="password">PDF Password:</label>
+      <input type="password" id="password" name="password" placeholder="Enter password" required>
+
+      <button type="submit">Unlock PDF</button>
+    </form>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('unlockForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      statusMsg.textContent = 'Uploading and unlocking...';
+
+      try {
+        const response = await fetch('/unlock-pdf', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'unlocked.pdf';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          statusMsg.textContent = 'PDF unlocked successfully!';
+        } else {
+          statusMsg.textContent = 'Failed to unlock PDF. Check password or try again.';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+
+  
+</body>
+</html>

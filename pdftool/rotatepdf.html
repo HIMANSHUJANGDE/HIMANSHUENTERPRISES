@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rotate PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    input[type="file"], select, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<header>Rotate PDF Tool</header>
+
+<div class="container">
+  <input type="file" id="pdf-upload" accept="application/pdf" /><br />
+  <label for="rotation-select">Rotate:</label>
+  <select id="rotation-select">
+    <option value="90">90° Clockwise</option>
+    <option value="180">180°</option>
+    <option value="270">270° Counter-Clockwise</option>
+  </select><br />
+  <button id="rotate-btn" disabled>Rotate PDF</button>
+</div>
+
+<!-- PDF-lib -->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+  let uploadedPdfBytes = null;
+
+  const fileInput = document.getElementById('pdf-upload');
+  const rotateBtn = document.getElementById('rotate-btn');
+  const rotationSelect = document.getElementById('rotation-select');
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (file && file.type === "application/pdf") {
+      const reader = new FileReader();
+      reader.onload = function () {
+        uploadedPdfBytes = new Uint8Array(this.result);
+        rotateBtn.disabled = false;
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  });
+
+  rotateBtn.addEventListener('click', async () => {
+    const degrees = parseInt(rotationSelect.value);
+    const pdfDoc = await PDFLib.PDFDocument.load(uploadedPdfBytes);
+    const pages = pdfDoc.getPages();
+
+    pages.forEach(page => {
+      const currentRotation = page.getRotation().angle;
+      page.setRotation(PDFLib.degrees((currentRotation + degrees) % 360));
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'rotated.pdf';
+    link.click();
+  });
+</script>
+
+
+</body>
+</html>

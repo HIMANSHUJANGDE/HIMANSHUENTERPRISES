@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All-in-One Unit Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .converter {
+      background: white;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    select, input {
+      width: 48%;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    select#category {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    input[readonly] {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="converter">
+    <h1>Unit Converter</h1>
+    <select id="category">
+      <option value="length">Length</option>
+      <option value="weight">Weight</option>
+      <option value="temperature">Temperature</option>
+    </select>
+
+    <div class="row">
+      <input type="number" id="inputValue" placeholder="Enter value" />
+      <select id="inputUnit"></select>
+    </div>
+
+    <div class="row">
+      <input type="text" id="outputValue" placeholder="Result" readonly />
+      <select id="outputUnit"></select>
+    </div>
+  </div>
+
+  <script>
+    const categorySelect = document.getElementById('category');
+    const inputUnit = document.getElementById('inputUnit');
+    const outputUnit = document.getElementById('outputUnit');
+    const inputValue = document.getElementById('inputValue');
+    const outputValue = document.getElementById('outputValue');
+
+    const units = {
+      length: ['meters', 'kilometers', 'miles', 'feet'],
+      weight: ['grams', 'kilograms', 'pounds', 'ounces'],
+      temperature: ['celsius', 'fahrenheit', 'kelvin']
+    };
+
+    const conversionRates = {
+      length: {
+        meters: { meters: 1, kilometers: 0.001, miles: 0.000621371, feet: 3.28084 },
+        kilometers: { meters: 1000, kilometers: 1, miles: 0.621371, feet: 3280.84 },
+        miles: { meters: 1609.34, kilometers: 1.60934, miles: 1, feet: 5280 },
+        feet: { meters: 0.3048, kilometers: 0.0003048, miles: 0.000189394, feet: 1 }
+      },
+      weight: {
+        grams: { grams: 1, kilograms: 0.001, pounds: 0.00220462, ounces: 0.035274 },
+        kilograms: { grams: 1000, kilograms: 1, pounds: 2.20462, ounces: 35.274 },
+        pounds: { grams: 453.592, kilograms: 0.453592, pounds: 1, ounces: 16 },
+        ounces: { grams: 28.3495, kilograms: 0.0283495, pounds: 0.0625, ounces: 1 }
+      }
+    };
+
+    function updateUnitOptions() {
+      const selectedCategory = categorySelect.value;
+      const options = units[selectedCategory];
+
+      inputUnit.innerHTML = '';
+      outputUnit.innerHTML = '';
+
+      options.forEach(unit => {
+        const opt1 = document.createElement('option');
+        opt1.value = unit;
+        opt1.textContent = capitalize(unit);
+        inputUnit.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = unit;
+        opt2.textContent = capitalize(unit);
+        outputUnit.appendChild(opt2);
+      });
+
+      convert();
+    }
+
+    function convert() {
+      const val = parseFloat(inputValue.value);
+      const from = inputUnit.value;
+      const to = outputUnit.value;
+      const cat = categorySelect.value;
+
+      if (isNaN(val)) {
+        outputValue.value = '';
+        return;
+      }
+
+      if (cat === 'temperature') {
+        outputValue.value = convertTemperature(val, from, to);
+      } else {
+        const rate = conversionRates[cat][from][to];
+        outputValue.value = (val * rate).toFixed(4);
+      }
+    }
+
+    function convertTemperature(value, from, to) {
+      let celsius;
+
+      if (from === 'celsius') celsius = value;
+      else if (from === 'fahrenheit') celsius = (value - 32) * 5 / 9;
+      else if (from === 'kelvin') celsius = value - 273.15;
+
+      let result;
+      if (to === 'celsius') result = celsius;
+      else if (to === 'fahrenheit') result = (celsius * 9 / 5) + 32;
+      else if (to === 'kelvin') result = celsius + 273.15;
+
+      return result.toFixed(2);
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Initial setup
+    categorySelect.addEventListener('change', updateUnitOptions);
+    inputValue.addEventListener('input', convert);
+    inputUnit.addEventListener('change', convert);
+    outputUnit.addEventListener('change', convert);
+
+    updateUnitOptions(); // initialize units
+  </script>
+
+</body>
+</html>

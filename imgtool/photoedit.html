@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <title>Photo Editor Tool</title>
+  <style>
+
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  margin: 0;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.editor-container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 700px;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+#canvas {
+  max-width: 100%;
+  margin: 20px 0;
+  border: 1px solid #ccc;
+}
+
+.sliders label {
+  display: block;
+  margin: 10px 0;
+  text-align: left;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.buttons {
+  margin-top: 20px;
+}
+
+button, a {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  text-decoration: none;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button {
+  background-color: #2196f3;
+  color: white;
+}
+
+a {
+  background-color: #4caf50;
+  color: white;
+}
+
+
+
+
+    
+  </style>
+</head>
+<body>
+  <div class="editor-container">
+    <h1>Photo Editor Tool</h1>
+
+    <input type="file" id="imageInput" accept="image/*" />
+    <canvas id="canvas"></canvas>
+
+    <div class="sliders">
+      <label>Brightness <input type="range" id="brightness" min="0" max="200" value="100" /></label>
+      <label>Contrast <input type="range" id="contrast" min="0" max="200" value="100" /></label>
+      <label>Saturation <input type="range" id="saturation" min="0" max="200" value="100" /></label>
+      <label>Grayscale <input type="range" id="grayscale" min="0" max="100" value="0" /></label>
+    </div>
+
+    <div class="buttons">
+      <button onclick="resetFilters()">Reset</button>
+      <a id="downloadLink" download="edited-image.png">Download</a>
+    </div>
+  </div>
+
+  <script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+let originalImage = null;
+
+const brightness = document.getElementById("brightness");
+const contrast = document.getElementById("contrast");
+const saturation = document.getElementById("saturation");
+const grayscale = document.getElementById("grayscale");
+const downloadLink = document.getElementById("downloadLink");
+
+document.getElementById("imageInput").addEventListener("change", loadImage);
+[brightness, contrast, saturation, grayscale].forEach(input =>
+  input.addEventListener("input", applyFilters)
+);
+
+function loadImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      originalImage = img;
+      applyFilters();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyFilters() {
+  if (!originalImage) return;
+
+  ctx.filter = `
+    brightness(${brightness.value}%)
+    contrast(${contrast.value}%)
+    saturate(${saturation.value}%)
+    grayscale(${grayscale.value}%)
+  `;
+  ctx.drawImage(originalImage, 0, 0);
+
+  downloadLink.href = canvas.toDataURL("image/png");
+}
+
+function resetFilters() {
+  brightness.value = 100;
+  contrast.value = 100;
+  saturation.value = 100;
+  grayscale.value = 0;
+  applyFilters();
+}
+
+
+
+
+
+    
+  </script>
+
+</body>
+</html>

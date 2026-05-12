@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <title>Crop Image Tool</title>
+  <style>
+
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  margin: 0;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+}
+
+canvas {
+  max-width: 100%;
+  border: 1px solid #ccc;
+  cursor: crosshair;
+}
+
+button, a {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+}
+
+a {
+  background: #4caf50;
+}
+
+.canvas-wrapper {
+  margin: 20px 0;
+  position: relative;
+}
+
+
+
+
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Crop Image Tool</h1>
+
+    <input type="file" id="imageInput" accept="image/*" />
+    <div class="canvas-wrapper">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <button onclick="cropImage()">Crop</button>
+    <a id="downloadLink" download="cropped-image.png">Download Cropped Image</a>
+  </div>
+
+  <script>
+
+
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const imageInput = document.getElementById('imageInput');
+const downloadLink = document.getElementById('downloadLink');
+
+let image = new Image();
+let startX, startY, endX, endY, isDragging = false;
+let imgLoaded = false;
+
+imageInput.addEventListener('change', function () {
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    image.onload = function () {
+      canvas.width = image.width;
+      canvas.height = image.height;
+      ctx.drawImage(image, 0, 0);
+      imgLoaded = true;
+    };
+    image.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+canvas.addEventListener('mousedown', function (e) {
+  if (!imgLoaded) return;
+  const rect = canvas.getBoundingClientRect();
+  startX = e.clientX - rect.left;
+  startY = e.clientY - rect.top;
+  isDragging = true;
+});
+
+canvas.addEventListener('mousemove', function (e) {
+  if (!isDragging) return;
+  const rect = canvas.getBoundingClientRect();
+  endX = e.clientX - rect.left;
+  endY = e.clientY - rect.top;
+  draw();
+});
+
+canvas.addEventListener('mouseup', function () {
+  isDragging = false;
+});
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0);
+
+  const width = endX - startX;
+  const height = endY - startY;
+
+  if (width && height) {
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(startX, startY, width, height);
+  }
+}
+
+function cropImage() {
+  if (!imgLoaded || startX == null || endX == null) {
+    alert("Please select an area to crop.");
+    return;
+  }
+
+  const cropWidth = endX - startX;
+  const cropHeight = endY - startY;
+
+  if (cropWidth <= 0 || cropHeight <= 0) {
+    alert("Invalid crop area.");
+    return;
+  }
+
+  // Create a new canvas to draw cropped area
+  const croppedCanvas = document.createElement('canvas');
+  const croppedCtx = croppedCanvas.getContext('2d');
+  croppedCanvas.width = cropWidth;
+  croppedCanvas.height = cropHeight;
+
+  croppedCtx.drawImage(canvas, startX, startY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+  // Show download link
+  const croppedDataUrl = croppedCanvas.toDataURL("image/png");
+  downloadLink.href = croppedDataUrl;
+  downloadLink.style.display = "inline-block";
+}
+
+
+
+
+    
+  </script>
+
+
+</body>
+</html>

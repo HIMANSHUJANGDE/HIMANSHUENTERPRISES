@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>PDF to PDF/A Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Convert PDF to PDF/A</h2>
+    <form id="convertForm">
+      <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" required>
+      <button type="submit">Convert to PDF/A</button>
+    </form>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('convertForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      statusMsg.textContent = 'Converting to PDF/A...';
+
+      try {
+        const response = await fetch('/convert-to-pdfa', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'converted-pdfa.pdf';
+          link.click();
+          statusMsg.textContent = 'Conversion successful!';
+        } else {
+          statusMsg.textContent = 'Conversion failed. Please try again.';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Repair PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Repair Damaged PDF</h2>
+    <form id="repairForm" enctype="multipart/form-data">
+      <input type="file" name="pdfFile" id="pdfFile" accept="application/pdf" required>
+      <button type="submit">Repair PDF</button>
+    </form>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('repairForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      statusMsg.textContent = 'Repairing your PDF...';
+
+      try {
+        const response = await fetch('/repair-pdf', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'repaired.pdf';
+          link.click();
+          statusMsg.textContent = 'PDF repaired successfully!';
+        } else {
+          statusMsg.textContent = 'Repair failed. The file may be too damaged.';
+        }
+      } catch (error) {
+        statusMsg.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+
+</body>
+</html>

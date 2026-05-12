@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF to JPG Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border: 1px solid #ccc;
+    }
+
+    .download-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .download-btn:disabled {
+      background: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <header>PDF to JPG Converter</header>
+
+  <div class="container">
+    <input type="file" id="pdf-upload" accept="application/pdf" />
+    <canvas id="pdf-canvas"></canvas>
+    <button id="download-img" class="download-btn" disabled>Download as JPG</button>
+  </div>
+
+  <!-- pdf.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+  <script>
+    const fileInput = document.getElementById('pdf-upload');
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('download-img');
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file || file.type !== 'application/pdf') return;
+
+      const fileReader = new FileReader();
+      fileReader.onload = async function() {
+        const typedarray = new Uint8Array(this.result);
+
+        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+        const page = await pdf.getPage(1); // convert only the first page
+
+        const viewport = page.getViewport({ scale: 2 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+
+        await page.render(renderContext).promise;
+
+        downloadBtn.disabled = false;
+      };
+      fileReader.readAsArrayBuffer(file);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const image = canvas.toDataURL('image/jpeg', 1.0);
+      const a = document.createElement('a');
+      a.href = image;
+      a.download = 'pdf-page.jpg';
+      a.click();
+    });
+  </script>
+
+</body>
+</html>

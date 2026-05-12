@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All-in-One Age Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .calculator {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .results {
+      margin-top: 20px;
+    }
+
+    .results p {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <h1>Age Calculator</h1>
+    <label for="dob">Enter Your Date of Birth:</label>
+    <input type="date" id="dob" />
+
+    <button onclick="calculateAge()">Calculate Age</button>
+
+    <div class="results" id="results"></div>
+  </div>
+
+  <script>
+    function calculateAge() {
+      const dobInput = document.getElementById("dob").value;
+      const resultsDiv = document.getElementById("results");
+
+      if (!dobInput) {
+        resultsDiv.innerHTML = "<p style='color:red;'>Please enter your birth date.</p>";
+        return;
+      }
+
+      const dob = new Date(dobInput);
+      const now = new Date();
+
+      if (dob > now) {
+        resultsDiv.innerHTML = "<p style='color:red;'>Birth date cannot be in the future.</p>";
+        return;
+      }
+
+      // Calculate full years, months, and days
+      let years = now.getFullYear() - dob.getFullYear();
+      let months = now.getMonth() - dob.getMonth();
+      let days = now.getDate() - dob.getDate();
+
+      if (days < 0) {
+        months--;
+        const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+        days += prevMonth;
+      }
+
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+
+      const ageInMilliseconds = now - dob;
+      const totalSeconds = Math.floor(ageInMilliseconds / 1000);
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      const totalHours = Math.floor(totalMinutes / 60);
+      const totalDays = Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
+      const totalWeeks = Math.floor(totalDays / 7);
+      const totalMonths = years * 12 + months;
+
+      resultsDiv.innerHTML = `
+        <p><strong>Age:</strong> ${years} years, ${months} months, ${days} days</p>
+        <p><strong>Total Months:</strong> ${totalMonths}</p>
+        <p><strong>Total Weeks:</strong> ${totalWeeks}</p>
+        <p><strong>Total Days:</strong> ${totalDays}</p>
+        <p><strong>Total Hours:</strong> ${totalHours}</p>
+        <p><strong>Total Minutes:</strong> ${totalMinutes}</p>
+        <p><strong>Total Seconds:</strong> ${totalSeconds}</p>
+      `;
+    }
+  </script>
+
+
+  
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>A4 Photo Print</title>
+
+<style>
+    body { margin: 0; padding: 0; font-family: Arial; }
+
+    @page { size: A4 portrait; margin: 8mm; }
+
+    #controls {
+        padding: 15px;
+        background: #f2f2f2;
+        border-bottom: 1px solid #ccc;
+    }
+
+    #previewList {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .previewItem {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 5px;
+        border: 1px solid #ccc;
+        background: #fff;
+    }
+
+    .previewItem img {
+        width: 60px;
+        height: auto;
+        border: 1px solid #aaa;
+    }
+
+    #photoArea {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4mm;
+        padding: 8mm;
+    }
+
+    .photoBox {
+        width: 35mm;
+        height: 25mm;
+        border: 0.5mm solid #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .photoBox img {
+        width: 100%;
+        height: auto;
+    }
+
+    @media print {
+        #controls, #previewList { display: none !important; }
+        body { margin: 0 !important; }
+        #photoArea { padding: 0; gap: 3mm; }
+    }
+</style>
+</head>
+
+<body>
+
+<div id="controls">
+    <h3>A4 Multi-Image Photo Generator</h3>
+
+    <!-- SINGLE FILE UPLOAD -->
+    <input type="file" id="singleUpload" accept="image/*" onchange="addPreview()">
+    <p>Upload images one-by-one and set PCS for each.</p>
+
+    <div id="previewList"></div>
+
+    <button onclick="generate()">Generate Photos</button>
+    <button onclick="window.print()">Print</button>
+</div>
+
+<div id="photoArea"></div>
+
+<script>
+let images = [];   // store uploaded images + PCS
+
+function addPreview() {
+    const fileInput = document.getElementById("singleUpload");
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        const id = images.length; // index
+
+        // Save image + default pcs
+        images.push({ src: e.target.result, pcs: 6 });
+
+        // Create preview box
+        const previewBox = document.createElement("div");
+        previewBox.className = "previewItem";
+        previewBox.id = "preview_" + id;
+
+        previewBox.innerHTML = `
+            <img src="${e.target.result}">
+            <div>
+                <strong>${file.name}</strong><br>
+                PCS: 
+                <input type="number" value="6" min="1" 
+                    style="width:60px;" 
+                    onchange="updatePCS(${id}, this.value)">
+            </div>
+        `;
+
+        document.getElementById("previewList").appendChild(previewBox);
+    };
+
+    reader.readAsDataURL(file);
+
+    // Reset file input to allow uploading same file again
+    fileInput.value = "";
+}
+
+function updatePCS(id, value) {
+    images[id].pcs = parseInt(value);
+}
+
+function generate() {
+    const area = document.getElementById("photoArea");
+    area.innerHTML = "";
+
+    images.forEach(imgData => {
+        for (let i = 0; i < imgData.pcs; i++) {
+            let box = document.createElement("div");
+            box.className = "photoBox";
+
+            let img = document.createElement("img");
+            img.src = imgData.src;
+
+            box.appendChild(img);
+            area.appendChild(box);
+        }
+    });
+}
+</script>
+
+</body>
+</html>

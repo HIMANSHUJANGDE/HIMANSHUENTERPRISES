@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Organize PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 700px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .page-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .page {
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      width: 100px;
+      height: 120px;
+      text-align: center;
+      position: relative;
+    }
+
+    .page-number {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .btn {
+      padding: 5px;
+      font-size: 12px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-up { background-color: #4CAF50; color: white; }
+    .btn-down { background-color: #2196F3; color: white; }
+    .btn-delete { background-color: #f44336; color: white; }
+
+    button#saveBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #673ab7;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Organize PDF Pages</h2>
+    <input type="file" id="pdfFile" accept="application/pdf">
+    <div class="page-list" id="pageList">
+      <!-- Page placeholders (dynamically generated) -->
+    </div>
+    <button id="saveBtn">Save Organized PDF</button>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const pdfFileInput = document.getElementById('pdfFile');
+    const pageList = document.getElementById('pageList');
+    const statusMsg = document.getElementById('statusMsg');
+
+    let pages = [];
+
+    pdfFileInput.addEventListener('change', () => {
+      // Simulate dummy pages for UI
+      // You would replace this with logic to extract real pages or thumbnails
+      const dummyPageCount = 5;
+      pages = Array.from({ length: dummyPageCount }, (_, i) => i + 1);
+      renderPages();
+    });
+
+    function renderPages() {
+      pageList.innerHTML = '';
+      pages.forEach((page, index) => {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        pageDiv.innerHTML = `
+          <div class="page-number">Page ${page}</div>
+          <div class="btn-group">
+            <button class="btn btn-up" onclick="moveUp(${index})">↑ Up</button>
+            <button class="btn btn-down" onclick="moveDown(${index})">↓ Down</button>
+            <button class="btn btn-delete" onclick="deletePage(${index})">✖ Delete</button>
+          </div>
+        `;
+        pageList.appendChild(pageDiv);
+      });
+    }
+
+    function moveUp(index) {
+      if (index === 0) return;
+      [pages[index - 1], pages[index]] = [pages[index], pages[index - 1]];
+      renderPages();
+    }
+
+    function moveDown(index) {
+      if (index === pages.length - 1) return;
+      [pages[index + 1], pages[index]] = [pages[index], pages[index + 1]];
+      renderPages();
+    }
+
+    function deletePage(index) {
+      pages.splice(index, 1);
+      renderPages();
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      statusMsg.textContent = 'Saving organized PDF...';
+
+      const formData = new FormData();
+      formData.append('pdfFile', pdfFileInput.files[0]);
+      formData.append('pageOrder', JSON.stringify(pages));
+
+      try {
+        const response = await fetch('/organize-pdf', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'organized.pdf';
+          link.click();
+          statusMsg.textContent = 'PDF saved successfully!';
+        } else {
+          statusMsg.textContent = 'Failed to organize PDF.';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>

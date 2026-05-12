@@ -1,0 +1,200 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"></meta>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"></meta>
+    <meta content="Effortlessly convert images to text with our user-friendly Image to Text Converter using Tesseract.js. Supports multiple languages!" name="description"></meta>
+    <meta content="free, image to text, OCR, converter, Tesseract.js, image conversion" name="keywords"></meta>
+    <meta content="Image to Text Converter" property="og:title"></meta>
+    <meta content="A free, simple and user-friendly online Image to Text Converter using Tesseract.js." property="og:description"></meta>
+    <meta content="your_website" property="og:url"></meta>
+    <title>Image to Text Converter</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.5/dist/tesseract.min.js"></script>
+    <style>
+      /* ... (previous styles) ... */
+      @keyframes spinner {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      #app {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: auto;
+        padding: 1rem;
+        text-align: center;
+      }
+      #dropZone {
+        border: 2px dashed #007bff;
+        border-radius: 5px;
+        padding: 1rem;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        position: relative;
+      }
+      #imageInput {
+        display: none;
+      }
+      img#preview {
+        max-width: 100%;
+        display: none;
+        position: relative;
+      }
+      #convertButton {
+  display: inline-block;
+  margin: 0 auto;
+}
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      .overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+      .overlay span {
+        border: 2px solid currentColor;
+        border-left-color: transparent;
+        border-radius: 50%;
+        width: 2em;
+        height: 2em;
+        animation: spinner 0.8s linear infinite;
+      }
+      #downloadContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #downloadLink {
+        display: inline-block;
+        background-image: linear-gradient(to bottom right, #007bff, #00ffff);
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-size: 1.5rem;
+        margin-top: 1rem;
+        text-align: center;
+        line-height: 1.5;
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h2>Image to Text Converter</h2>
+    </header>
+    <main>
+      <div id="app">
+        <section>
+          <div id="dropZone">
+            <span>Drag and drop an image or click to select</span>
+            <input accept="image/*" id="imageInput" type="file" />
+          </div>
+          <img id="preview" />
+          <div class="overlay" id="previewOverlay" style="display: none;">
+            <p>Please wait, we are working...</p>
+            <span></span>
+          </div>
+        </section>
+        <section>
+          <button id="convertButton" onclick="convertImage()">Convert to Text</button>
+          <div id="downloadContainer" style="display: none;">
+            <a id="downloadLink">Download Text</a>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script>
+  const dropZone = document.getElementById("dropZone");
+const imageInput = document.getElementById("imageInput");
+const convertButton = document.getElementById("convertButton");
+const downloadContainer = document.getElementById("downloadContainer");
+const previewOverlay = document.getElementById("previewOverlay");
+
+dropZone.addEventListener("click", () => {
+  imageInput.click();
+});
+
+const dropHandler = (event) => {
+  event.preventDefault();
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    imageInput.files = files;
+    previewImage({ target: imageInput });
+  }
+};
+
+const dragOverHandler = (event) => {
+  event.preventDefault();
+};
+
+dropZone.addEventListener("drop", dropHandler);
+dropZone.addEventListener("dragover", dragOverHandler);
+
+const previewImage = (event) => {
+  const preview = document.getElementById("preview");
+  const input = event.target;
+  if (input.files.length === 0) {
+    preview.src = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.src = e.target.result;
+    preview.style.display = "block";
+    convertButton.style.display = "block";
+    downloadContainer.style.display = "none"; // Add this line to hide the "Download Text" button
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+
+imageInput.addEventListener("change", previewImage);
+
+const convertImage = async () => {
+  const preview = document.getElementById("preview");
+  if (!preview.src) {
+    alert("Please select an image to convert.");
+    return;
+  }
+
+  try {
+    convertButton.disabled = true;
+    imageInput.disabled = true;
+    previewOverlay.style.display = "flex";
+
+    const result = await Tesseract.recognize(preview.src, "eng+spa+fra+deu+rus+chi_sim+jpn+ita+por+pol+nld+ara+dan+kor+hin");
+    const text = result.data.text + "\n\nConverted by www.your_website.com";
+
+    const downloadLink = document.getElementById("downloadLink");
+    const file = new Blob([text], { type: "text/plain" });
+    downloadLink.href = URL.createObjectURL(file);
+    downloadLink.download = "converted-by-www.your_website.com.txt";
+    downloadContainer.style.display = "flex";
+    convertButton.style.display = "none";
+  } catch (error) {
+    alert("An error occurred during the conversion. Please try again.");
+    console.error(error);
+  } finally {
+    previewOverlay.style.display = "none";
+    convertButton.disabled = false;
+    imageInput.disabled = false;
+  }
+};
+</script>
+  </body>
+</html>

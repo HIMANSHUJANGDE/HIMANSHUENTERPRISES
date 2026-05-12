@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Small Photo Printer By Himanshu Enterprises</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      display: inline-block;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Print Smaller Photos on A4 By Himanshu Enterprises</h2>
+    <label for="pcsInput">How many photos:</label>
+    <input type="number" id="pcsInput" value="45" min="1" max="100">
+    <br>
+    <input type="file" id="photoInput" accept="image/*">
+    <br>
+    <canvas id="outputCanvas" width="2480" height="3508"></canvas>
+    <br>
+    <button id="printBtn">Print</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('outputCanvas');
+    const ctx = canvas.getContext('2d');
+    const pcsInput = document.getElementById('pcsInput');
+    const photoInput = document.getElementById('photoInput');
+
+    // A4 size in px at 300 DPI
+    const PAGE_WIDTH = 2480;
+    const PAGE_HEIGHT = 3508;
+
+    // Photo size (40mm x 30mm) in pixels (landscape)
+    const PHOTO_WIDTH = 472;  // 40mm @ 300 DPI
+    const PHOTO_HEIGHT = 354; // 30mm @ 300 DPI
+    const GAP = 20;
+    const BORDER = 2;
+
+    // Event listener for photo upload
+    photoInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const pcs = parseInt(pcsInput.value) || 45;
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const img = new Image();
+        img.onload = function () {
+          // Resize and rotate photo to landscape automatically
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          // Resize image to 472x354 px (landscape orientation)
+          tempCanvas.width = PHOTO_WIDTH;
+          tempCanvas.height = PHOTO_HEIGHT;
+
+          // Draw image rotated and resized to fit landscape
+          tempCtx.clearRect(0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+          tempCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+
+          // Clear main canvas (A4 page)
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
+
+          // Calculate grid layout (columns and rows)
+          const cols = Math.floor((PAGE_WIDTH + GAP) / (PHOTO_WIDTH + GAP));
+          const rows = Math.floor((PAGE_HEIGHT + GAP) / (PHOTO_HEIGHT + GAP));
+          const maxPhotos = cols * rows;
+
+          // If input pcs exceeds max, show the maximum limit
+          const count = Math.min(pcs, maxPhotos);
+          if (pcs > maxPhotos) {
+            alert(`Only ${maxPhotos} photos can fit on A4. Showing ${maxPhotos}.`);
+          }
+
+          // Draw photos onto the page with border
+          let placed = 0;
+          let y = GAP;
+          for (let r = 0; r < rows && placed < count; r++) {
+            let x = GAP;
+            for (let c = 0; c < cols && placed < count; c++) {
+              // Draw border
+              ctx.fillStyle = "#000";
+              ctx.fillRect(x - BORDER, y - BORDER, PHOTO_WIDTH + BORDER * 2, PHOTO_HEIGHT + BORDER * 2);
+
+              // Draw photo
+              ctx.drawImage(tempCanvas, x, y, PHOTO_WIDTH, PHOTO_HEIGHT);
+
+              placed++;
+              x += PHOTO_WIDTH + GAP;
+            }
+            y += PHOTO_HEIGHT + GAP;
+          }
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('printBtn').addEventListener('click', () => {
+      const dataUrl = canvas.toDataURL('image/png');
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html>
+       <title>Print Small Photos By Himanshu Enterprises</title>
+        <body style="margin:0;">
+          <img src="${dataUrl}" style="width:100%;" onload="window.print(); window.close();">
+        </body>
+        </html>
+      `);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 0;
+      margin: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      margin: 10px 0;
+    }
+
+    #signature-pad {
+      cursor: crosshair;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>Sign PDF Tool</header>
+  <div class="container">
+    <input type="file" id="pdf-upload" accept="application/pdf" />
+    <br/>
+    <canvas id="pdf-canvas" width="600" height="800"></canvas>
+    <br/>
+
+    <div>
+      <p>Draw your signature:</p>
+      <canvas id="signature-pad" width="300" height="100"></canvas><br>
+      <button onclick="clearSignature()">Clear Signature</button>
+    </div>
+
+    <br/>
+    <button id="sign-pdf">Sign & Download PDF</button>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script>
+    let signaturePad = document.getElementById('signature-pad');
+    let sigCtx = signaturePad.getContext('2d');
+    let drawing = false;
+
+    // Signature drawing events
+    signaturePad.addEventListener('mousedown', () => drawing = true);
+    signaturePad.addEventListener('mouseup', () => drawing = false);
+    signaturePad.addEventListener('mousemove', drawSignature);
+
+    function drawSignature(e) {
+      if (!drawing) return;
+      const rect = signaturePad.getBoundingClientRect();
+      sigCtx.lineWidth = 2;
+      sigCtx.lineCap = 'round';
+      sigCtx.strokeStyle = 'black';
+      sigCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      sigCtx.stroke();
+      sigCtx.beginPath();
+      sigCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function clearSignature() {
+      sigCtx.clearRect(0, 0, signaturePad.width, signaturePad.height);
+    }
+
+    let uploadedPdfBytes = null;
+    const pdfCanvas = document.getElementById('pdf-canvas');
+    const pdfCtx = pdfCanvas.getContext('2d');
+
+    document.getElementById('pdf-upload').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = async function() {
+        uploadedPdfBytes = new Uint8Array(this.result);
+        const pdf = await pdfjsLib.getDocument({ data: uploadedPdfBytes }).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 1.5 });
+        pdfCanvas.width = viewport.width;
+        pdfCanvas.height = viewport.height;
+
+        await page.render({
+          canvasContext: pdfCtx,
+          viewport: viewport
+        }).promise;
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('sign-pdf').addEventListener('click', async () => {
+      if (!uploadedPdfBytes) return;
+
+      const signatureDataUrl = signaturePad.toDataURL();
+      const pdfDoc = await PDFLib.PDFDocument.load(uploadedPdfBytes);
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
+
+      const pngImage = await pdfDoc.embedPng(signatureDataUrl);
+      const { width, height } = pngImage.scale(0.5);
+
+      firstPage.drawImage(pngImage, {
+        x: 50,
+        y: 50,
+        width,
+        height
+      });
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'signed.pdf';
+      link.click();
+    });
+  </script>
+
+  
+</body>
+</html>

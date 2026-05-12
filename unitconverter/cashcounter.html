@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Indian Rupees Cash Counter</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9f9f9;
+    padding: 20px;
+    max-width: 500px;
+    margin: auto;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  .instructions {
+    background: #e7f3ff;
+    border: 1px solid #a3d0ff;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    color: #0366d6;
+    font-weight: 600;
+    text-align: center;
+  }
+  .cash-counter {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px #ccc;
+  }
+  label {
+    display: flex;
+    justify-content: space-between;
+    margin: 12px 0;
+    font-weight: 600;
+  }
+  input[type="number"] {
+    width: 80px;
+    padding: 6px 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+  }
+  .total, .count {
+    margin-top: 20px;
+    font-size: 1.3rem;
+    text-align: center;
+    font-weight: bold;
+  }
+  .total {
+    color: #007bff;
+  }
+  .count {
+    color: #28a745;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  /* Hide buttons when printing */
+  @media print {
+    button {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Cash Counter Tool</h1>
+
+
+
+<div class="cash-counter">
+  <form id="cashForm">
+    <label>
+      ₹500 notes:
+      <input type="number" min="0" value="" data-value="500" />
+    </label>
+    <label>
+      ₹200 notes:
+      <input type="number" min="0" value="" data-value="200" />
+    </label>
+    <label>
+      ₹100 notes:
+      <input type="number" min="0" value="" data-value="100" />
+    </label>
+    <label>
+      ₹50 notes:
+      <input type="number" min="0" value="" data-value="50" />
+    </label>
+    <label>
+      ₹20 notes:
+      <input type="number" min="0" value="" data-value="20" />
+    </label>
+    <label>
+      ₹10 notes:
+      <input type="number" min="0" value="" data-value="10" />
+    </label>
+    <label>
+      ₹5 coins:
+      <input type="number" min="0" value="" data-value="5" />
+    </label>
+    <label>
+      ₹2 coins:
+      <input type="number" min="0" value="" data-value="2" />
+    </label>
+    <label>
+      ₹1 coins:
+      <input type="number" min="0" value="" data-value="1" />
+    </label>
+
+    <div class="total" id="totalAmount">
+      Total: ₹0
+    </div>
+    <div class="count" id="countNotes">
+      Count of notes/coins: 0
+    </div>
+
+    <button type="button" id="clearBtn">Clear</button>
+    <button type="button" id="printBtn">Print</button>
+  </form>
+</div>
+
+<script>
+  const inputs = document.querySelectorAll('input[type="number"]');
+  const totalAmount = document.getElementById('totalAmount');
+  const countNotes = document.getElementById('countNotes');
+  const clearBtn = document.getElementById('clearBtn');
+  const printBtn = document.getElementById('printBtn');
+
+  function calculateTotal() {
+    let total = 0;
+    let count = 0;
+    inputs.forEach(input => {
+      const countVal = parseInt(input.value) || 0;
+      const value = parseInt(input.getAttribute('data-value'));
+      total += countVal * value;
+      count += countVal;
+    });
+    totalAmount.textContent = `Total: ₹${total.toLocaleString('en-IN')}`;
+    countNotes.textContent = `Count of notes/coins: ${count}`;
+  }
+
+  inputs.forEach(input => {
+    input.addEventListener('input', calculateTotal);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    inputs.forEach(input => {
+      input.value = '';
+    });
+    calculateTotal();
+  });
+
+  printBtn.addEventListener('click', () => {
+    window.print();
+  });
+
+  calculateTotal();
+</script>
+
+</body>
+</html>

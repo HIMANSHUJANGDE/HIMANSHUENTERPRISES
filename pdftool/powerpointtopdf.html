@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>PowerPoint to PDF Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.9.0/pptxgen.bundle.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 50px;
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .note {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>PowerPoint to PDF Tool</h1>
+  <input type="file" id="pptxFile" accept=".pptx">
+  <button onclick="convertPPTXToPDF()">Convert to PDF</button>
+  <div class="note">Converts PowerPoint slides into PDF.</div>
+</div>
+
+<script>
+  async function convertPPTXToPDF() {
+    const input = document.getElementById('pptxFile');
+    if (!input.files.length) {
+      alert("Please select a PowerPoint file.");
+      return;
+    }
+
+    const file = input.files[0];
+    
+    // Read the PPTX file using JSZip
+    const zip = new JSZip();
+    const pptxData = await zip.loadAsync(file);
+
+    const slides = [];
+    
+    // Read each slide content (this is a simplified approach to extract text)
+    pptxData.forEach(function (relativePath, zipEntry) {
+      if (relativePath.includes("ppt/slides/slide")) {
+        zipEntry.async("text").then(function(content) {
+          slides.push(content);
+        });
+      }
+    });
+
+    // Once all slides are processed, create the PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    slides.forEach((slideContent, index) => {
+      if (index > 0) doc.addPage(); // Add a new page for each slide
+      doc.text(slideContent, 10, 10); // Add the slide text to PDF
+    });
+
+    // Save the generated PDF
+    doc.save("presentation.pdf");
+  }
+</script>
+
+
+</body>
+</html>

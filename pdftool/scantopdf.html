@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Scan to PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 20px auto;
+      width: 100%;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    canvas {
+      display: none;
+    }
+
+    #preview {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    #preview img {
+      max-width: 100px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Scan to PDF</h2>
+    <input type="file" id="imageInput" accept="image/*" multiple>
+    <button onclick="generatePDF()">Generate PDF</button>
+    <div id="preview"></div>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const statusMsg = document.getElementById('statusMsg');
+    let imageFiles = [];
+
+    imageInput.addEventListener('change', () => {
+      preview.innerHTML = '';
+      imageFiles = Array.from(imageInput.files);
+
+      imageFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    async function generatePDF() {
+      if (imageFiles.length === 0) {
+        statusMsg.textContent = 'Please select image(s) first.';
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        const imgData = await readFileAsDataURL(file);
+
+        const img = new Image();
+        img.src = imgData;
+
+        await new Promise(resolve => {
+          img.onload = () => {
+            const width = pdf.internal.pageSize.getWidth();
+            const height = (img.height / img.width) * width;
+            if (i > 0) pdf.addPage();
+            pdf.addImage(img, 'JPEG', 0, 0, width, height);
+            resolve();
+          };
+        });
+      }
+
+      pdf.save('scanned.pdf');
+      statusMsg.textContent = 'PDF generated and downloaded!';
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Compare PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    #resultPreview {
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      text-align: left;
+      font-family: monospace;
+      background: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Compare Two PDFs</h2>
+    <form id="compareForm" enctype="multipart/form-data">
+      <input type="file" name="pdf1" id="pdf1" accept="application/pdf" required>
+      <input type="file" name="pdf2" id="pdf2" accept="application/pdf" required>
+      <button type="submit">Compare PDFs</button>
+    </form>
+    <p id="statusMsg"></p>
+    <div id="resultPreview"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('compareForm');
+    const statusMsg = document.getElementById('statusMsg');
+    const resultPreview = document.getElementById('resultPreview');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.textContent = 'Comparing PDFs...';
+      resultPreview.style.display = 'none';
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/compare-pdfs', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const result = await response.text(); // Expecting plain text diff
+          resultPreview.textContent = result;
+          resultPreview.style.display = 'block';
+          statusMsg.textContent = 'Comparison complete.';
+        } else {
+          statusMsg.textContent = 'Comparison failed. PDFs may be unreadable.';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>

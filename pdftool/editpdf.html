@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF Editor Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+
+    header {
+      background: #333;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .toolbar button, .toolbar input[type="color"] {
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+
+    #pdf-canvas {
+      border: 1px solid #ccc;
+      background: #fff;
+      display: block;
+      margin-top: 20px;
+      max-width: 100%;
+    }
+
+    .file-upload {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  PDF Editor Tool
+</header>
+
+<div class="container">
+  <div class="file-upload">
+    <input type="file" id="upload-pdf" accept="application/pdf" />
+  </div>
+
+  <div class="toolbar">
+    <button id="addText">Add Text</button>
+    <button id="highlight">Highlight</button>
+    <input type="color" id="colorPicker" value="#ff0000" />
+    <button id="download">Download PDF</button>
+  </div>
+
+  <canvas id="pdf-canvas"></canvas>
+</div>
+
+
+
+
+</body>
+</html>

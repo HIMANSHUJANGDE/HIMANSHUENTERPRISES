@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>PDF to Excel Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
+      padding: 50px;
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .note {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>PDF to Excel Tool</h1>
+  <input type="file" id="pdfFile" accept="application/pdf">
+  <button onclick="convertPDFtoExcel()">Convert to Excel</button>
+  <div class="note">Extracts text and creates a basic Excel file from tables.</div>
+</div>
+
+<script>
+  async function convertPDFtoExcel() {
+    const input = document.getElementById('pdfFile');
+    const file = input.files[0];
+
+    if (!file) {
+      alert("Please select a PDF file.");
+      return;
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pdfText = [];
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      pdfText.push(pageText);
+    }
+
+    const data = parseTextToTable(pdfText);
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+    // Create a downloadable Excel file
+    XLSX.writeFile(wb, "converted-file.xlsx");
+  }
+
+  function parseTextToTable(textArray) {
+    const tableData = [];
+
+    // Split each page text into lines and parse it into rows
+    textArray.forEach(pageText => {
+      const rows = pageText.split('\n'); // Split by new line to simulate rows
+      rows.forEach(row => {
+        const cols = row.split(/\s{2,}/); // Split by two or more spaces to simulate columns
+        if (cols.length > 1) {
+          tableData.push(cols);
+        }
+      });
+    });
+
+    return tableData;
+  }
+</script>
+
+
+</body>
+</html>

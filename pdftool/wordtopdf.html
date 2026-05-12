@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Word to PDF Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 50px;
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .note {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Word to PDF Tool</h1>
+  <input type="file" id="wordFile" accept=".docx">
+  <button onclick="convertWordToPDF()">Convert to PDF</button>
+  <div class="note">Converts Word document text to PDF. Complex formatting might be lost.</div>
+</div>
+
+<script>
+  async function convertWordToPDF() {
+    const input = document.getElementById('wordFile');
+    if (!input.files.length) {
+      alert("Please select a Word file.");
+      return;
+    }
+
+    const file = input.files[0];
+    
+    // Read the Word document using Mammoth
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+
+    const textContent = result.value; // Extracted text
+
+    // Create PDF using jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Split text into pages (if needed)
+    const lines = doc.splitTextToSize(textContent, 180); // 180 is max width for text on one line
+    doc.text(lines, 10, 10);
+
+    // Save the PDF
+    doc.save('converted-document.pdf');
+  }
+</script>
+
+
+
+  
+</body>
+</html>

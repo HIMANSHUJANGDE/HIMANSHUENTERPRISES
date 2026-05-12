@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Convert to JPG Tool</title>
+  <style>
+
+
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+  margin: 0;
+}
+
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  max-width: 600px;
+  width: 100%;
+}
+
+input[type="file"] {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.preview {
+  margin: 20px 0;
+}
+
+#previewImage {
+  max-width: 100%;
+  max-height: 400px;
+  margin-bottom: 20px;
+}
+
+button, a {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+button:hover, a:hover {
+  background-color: #388e3c;
+}
+
+#downloadLink {
+  display: none;
+}
+
+
+
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Convert to JPG Tool</h1>
+
+    <input type="file" id="imageInput" accept="image/*">
+    
+    <div class="preview">
+      <h3>Preview:</h3>
+      <img id="previewImage" src="" alt="Image Preview">
+    </div>
+
+    <button onclick="convertToJPG()">Convert to JPG</button>
+    <a id="downloadLink" download="converted-image.jpg">Download JPG</a>
+  </div>
+
+  <script>
+
+
+
+const imageInput = document.getElementById("imageInput");
+const previewImage = document.getElementById("previewImage");
+const downloadLink = document.getElementById("downloadLink");
+
+let image = new Image();
+
+imageInput.addEventListener("change", () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    image.onload = function () {
+      previewImage.src = e.target.result;
+    };
+    image.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function convertToJPG() {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Set canvas dimensions to match the image
+  canvas.width = image.width;
+  canvas.height = image.height;
+
+  // Draw image onto canvas
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  // Convert canvas content to JPG data URL
+  const jpgDataUrl = canvas.toDataURL("image/jpeg");
+
+  // Set the download link and display it
+  downloadLink.href = jpgDataUrl;
+  downloadLink.style.display = "inline-block";
+}
+
+
+
+    
+  </script>
+
+</body>
+</html>

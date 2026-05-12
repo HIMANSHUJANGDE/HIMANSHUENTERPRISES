@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JPG to PDF Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+    }
+
+    .preview {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .preview img {
+      width: 150px;
+      border: 1px solid #ccc;
+      padding: 5px;
+      background: white;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<header>JPG to PDF Converter</header>
+
+<div class="container">
+  <input type="file" id="image-upload" accept="image/jpeg" multiple />
+  <div class="preview" id="image-preview"></div>
+  <button id="convert-btn" disabled>Convert to PDF</button>
+</div>
+
+<!-- jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  const imageInput = document.getElementById('image-upload');
+  const previewContainer = document.getElementById('image-preview');
+  const convertBtn = document.getElementById('convert-btn');
+  let imageFiles = [];
+
+  imageInput.addEventListener('change', () => {
+    imageFiles = Array.from(imageInput.files);
+    previewContainer.innerHTML = '';
+
+    if (imageFiles.length > 0) {
+      convertBtn.disabled = false;
+    }
+
+    imageFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  convertBtn.addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    for (let i = 0; i < imageFiles.length; i++) {
+      const imgData = await toDataURL(imageFiles[i]);
+
+      if (i > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 10, 10, 190, 270); // fit within A4
+    }
+
+    pdf.save('converted.pdf');
+  });
+
+  function toDataURL(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+
+
+
+  
+</body>
+</html>

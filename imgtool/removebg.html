@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Remove Image Background Tool</title>
+  <style>
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  text-align: center;
+  padding: 40px;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+input[type="file"] {
+  margin: 20px 0;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.preview {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.preview div {
+  flex: 1;
+  min-width: 300px;
+}
+
+img {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+}
+
+
+
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Remove Image Background</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="removeBackground()">Remove Background</button>
+
+    <div class="preview">
+      <div>
+        <h3>Original Image</h3>
+        <img id="originalImage" src="" alt="Original" />
+      </div>
+      <div>
+        <h3>Without Background</h3>
+        <img id="outputImage" src="" alt="Without Background" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+
+
+let selectedFile;
+
+document.getElementById("imageInput").addEventListener("change", function (e) {
+  selectedFile = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    document.getElementById("originalImage").src = event.target.result;
+  };
+  reader.readAsDataURL(selectedFile);
+});
+
+function removeBackground() {
+  if (!selectedFile) {
+    alert("Please select an image first.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("image_file", selectedFile);
+  formData.append("size", "auto");
+
+  fetch("https://api.remove.bg/v1.0/removebg", {
+    method: "POST",
+    headers: {
+      "X-Api-Key": "kmWvwT2X2hcAnTdQEwhdWwGo" // 🔑 Replace this with your actual key
+    },
+    body: formData
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Background removal failed.");
+      }
+      return response.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      document.getElementById("outputImage").src = url;
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("Something went wrong. Check the console and your API key.");
+    });
+}
+
+
+
+    
+  </script>
+
+</body>
+</html>
+

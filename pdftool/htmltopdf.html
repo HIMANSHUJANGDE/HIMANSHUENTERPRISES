@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>HTML to PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 30px;
+      text-align: center;
+    }
+
+    textarea {
+      width: 80%;
+      height: 300px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 16px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTML to PDF Converter</h1>
+  <p>Paste your HTML code below and download as PDF:</p>
+  <textarea id="htmlInput" placeholder="Enter your HTML code here..."></textarea>
+  <br>
+  <button onclick="convertToPDF()">Download PDF</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    function convertToPDF() {
+      const inputHTML = document.getElementById('htmlInput').value;
+      const container = document.createElement('div');
+      container.innerHTML = inputHTML;
+      document.body.appendChild(container); // Needed so styles apply
+
+      html2pdf().from(container).save('output.pdf');
+
+      // Optional: Remove container after saving
+      setTimeout(() => container.remove(), 1000);
+    }
+  </script>
+
+</body>
+</html>

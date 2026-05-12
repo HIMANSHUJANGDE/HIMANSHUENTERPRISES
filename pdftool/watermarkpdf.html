@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Watermark PDF Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 0;
+      margin: 0;
+      text-align: center;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    input[type="file"],
+    input[type="text"],
+    button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+    }
+  </style>
+</head>
+<body>
+
+<header>Watermark PDF Tool</header>
+
+<div class="container">
+  <input type="file" id="pdf-upload" accept="application/pdf" /><br />
+  <input type="text" id="watermark-text" placeholder="Enter watermark text" /><br />
+  <button id="add-watermark" disabled>Add Watermark</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+  let uploadedPdfBytes = null;
+
+  const fileInput = document.getElementById('pdf-upload');
+  const watermarkInput = document.getElementById('watermark-text');
+  const watermarkBtn = document.getElementById('add-watermark');
+
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file || file.type !== 'application/pdf') return;
+
+    const reader = new FileReader();
+    reader.onload = function () {
+      uploadedPdfBytes = new Uint8Array(this.result);
+      watermarkBtn.disabled = false;
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  watermarkBtn.addEventListener('click', async () => {
+    if (!uploadedPdfBytes) return;
+
+    const watermarkText = watermarkInput.value || 'WATERMARK';
+    const pdfDoc = await PDFLib.PDFDocument.load(uploadedPdfBytes);
+
+    const pages = pdfDoc.getPages();
+    const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+    pages.forEach((page) => {
+      const { width, height } = page.getSize();
+      page.drawText(watermarkText, {
+        x: width / 4,
+        y: height / 2,
+        size: 50,
+        font,
+        color: PDFLib.rgb(0.75, 0.75, 0.75),
+        rotate: PDFLib.degrees(-45),
+        opacity: 0.5,
+      });
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'watermarked.pdf';
+    link.click();
+  });
+</script>
+
+
+
+
+  
+</body>
+</html>

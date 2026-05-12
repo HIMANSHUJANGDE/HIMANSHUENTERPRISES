@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <title>PDF Redact Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 30px;
+    }
+
+    .container {
+      background: white;
+      width: 100%;
+      max-width: 600px;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      text-align: center;
+      color: #333;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 15px auto 25px auto;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .instructions {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    button {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      padding: 14px 25px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #c9302c;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      font-size: 14px;
+      text-align: center;
+      color: #444;
+      min-height: 20px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>PDF Redaction Tool</h2>
+    <p class="instructions">
+      Upload a PDF file. Specify text or areas to redact in the backend.
+      (This tool only uploads the file.)
+    </p>
+    <form id="redactForm" enctype="multipart/form-data">
+      <label for="pdfFile">Select PDF file to redact:</label>
+      <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" required />
+
+      <label for="redactText">Text or keywords to redact (comma separated):</label>
+      <input type="text" id="redactText" name="redactText" placeholder="e.g. confidential, secret" />
+
+      <button type="submit">Redact PDF</button>
+    </form>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('redactForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.textContent = 'Uploading and processing...';
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/redact-pdf', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'redacted.pdf';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          statusMsg.textContent = 'Redaction complete! Download started.';
+        } else {
+          statusMsg.textContent = 'Failed to redact PDF.';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>
