@@ -1,5 +1,229 @@
-<html>
-  <body>
-    <h1>Himanshu Enterprises</h1>
-  </body>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Himanshu Enterprises</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#0f172a,#1e293b,#111827);
+color:#fff;
+overflow-x:hidden;
+}
+
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 8%;
+position:fixed;
+width:100%;
+top:0;
+z-index:1000;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(12px);
+}
+
+.logo{
+font-size:28px;
+font-weight:700;
+color:#38bdf8;
+}
+
+nav ul{
+display:flex;
+list-style:none;
+gap:25px;
+}
+
+nav ul li a{
+color:#fff;
+text-decoration:none;
+transition:.3s;
+}
+
+nav ul li a:hover{
+color:#38bdf8;
+}
+
+.hero{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+text-align:center;
+padding:120px 20px 50px;
+}
+
+.hero h1{
+font-size:55px;
+margin-bottom:20px;
+}
+
+.hero h1 span{
+color:#38bdf8;
+}
+
+.hero p{
+max-width:700px;
+font-size:18px;
+color:#cbd5e1;
+margin-bottom:30px;
+}
+
+.btn{
+padding:14px 30px;
+border:none;
+border-radius:40px;
+background:#38bdf8;
+color:#fff;
+font-size:16px;
+cursor:pointer;
+transition:.3s;
+}
+
+.btn:hover{
+background:#0ea5e9;
+transform:translateY(-3px);
+}
+
+.features{
+padding:70px 8%;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:25px;
+}
+
+.card{
+padding:30px;
+border-radius:20px;
+background:rgba(255,255,255,0.05);
+transition:.3s;
+}
+
+.card:hover{
+transform:translateY(-8px);
+background:rgba(255,255,255,0.08);
+}
+
+.card h3{
+margin-bottom:15px;
+color:#38bdf8;
+}
+
+.card p{
+color:#cbd5e1;
+}
+
+/* Contact Section */
+.contact{
+padding:70px 8%;
+text-align:center;
+}
+
+.contact-box{
+max-width:700px;
+margin:auto;
+padding:35px;
+border-radius:20px;
+background:rgba(255,255,255,0.05);
+}
+
+.contact h2{
+font-size:40px;
+margin-bottom:20px;
+color:#38bdf8;
+}
+
+.contact p{
+font-size:18px;
+margin:12px 0;
+color:#cbd5e1;
+}
+
+footer{
+text-align:center;
+padding:25px;
+color:#94a3b8;
+}
+
+@media(max-width:768px){
+.hero h1{
+font-size:38px;
+}
+nav ul{
+display:none;
+}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="logo">Himanshu Enterprises</div>
+<ul>
+<li><a href="#">Home</a></li>
+<li><a href="#">Features</a></li>
+<li><a href="#contact">Contact</a></li>
+</ul>
+</nav>
+
+<section class="hero">
+<h1>Build Stunning <span>UI/UX</span> Websites</h1>
+<p>Create modern premium responsive websites with smooth animations and professional user experience.</p>
+<button class="btn" onclick="welcome()">Get Started</button>
+</section>
+
+<section class="features">
+<div class="card">
+<h3>Modern Design</h3>
+<p>Premium stylish layout with best user experience.</p>
+</div>
+
+<div class="card">
+<h3>Responsive</h3>
+<p>Perfect design for mobile, tablet and desktop.</p>
+</div>
+
+<div class="card">
+<h3>Fast Performance</h3>
+<p>Optimized clean code for fast loading website.</p>
+</div>
+</section>
+
+<section class="contact" id="contact">
+<div class="contact-box">
+<h2>Contact Us</h2>
+<p>📍 Address: Mumbai, Maharashtra, India</p>
+<p>📞 Phone: +91 98765 43210</p>
+<p>📧 Email: contact@uiuxsite.com</p>
+<p>🌐 Website: www.uiuxsite.com</p>
+</div>
+</section>
+
+<footer>
+© 2026 UIUXSite. All Rights Reserved.
+</footer>
+
+<script>
+function welcome(){
+alert("Welcome to UIUXSite!");
+}
+</script>
+
+</body>
 </html>
+
+
