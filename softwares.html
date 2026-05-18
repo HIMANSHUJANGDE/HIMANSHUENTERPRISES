@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern File Download System</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI,sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#0f172a,#1e293b);
+padding:30px;
+color:white;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+}
+
+.title{
+text-align:center;
+font-size:38px;
+font-weight:700;
+margin-bottom:25px;
+}
+
+.search-box{
+display:flex;
+justify-content:center;
+margin-bottom:30px;
+}
+
+.search-box input{
+width:100%;
+max-width:600px;
+padding:16px 22px;
+border:none;
+outline:none;
+border-radius:50px;
+font-size:16px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(12px);
+color:#fff;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.07);
+border:1px solid rgba(255,255,255,0.12);
+backdrop-filter:blur(18px);
+padding:22px;
+border-radius:22px;
+transition:.3s;
+}
+
+.card:hover{
+transform:translateY(-6px);
+box-shadow:0 15px 35px rgba(0,0,0,0.4);
+}
+
+.icon{
+font-size:45px;
+margin-bottom:12px;
+}
+
+.filename{
+font-size:22px;
+font-weight:600;
+margin-bottom:10px;
+}
+
+.meta{
+font-size:14px;
+opacity:.8;
+margin-bottom:18px;
+}
+
+.tag{
+display:inline-block;
+padding:7px 14px;
+border-radius:20px;
+background:#2563eb;
+font-size:13px;
+margin-bottom:18px;
+}
+
+.btn{
+display:block;
+text-align:center;
+text-decoration:none;
+background:linear-gradient(45deg,#22c55e,#16a34a);
+padding:14px;
+border-radius:12px;
+color:#fff;
+font-weight:700;
+transition:.3s;
+}
+
+.btn:hover{
+transform:scale(1.04);
+}
+
+.no-result{
+text-align:center;
+font-size:20px;
+margin-top:20px;
+display:none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1 class="title">📁 File Download Center</h1>
+
+<div class="search-box">
+<input type="text" id="search" placeholder="Search files...">
+</div>
+
+<div class="grid" id="fileContainer">
+
+</div>
+
+<div class="no-result" id="noResult">
+No Files Found
+</div>
+
+</div>
+
+<script>
+
+const files=[
+
+{
+name:"InstallNavi.exe",
+type:"ZIP File",
+size:"120 MB",
+category:"Software",
+icon:"💻",
+path:"InstallNavi.exe"
+},
+
+{
+name:"Document.pdf",
+type:"PDF",
+size:"5 MB",
+category:"Document",
+icon:"📄",
+path:"files/Document.pdf"
+},
+
+{
+name:"Photo.jpg",
+type:"Image",
+size:"3 MB",
+category:"Image",
+icon:"🖼️",
+path:"files/Photo.jpg"
+},
+
+{
+name:"Video.mp4",
+type:"Video",
+size:"80 MB",
+category:"Media",
+icon:"🎬",
+path:"files/Video.mp4"
+}
+
+];
+
+const container=document.getElementById("fileContainer");
+
+function displayFiles(list){
+
+container.innerHTML="";
+
+if(list.length===0){
+document.getElementById("noResult").style.display="block";
+return;
+}
+
+document.getElementById("noResult").style.display="none";
+
+list.forEach(file=>{
+
+container.innerHTML += `
+
+<div class="card">
+
+<div class="icon">${file.icon}</div>
+
+<div class="filename">${file.name}</div>
+
+<div class="meta">
+${file.type} • ${file.size}
+</div>
+
+<div class="tag">
+${file.category}
+</div>
+
+<a class="btn" href="${file.path}" download>
+⬇ Download
+</a>
+
+</div>
+
+`;
+
+});
+
+}
+
+displayFiles(files);
+
+document.getElementById("search").addEventListener("keyup",function(){
+
+let value=this.value.toLowerCase();
+
+let filtered=files.filter(file=>
+
+file.name.toLowerCase().includes(value) ||
+file.category.toLowerCase().includes(value)
+
+);
+
+displayFiles(filtered);
+
+});
+
+</script>
+
+</body>
+</html>
